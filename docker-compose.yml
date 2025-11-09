@@ -1,0 +1,69 @@
+services:
+  db:
+    image: postgis/postgis:17-3.4
+    container_name: willys-db
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-willysDB}
+    volumes:
+      - postgres_data_container:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d willysDB']
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    restart: always
+
+
+  address-online-backend:
+    build:
+      dockerfile: ${DOCKERFILE:-Dockerfile}
+    container_name: willys-backend
+    ports:
+      - '8080:8080'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.willys-backend.rule=Host(`api.willys.com`)"
+      - "traefik.http.routers.willys-backend.entrypoints=websecure"
+      - "traefik.http.routers.willys-backend.tls.certresolver=myresolver"
+      - "traefik.http.services.willys-backend.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.request-size-limit.buffering.maxRequestBodyBytes=104857600"
+      - "traefik.http.routers.willys-backend.middlewares=request-size-limit"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ['yarn', 'start:prod']
+    restart: always
+    mem_limit: 2g
+    mem_reservation: 1g
+  traefik:
+    image: traefik:v3.0
+    command:
+      - --log.level=DEBUG
+      - --accesslog=true
+      - --providers.docker=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.myresolver.acme.httpchallenge=true
+      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.myresolver.acme.email=youssefbashafcis@gmail.com
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+      - --providers.docker.network=willys_default 
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/letsencrypt:/letsencrypt
+
+volumes:
+  postgres_data_container:
+    driver: local
