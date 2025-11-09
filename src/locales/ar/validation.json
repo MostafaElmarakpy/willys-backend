@@ -1,0 +1,5 @@
+{
+  "required": "يرجى تقديم قيمة لـ `{property}`",
+  "length": "يجب أن يكون عدد أحرف `{property}` بين {constraints.0} و {constraints.1}.",
+  "string": "`{property}` يجب أن تكون سلسلة (string) ؛ لقد قدمت {value}"
+}

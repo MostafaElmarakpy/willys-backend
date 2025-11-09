@@ -1,0 +1,68 @@
+import { Type } from 'class-transformer';
+import {
+  IsDate,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { CountryCode } from 'libphonenumber-js/max';
+import { IsUnique } from 'src/common/decorators/is-unique.decorator';
+import { UserStatus } from 'src/common/enums/UserStatus';
+import { IsPhoneNumberWithCountryCode } from 'src/common/validator/is-phone-number-with-Country-code';
+import { UserRole } from 'src/common/enums/UserRole';
+import { UserGender } from 'src/common/enums/UserGender';
+import { User } from 'src/database/entities/user.entity';
+
+export class CreateUserDto {
+  @IsString()
+  @IsNotEmpty()
+  fullName: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  @IsUnique(User, 'email')
+  email?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsPhoneNumberWithCountryCode('phoneNumberCountryCode', {
+    message: 'Invalid phone number for the provided country code',
+  })
+  @IsUnique(User, 'phoneNumber')
+  phoneNumber?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(2)
+  @MaxLength(3)
+  phoneNumberCountryCode: CountryCode;
+
+  @IsNotEmpty()
+  @IsEnum(UserRole)
+  role: string;
+
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  birthday?: Date;
+
+  @IsOptional()
+  @IsEnum(UserGender)
+  gender: UserGender;
+
+  @IsOptional()
+  @IsEnum(UserStatus)
+  status!: UserStatus;
+
+  @IsString()
+  @IsNotEmpty()
+  userLocale: string = 'ar';
+}
