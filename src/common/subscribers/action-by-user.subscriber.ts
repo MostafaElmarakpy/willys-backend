@@ -25,16 +25,17 @@ export class ActionByUserSubscriber implements EntitySubscriberInterface {
     relation: string,
     currentUser: User,
   ) {
-    const { metadata, manager, entity } = event;
-    const target = metadata.target;
+    const { metadata, entity } = event;
 
+    // Check if the entity has the relation property
     if (metadata.relations.some((rel) => rel.propertyName === relation)) {
-      manager
-        .getRepository(target)
-        .createQueryBuilder()
-        .relation(target, relation)
-        .of(entity)
-        .set(currentUser);
+      // Set the foreign key ID directly
+      const foreignKeyProperty = relation + 'Id';
+      
+      if (entity && typeof entity === 'object') {
+        entity[foreignKeyProperty] = currentUser.id;
+        entity[relation] = currentUser;
+      }
     }
   }
 

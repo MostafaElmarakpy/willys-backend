@@ -22,10 +22,10 @@ export class ConfigService {
     'S3_SECRET_KEY_ID',
     'S3_BUCKET_NAME',
     'S3_REGION',
-    // 'ROUND_CUBE_HOST',
-    // 'ROUND_CUBE_PORT',
-    // 'ROUND_CUBE_USER',
-    // 'ROUND_CUBE_PASSWORD',
+    'ROUND_CUBE_HOST',
+    'ROUND_CUBE_PORT',
+    'ROUND_CUBE_USER',
+    'ROUND_CUBE_PASSWORD',
     // 'TOTP_SECRET',
   ];
 
@@ -66,7 +66,7 @@ export class ConfigService {
       roundCubePort: Number(process.env.ROUND_CUBE_PORT),
       roundCubeUser: process.env.ROUND_CUBE_USER!,
       roundCubePassword: process.env.ROUND_CUBE_PASSWORD!,
-      totpSecret: process.env.TOTP_SECRET!,
+      // totpSecret: process.env.TOTP_SECRET!,
     };
 
     this.logger.log(

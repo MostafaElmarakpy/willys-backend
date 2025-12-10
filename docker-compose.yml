@@ -20,7 +20,7 @@ services:
     restart: always
 
 
-  address-online-backend:
+  willys-backend:
     build:
       dockerfile: ${DOCKERFILE:-Dockerfile}
     container_name: willys-backend

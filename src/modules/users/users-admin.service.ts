@@ -50,7 +50,7 @@ export class UsersAdminService {
     const user = new User();
     user.email = createUserDto?.email;
     user.password = await bcrypt.hash(createUserDto.password, 10);
-    user.role = createUserDto.role;
+    user.role = createUserDto.role as UserRole;
     user.status = createUserDto.status;
     user.fullName = createUserDto.fullName;
     user.phoneNumber = createUserDto?.phoneNumber;
@@ -176,6 +176,7 @@ export class UsersAdminService {
     const updatedUserData = {
       ...updateUserDto,
       avatar: uploadedAvatar?.url ?? user.avatar,
+      role: updateUserDto.role ? (updateUserDto.role as UserRole) : user.role,
     };
 
     await this.usersRepository.update(id, updatedUserData);

@@ -1,0 +1,334 @@
+{
+  "info": {
+    "name": "Willy's Restaurant Backend API",
+    "description": "Complete API collection for Willy's Restaurant management system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "willy-backend-api"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Ahmed Mohamed\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"1234567890\",\n  \"phoneNumberCountryCode\": \"EG\",\n  \"userLocale\": \"ar\",\n  \"gender\": \"male\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Branches",
+      "item": [
+        {
+          "name": "Create Branch",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('branch_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Alexandria - Smouha Branch\",\n    \"ar\": \"الإسكندرية - فرع سموحة\"\n  },\n  \"address\": \"Smouha Square, Alexandria, Egypt\",\n  \"latitude\": 31.2102,\n  \"longitude\": 29.9450,\n  \"phone\": \"+201234567890\",\n  \"email\": \"smouha@willys.com\",\n  \"deliveryFee\": 15.50,\n  \"estimatedDeliveryTime\": 30,\n  \"openingHours\": \"09:00\",\n  \"closingHours\": \"23:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/branches",
+              "host": ["{{base_url}}"],
+              "path": ["branches"]
+            }
+          }
+        },
+        {
+          "name": "Get All Branches",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/branches",
+              "host": ["{{base_url}}"],
+              "path": ["branches"]
+            }
+          }
+        },
+        {
+          "name": "Get Branch by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/branches/{{branch_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["branches", "{{branch_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Branch",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deliveryFee\": 20.00,\n  \"estimatedDeliveryTime\": 25\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/branches/{{branch_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["branches", "{{branch_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Check Delivery Zone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 31.2150,\n  \"longitude\": 29.9500\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/branches/check-delivery-zone",
+              "host": ["{{base_url}}"],
+              "path": ["branches", "check-delivery-zone"]
+            }
+          }
+        },
+        {
+          "name": "Find Nearby Branches",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/branches/nearby?latitude=31.2102&longitude=29.9450&radius=5",
+              "host": ["{{base_url}}"],
+              "path": ["branches", "nearby"],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "31.2102"
+                },
+                {
+                  "key": "longitude", 
+                  "value": "29.9450"
+                },
+                {
+                  "key": "radius",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Zones",
+      "item": [
+        {
+          "name": "Create Zone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('zone_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Smouha Delivery Zone\",\n    \"ar\": \"منطقة توصيل سموحة\"\n  },\n  \"branchId\": \"{{branch_id}}\",\n  \"polygon\": {\n    \"type\": \"Polygon\",\n    \"coordinates\": [[\n      [29.9400, 31.2050],\n      [29.9500, 31.2050], \n      [29.9500, 31.2150],\n      [29.9400, 31.2150],\n      [29.9400, 31.2050]\n    ]]\n  },\n  \"priority\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/zones",
+              "host": ["{{base_url}}"],
+              "path": ["zones"]
+            }
+          }
+        },
+        {
+          "name": "Get All Zones",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/zones",
+              "host": ["{{base_url}}"],
+              "path": ["zones"]
+            }
+          }
+        },
+        {
+          "name": "Get Zones by Branch",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/zones/branch/{{branch_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "branch", "{{branch_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Check Point in Zone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 31.2100,\n  \"longitude\": 29.9450\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/zones/check-point",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "check-point"]
+            }
+          }
+        },
+        {
+          "name": "Update Zone",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priority\": 15\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/zones/{{zone_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "{{zone_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Zone",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/zones/{{zone_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["zones", "{{zone_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

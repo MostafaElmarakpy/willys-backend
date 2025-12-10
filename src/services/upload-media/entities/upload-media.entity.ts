@@ -5,10 +5,15 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   DeleteDateColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+  Index,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 @Entity('upload_media')
+@Index(['entityType', 'entityId'])
 export class UploadMedia {
   @PrimaryGeneratedColumn('uuid')
   id: string = uuidv4();
@@ -23,6 +28,7 @@ export class UploadMedia {
   url: string;
 
   @Column()
+  @Index()
   mimetype: string;
 
   @Column()
@@ -34,16 +40,24 @@ export class UploadMedia {
   @Column()
   entityId: string; // ID of the related entity
 
+  @Column({ nullable: true })
+  createdById?: string;
+
   @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'createdById' })
   createdBy?: User;
 
+  @Column({ nullable: true })
+  updatedById?: string;
+
   @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'updatedById' })
   updatedBy?: User;
 
-  @Column({ nullable: true })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ nullable: true })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   @DeleteDateColumn({ nullable: true })

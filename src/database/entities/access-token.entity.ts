@@ -5,6 +5,8 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
+  JoinColumn,
+  Index,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -17,12 +19,15 @@ export class AccessToken {
   identifier: string;
 
   @Column({ name: 'accessToken' })
+  @Index()
   accessToken: string;
 
   @Column({ name: 'refreshToken' })
+  @Index()
   refreshToken: string;
 
   @Column({ name: 'userId' })
+  @Index()
   userId: string;
 
   @Column({ name: 'deviceIP', nullable: true })
@@ -35,6 +40,7 @@ export class AccessToken {
   deviceLocation?: string;
 
   @Column({ type: 'timestamp' })
+  @Index()
   expiration: Date;
 
   @Column({ type: 'timestamp' })
@@ -44,5 +50,6 @@ export class AccessToken {
   createdAt: Date;
 
   @ManyToOne(() => User, (user) => user.accessTokens)
+  @JoinColumn({ name: 'userId' })
   user: User;
 }

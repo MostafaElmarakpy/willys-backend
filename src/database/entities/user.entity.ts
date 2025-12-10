@@ -9,10 +9,11 @@ import {
   Column,
   DeleteDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -25,6 +26,7 @@ export class User {
   fullName!: string;
 
   @Column({ unique: true, nullable: true })
+  @Index()
   email?: string;
 
   @Exclude({ toClassOnly: true })
@@ -32,7 +34,7 @@ export class User {
   password!: string;
 
   @Column({ nullable: true })
-  changePasswordTime!: Date;
+  changePasswordTime?: Date;
 
   @Column({ nullable: true })
   phoneNumber?: string;
@@ -51,7 +53,8 @@ export class User {
     enum: UserRole,
     default: UserRole.user,
   })
-  role!: string;
+  @Index()
+  role!: UserRole;
 
   @Column({ default: false })
   confirmAccount!: boolean;
@@ -61,51 +64,52 @@ export class User {
     enum: UserStatus,
     default: UserStatus.Offline,
   })
-  status!: string;
+  @Index()
+  status!: UserStatus;
 
   @Column({ nullable: true })
   avatar?: string;
 
   @Column({ nullable: true })
-  birthday!: Date;
+  birthday?: Date;
 
   @Column({ nullable: true })
-  joined!: Date;
+  joined?: Date;
 
   @Column({
     type: 'enum',
     enum: UserGender,
     nullable: true,
   })
-  gender!: string;
+  gender?: UserGender;
 
   @Column({
     type: 'enum',
     enum: UserProvider,
     default: UserProvider.System,
   })
-  provider!: string;
+  provider!: UserProvider;
 
   @Column({ nullable: true })
-  verificationCode!: string;
+  verificationCode?: string;
 
   @Column({ nullable: true })
-  verificationCodeExpiresAt!: Date;
+  verificationCodeExpiresAt?: Date;
 
-  @Column({ nullable: true })
-  createdAt!: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @Column({ nullable: true })
-  updatedAt!: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @DeleteDateColumn({ nullable: true })
-  deletedAt!: Date;
+  deletedAt?: Date;
 
   @Column({ nullable: true })
-  lastLogin!: Date;
+  lastLogin?: Date;
 
   @Column({ nullable: true })
-  lastLogout!: Date;
+  lastLogout?: Date;
 
   @OneToMany(() => ResetPasswordToken, (token) => token.user)
   resetPasswordTokens: ResetPasswordToken[];
