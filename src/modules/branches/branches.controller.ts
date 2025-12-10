@@ -8,7 +8,6 @@ import {
   Delete,
   ParseUUIDPipe,
   Query,
-  HttpStatus,
   Put,
   UseGuards,
   Version,
@@ -17,6 +16,8 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/UserRole';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { createSuccessResponse, createCreatedResponse } from '../../common/utils/api-response-wrapper';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 import { BranchesService } from './branches.service';
 import { CreateBranchDto } from './dto/create-branch.dto';
 import { UpdateBranchDto } from './dto/update-branch.dto';
@@ -36,17 +37,16 @@ export class BranchesController {
   @Roles(UserRole.admin)
   async create(@Body() createBranchDto: CreateBranchDto) {
     const branch = await this.branchesService.create(createBranchDto);
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Branch created successfully',
-      data: branch,
-    };
+    return createCreatedResponse(branch, 'Branch created successfully');
   }
 
   @Get()
   @Version('1')
   @Roles(UserRole.admin)
-  async findAll(@Query('status') status?: 'all' | 'active' | 'open') {
+  async findAll(
+    @Query('status') status?: 'all' | 'active' | 'open',
+    @Query() pagination?: PaginationDto,
+  ) {
     let branches: any;
     
     switch (status) {
@@ -60,11 +60,7 @@ export class BranchesController {
         branches = await this.branchesService.findAll();
     }
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Branches retrieved successfully',
-      data: branches,
-    };
+    return createSuccessResponse(branches, 'Branches retrieved successfully');
   }
 
   @Get('nearby')
@@ -74,6 +70,7 @@ export class BranchesController {
     @Query('latitude') latitude: number,
     @Query('longitude') longitude: number,
     @Query('radius') radius?: number,
+    @Query() pagination?: PaginationDto,
   ) {
     const branches = await this.branchesService.findNearby(
       latitude,
@@ -81,11 +78,7 @@ export class BranchesController {
       radius,
     );
 
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Nearby branches retrieved successfully',
-      data: branches,
-    };
+    return createSuccessResponse(branches, 'Nearby branches retrieved successfully');
   }
 
   @Post('check-delivery-zone')
@@ -94,15 +87,11 @@ export class BranchesController {
   async checkDeliveryZone(@Body() zoneCheckDto: ZoneCheckDto) {
     const result = await this.zonesService.checkPointInZone(zoneCheckDto);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Zone check completed',
-      data: {
-        canDeliver: result.isInZone,
-        availableBranches: result.matchingBranches,
-        recommendedBranch: result.matchingBranches[0]?.branch || null,
-      },
-    };
+    return createSuccessResponse({
+      canDeliver: result.isInZone,
+      availableBranches: result.matchingBranches,
+      recommendedBranch: result.matchingBranches[0]?.branch || null,
+    }, 'Zone check completed');
   }
 
   @Post('find-serving-branch')
@@ -111,11 +100,7 @@ export class BranchesController {
   async findServingBranch(@Body() zoneCheckDto: ZoneCheckDto) {
     const branch = await this.zonesService.findBestBranchForLocation(zoneCheckDto);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: branch ? 'Serving branch found' : 'No serving branch found',
-      data: { branch },
-    };
+    return createSuccessResponse({ branch }, branch ? 'Serving branch found' : 'No serving branch found');
   }
 
   @Get(':id')
@@ -124,11 +109,7 @@ export class BranchesController {
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const branch = await this.branchesService.findOne(id);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Branch retrieved successfully',
-      data: branch,
-    };
+    return createSuccessResponse(branch, 'Branch retrieved successfully');
   }
 
   @Get(':id/stats')
@@ -137,11 +118,7 @@ export class BranchesController {
   async getBranchStats(@Param('id', ParseUUIDPipe) id: string) {
     const stats = await this.branchesService.getBranchStats(id);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Branch statistics retrieved successfully',
-      data: stats,
-    };
+    return createSuccessResponse(stats, 'Branch statistics retrieved successfully');
   }
 
   @Get(':id/zones')
@@ -150,11 +127,7 @@ export class BranchesController {
   async getBranchZones(@Param('id', ParseUUIDPipe) id: string) {
     const zones = await this.zonesService.findByBranch(id);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Branch zones retrieved successfully',
-      data: zones,
-    };
+    return createSuccessResponse(zones, 'Branch zones retrieved successfully');
   }
 
   @Put(':id')
@@ -166,11 +139,7 @@ export class BranchesController {
   ) {
     const branch = await this.branchesService.update(id, updateBranchDto);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Branch updated successfully',
-      data: branch,
-    };
+    return createSuccessResponse(branch, 'Branch updated successfully');
   }
 
   @Patch(':id/toggle-status')
@@ -182,11 +151,7 @@ export class BranchesController {
   ) {
     const branch = await this.branchesService.toggleStatus(id, status);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: `Branch ${status} status toggled successfully`,
-      data: branch,
-    };
+    return createSuccessResponse(branch, `Branch ${status} status toggled successfully`);
   }
 
   @Delete(':id')
@@ -195,9 +160,6 @@ export class BranchesController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.branchesService.remove(id);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Branch deleted successfully',
-    };
+    return createSuccessResponse(null, 'Branch deleted successfully');
   }
 }

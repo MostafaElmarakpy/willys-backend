@@ -1,172 +1,130 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-// Success Response Interface
+// Success Response Interface (matches current controller pattern)
 export interface SuccessResponse<T> {
-  success: boolean;
-  status: number;
+  statusCode: number;
+  message: string;
   data: T;
-  message?: string;
 }
 
-// Error Response Interface
+// Error Response Interface (matches current NestJS exception format)
 export interface ErrorResponse {
-  message?: string;
-  success: boolean;
-  status: number;
-  errors: {
-    key: string;
-    message: string;
-  }[];
-  debug?: any;
+  statusCode: number;
+  message: string | string[];
+  error?: string;
 }
 
 // Paginated Response Interface
 export interface PaginatedResponse<T> {
-  success: boolean;
-  status: number;
+  statusCode: number;
+  message: string;
   data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-  filtersRelaxed?: boolean;
-  relaxedFilters?: string[];
-  message?: string;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 /**
- * General success response handler.
+ * Creates a standardized success response
  */
-export function success<T>(
+export function createSuccessResponse<T>(
   data: T,
+  message: string = 'Operation successful',
   statusCode: number = HttpStatus.OK,
-  message: string = 'Request successful',
 ): SuccessResponse<T> {
   return {
-    success: true,
-    status: statusCode,
-    data: data,
+    statusCode,
     message,
+    data,
   };
 }
 
 /**
- * Success response for a single record.
+ * Creates a standardized created response
  */
-export function showOne<T>(
+export function createCreatedResponse<T>(
   data: T,
-  statusCode: number = HttpStatus.OK,
+  message: string = 'Resource created successfully',
 ): SuccessResponse<T> {
   return {
-    success: true,
-    status: statusCode,
-    data: data,
+    statusCode: HttpStatus.CREATED,
+    message,
+    data,
   };
 }
 
 /**
- * Success response for a created resource.
+ * Creates a standardized paginated response
  */
-export function successCreate<T>(
-  data: T,
-  statusCode: number = HttpStatus.CREATED,
-): SuccessResponse<T> {
-  return {
-    success: true,
-    status: statusCode,
-    data: data,
-    message: 'Resource created successfully',
-  };
-}
-
-/**
- * Paginated response handler.
- */
-export function paginate<T>(
+export function createPaginatedResponse<T>(
   data: T[],
-  total: number,
   page: number,
   limit: number,
-  filtersRelaxed?: boolean,
-  relaxedFilters?: string[],
-  message: string = 'Request successful',
+  total: number,
+  message: string = 'Data retrieved successfully',
 ): PaginatedResponse<T> {
   const totalPages = Math.ceil(total / limit);
+  
   return {
-    success: true,
-    status: HttpStatus.OK,
-    data: data,
-    total,
-    page,
-    limit,
-    totalPages,
-    filtersRelaxed,
-    relaxedFilters,
+    statusCode: HttpStatus.OK,
     message,
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    },
   };
 }
 
-export function handleError(
-  error: any,
+/**
+ * Creates a standardized error response and throws it
+ */
+export function createErrorResponse(
+  message: string | string[],
   statusCode: number = HttpStatus.INTERNAL_SERVER_ERROR,
-  debug?: any,
-): ErrorResponse {
-  let message: string;
-  let errors: { key: string; message: string }[] = [];
-
-  if (error instanceof HttpException) {
-    statusCode = error.getStatus();
-    const response = error.getResponse() as any;
-    message = response.message || 'An error occurred';
-    errors = Array.isArray(response.message)
-      ? response.message.map((msg: string) => ({ key: 'error', message: msg }))
-      : [{ key: 'error', message }];
-  } else if (error instanceof Error) {
-    message = error.message;
-    errors = [{ key: 'error', message }];
-  } else if (typeof error === 'object' && error !== null) {
-    message = 'Validation failed';
-    errors = Object.entries(error).map(([key, value]) => ({
-      key,
-      message: Array.isArray(value) ? value.join(', ') : String(value),
-    }));
-  } else {
-    message = 'An unexpected error occurred';
-    errors = [{ key: 'error', message }];
-  }
-
-  throw new HttpException(
-    {
-      success: false,
-      status: statusCode,
-      message,
-      errors,
-      debug: process.env.NODE_ENV === 'development' ? debug : undefined,
-    },
+  error?: string,
+): never {
+  const response: ErrorResponse = {
     statusCode,
-  );
+    message,
+    ...(error && { error }),
+  };
+
+  throw new HttpException(response, statusCode);
 }
 
-export function errorResponse(
-  error: any,
-  statusCode?: number,
-  debug?: any,
-): ErrorResponse {
-  return handleError(error, statusCode, debug);
+/**
+ * Predefined error responses
+ */
+export function throwBadRequest(message: string = 'Bad Request'): never {
+  return createErrorResponse(message, HttpStatus.BAD_REQUEST, 'Bad Request');
 }
 
-export function unauthorized(
-  message: string = 'Unauthorized access',
-): ErrorResponse {
-  return handleError(message, HttpStatus.UNAUTHORIZED);
+export function throwUnauthorized(message: string = 'Unauthorized'): never {
+  return createErrorResponse(message, HttpStatus.UNAUTHORIZED, 'Unauthorized');
 }
 
-export function notFound(
-  message: string = 'Resource not found',
-): ErrorResponse {
-  return handleError(message, HttpStatus.NOT_FOUND);
+export function throwForbidden(message: string = 'Forbidden'): never {
+  return createErrorResponse(message, HttpStatus.FORBIDDEN, 'Forbidden');
 }
 
-export function validationError(errors: any): ErrorResponse {
-  return handleError(errors, HttpStatus.BAD_REQUEST);
+export function throwNotFound(message: string = 'Resource not found'): never {
+  return createErrorResponse(message, HttpStatus.NOT_FOUND, 'Not Found');
+}
+
+export function throwConflict(message: string = 'Conflict'): never {
+  return createErrorResponse(message, HttpStatus.CONFLICT, 'Conflict');
+}
+
+export function throwValidationError(message: string | string[] = 'Validation failed'): never {
+  return createErrorResponse(message, HttpStatus.BAD_REQUEST, 'Validation Error');
+}
+
+export function throwInternalError(message: string = 'Internal server error'): never {
+  return createErrorResponse(message, HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error');
 }

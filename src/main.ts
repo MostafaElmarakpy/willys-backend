@@ -5,7 +5,7 @@ import { useContainer, ValidationError } from 'class-validator';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 import { AppModule } from './app.module';
 import { LocaleInterceptor } from './common/interceptor/locale.interceptor';
-import { handleError } from './common/utils/api-response-wrapper';
+import { createErrorResponse } from './common/utils/api-response-wrapper';
 import { ConfigService } from './config/config.service';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -63,7 +63,7 @@ async function bootstrap() {
           {},
         );
 
-        return handleError(formattedErrors, HttpStatus.BAD_REQUEST);
+        return createErrorResponse('Validation failed', HttpStatus.BAD_REQUEST);
       },
     }),
   );

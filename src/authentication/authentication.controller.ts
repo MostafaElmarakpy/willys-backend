@@ -10,7 +10,7 @@ import {
   UseInterceptors,
   Version,
 } from '@nestjs/common';
-import { success } from 'src/common/utils/api-response-wrapper';
+import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
 import { EntityFileInterceptor } from 'src/services/upload-media/entity-file.interceptor';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { LocalAuthGuard } from '../common/guards/local-auth.guard';
@@ -34,7 +34,7 @@ export class AuthenticationController {
   @Version('1')
   async login(@Body() loginDto: LoginDto) {
     const response = await this.authenticationService.login(loginDto);
-    return success(response);
+    return createSuccessResponse(response);
   }
 
   @Post('refresh')
@@ -43,7 +43,7 @@ export class AuthenticationController {
     const response = await this.authenticationService.refresh(
       refreshDto.refresh_token,
     );
-    return success(response);
+    return createSuccessResponse(response);
   }
 
   @Post('register')
@@ -57,7 +57,7 @@ export class AuthenticationController {
       registerDto,
       avatar,
     );
-    return success(response);
+    return createSuccessResponse(response);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -65,7 +65,7 @@ export class AuthenticationController {
   @Version('1')
   async logout(@Request() req: any) {
     await this.authenticationService.logout(req);
-    return success([]);
+    return createSuccessResponse([]);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -73,7 +73,7 @@ export class AuthenticationController {
   @Version('1')
   async profile(@Request() req: any) {
     const response = await this.authenticationService.profile(req.user.id);
-    return success(response);
+    return createSuccessResponse(response);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -90,7 +90,7 @@ export class AuthenticationController {
       updateProfileDto,
       avatar,
     );
-    return success(response);
+    return createSuccessResponse(response);
   }
 
   @Post('forgot-password')
@@ -100,7 +100,7 @@ export class AuthenticationController {
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     const response =
       await this.authenticationService.resetPassword(resetPasswordDto);
-    return success({ message: response });
+    return createSuccessResponse({ message: response });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -114,7 +114,7 @@ export class AuthenticationController {
       req.user.id,
       changePasswordDto,
     );
-    return success({ message: response });
+    return createSuccessResponse({ message: response });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -123,7 +123,7 @@ export class AuthenticationController {
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     const response =
       await this.authenticationService.verifyEmail(verifyEmailDto);
-    return success({ message: response });
+    return createSuccessResponse({ message: response });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -135,7 +135,7 @@ export class AuthenticationController {
     const response = await this.authenticationService.resendVerificationEmail(
       resendVerificationEmailDto,
     );
-    return success({ message: response });
+    return createSuccessResponse({ message: response });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -149,7 +149,7 @@ export class AuthenticationController {
       req.user.id,
       changeEmailDto,
     );
-    return success({ message: response });
+    return createSuccessResponse({ message: response });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -159,6 +159,6 @@ export class AuthenticationController {
     const response = await this.authenticationService.deleteAccount(
       req.user.id,
     );
-    return success({ message: response });
+    return createSuccessResponse({ message: response });
   }
 }

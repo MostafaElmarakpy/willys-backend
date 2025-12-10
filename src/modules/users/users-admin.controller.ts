@@ -21,13 +21,9 @@ import {
   TransformToTypeTypes,
 } from 'src/common/interceptor/add-param-to-body-interceptor';
 import { Serialize } from 'src/common/interceptor/serialize-interceptor';
-import { PaginationOptionsDto } from 'src/common/pagination/dto';
-import {
-  paginate,
-  showOne,
-  success,
-} from 'src/common/utils/api-response-wrapper';
 import { EntityFileInterceptor } from 'src/services/upload-media/entity-file.interceptor';
+import { createSuccessResponse, createCreatedResponse } from 'src/common/utils/api-response-wrapper';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
@@ -41,19 +37,17 @@ export class UsersAdminController {
   @Get()
   @Version('1')
   @Roles(UserRole.admin)
-  async findAll(@Query() pagination: PaginationOptionsDto) {
-    const { data, total, pageNumber, limitNumber } =
-      await this.usersService.findAll(pagination);
-    return paginate(data, total, pageNumber, limitNumber);
+  async findAll(@Query() pagination: PaginationDto) {
+    const users = await this.usersService.findAll(pagination.page || 1, pagination.limit || 10);
+    return createSuccessResponse(users, 'Users retrieved successfully');
   }
 
   @Get('/management')
   @Version('1')
   @Roles(UserRole.admin)
-  async findAllUsersRole(@Query() pagination: PaginationOptionsDto) {
-    const { data, total, pageNumber, limitNumber } =
-      await this.usersService.findAllUsersRole(pagination);
-    return paginate(data, total, pageNumber, limitNumber);
+  async findAllUsersRole(@Query() pagination: PaginationDto) {
+    const users = await this.usersService.findAllUsersRole(pagination.page || 1, pagination.limit || 10);
+    return createSuccessResponse(users, 'Management users retrieved successfully');
   }
 
   @UseInterceptors(EntityFileInterceptor('user', 'avatar'))
@@ -65,7 +59,7 @@ export class UsersAdminController {
     @Body() createUserDto: CreateUserDto,
   ) {
     const user = await this.usersService.create(createUserDto, avatar);
-    return showOne(user);
+    return createCreatedResponse(user, 'User created successfully');
   }
 
   @Get(':id')
@@ -73,9 +67,8 @@ export class UsersAdminController {
   @Roles(UserRole.admin)
   @Serialize(UserDto)
   async findOne(@Param('id') id: string) {
-    const response = await this.usersService.findOne(id);
-    const result = showOne(response);
-    return result.data;
+    const user = await this.usersService.findOne(id);
+    return createSuccessResponse(user, 'User retrieved successfully');
   }
 
   @Patch(':id')
@@ -93,13 +86,13 @@ export class UsersAdminController {
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() avatar: Express.Multer.File,
   ) {
-    const response = await this.usersService.update(
+    const user = await this.usersService.update(
       updateUserDto.id,
       updateUserDto,
       avatar,
     );
 
-    return showOne(response);
+    return createSuccessResponse(user, 'User updated successfully');
   }
 
   @Delete(':id')
@@ -107,6 +100,6 @@ export class UsersAdminController {
   @Roles(UserRole.admin)
   async remove(@Param('id') id: string) {
     await this.usersService.remove(id);
-    return success([]);
+    return createSuccessResponse(null, 'User deleted successfully');
   }
 }

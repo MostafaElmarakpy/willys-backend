@@ -7,7 +7,7 @@ import {
   Version,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { success } from 'src/common/utils/api-response-wrapper';
+import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
 import { CreateUploadMediaDto } from './dto/create-upload-media.dto';
 import { EntityFileInterceptor } from './entity-file.interceptor';
 
@@ -20,6 +20,6 @@ export class UploadMediaController {
   @Version('1')
   @UseInterceptors(EntityFileInterceptor('media', 'uploadFile'))
   async uploadFile(@Body() body: CreateUploadMediaDto) {
-    return success({}, 200, 'File uploaded successfully');
+    return createSuccessResponse({}, 'File uploaded successfully');
   }
 }

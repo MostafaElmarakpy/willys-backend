@@ -10,8 +10,7 @@ import { IsUniqueConstraint } from './validator/is-unique.constraint';
 import { ClsModule } from 'nestjs-cls';
 import { ConfigService } from 'src/config/config.service';
 import { MailService } from './mail/mail.service';
-import { PaginationModule } from './pagination/pagination.module';
-import { OtpModule } from './otp/opt.module';
+import { OtpModule } from './otp/otp.module';
 
 @Module({
   imports: [
@@ -37,7 +36,6 @@ import { OtpModule } from './otp/opt.module';
     AuthenticationModule,
     UsersModule,
     ConfigModule,
-    PaginationModule,
     OtpModule,
   ],
   providers: [

@@ -8,8 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserProvider } from 'src/common/enums/UserProvider';
 import { UserRole } from 'src/common/enums/UserRole';
-import { PaginationService } from 'src/common/pagination';
-import { PaginationOptionsDto } from 'src/common/pagination/dto';
 import { User } from 'src/database/entities/user.entity';
 import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
 import { Repository } from 'typeorm';
@@ -25,7 +23,6 @@ export class UsersAdminService {
     private readonly usersRepository: Repository<User>,
     private readonly usersService: UsersService,
     private readonly uploadMediaService: UploadMediaService,
-    private readonly paginationService: PaginationService,
   ) {}
 
   async create(createUserDto: CreateUserDto, avatar: any): Promise<User> {
@@ -95,68 +92,48 @@ export class UsersAdminService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findAll(pagination: PaginationOptionsDto): Promise<{
-    data: User[];
-    total: number;
-    pageNumber: number;
-    limitNumber: number;
-  }> {
-    const fetchUsers = async (paginationOptions: PaginationOptionsDto) => {
-      return this.paginationService.findWithPagination(
-        this.usersRepository,
-        {
-          ...paginationOptions,
-          simple: true,
-          simpleSelectFields: [
-            'entity.id',
-            'entity.email',
-            'entity.fullName',
-            'entity.phoneNumber',
-            'entity.phoneNumberCountryCode',
-          ],
-        },
-        [],
-        (queryBuilder) =>
-          queryBuilder.andWhere('entity.role != :role', {
-            role: UserRole.admin,
-          }),
-      );
-    };
-
-    let result = await fetchUsers(pagination);
-    return result;
+  async findAll(page: number = 1, limit: number = 10): Promise<User[]> {
+    const skip = (page - 1) * limit;
+    
+    return this.usersRepository.find({
+      where: { 
+        role: UserRole.user 
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        phoneNumber: true,
+        phoneNumberCountryCode: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      skip,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
   }
-  async findAllUsersRole(pagination: PaginationOptionsDto): Promise<{
-    data: User[];
-    total: number;
-    pageNumber: number;
-    limitNumber: number;
-  }> {
-    const fetchUsers = async (paginationOptions: PaginationOptionsDto) => {
-      return this.paginationService.findWithPagination(
-        this.usersRepository,
-        {
-          ...paginationOptions,
-          simple: true,
-          simpleSelectFields: [
-            'entity.id',
-            'entity.email',
-            'entity.fullName',
-            'entity.phoneNumber',
-            'entity.phoneNumberCountryCode',
-            'entity.role',
-          ],
-        },
-        [],
-        (queryBuilder) =>
-          queryBuilder.andWhere('entity.role != :role', {
-            role: UserRole.user,
-          }),
-      );
-    };
-
-    let result = await fetchUsers(pagination);
-    return result;
+  async findAllUsersRole(page: number = 1, limit: number = 10): Promise<User[]> {
+    const skip = (page - 1) * limit;
+    
+    return this.usersRepository.find({
+      where: { 
+        role: UserRole.admin 
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        phoneNumber: true,
+        phoneNumberCountryCode: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      skip,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, avatar: any) {

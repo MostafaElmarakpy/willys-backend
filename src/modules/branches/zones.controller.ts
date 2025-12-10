@@ -7,8 +7,8 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
-  HttpStatus,
   Put,
+  Query,
   UseGuards,
   Version,
 } from '@nestjs/common';
@@ -16,6 +16,8 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/UserRole';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { createSuccessResponse, createCreatedResponse } from '../../common/utils/api-response-wrapper';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
@@ -31,23 +33,15 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async create(@Body() createZoneDto: CreateZoneDto) {
     const zone = await this.zonesService.create(createZoneDto);
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Zone created successfully',
-      data: zone,
-    };
+    return createCreatedResponse(zone, 'Zone created successfully');
   }
 
   @Get()
   @Version('1')
   @Roles(UserRole.admin)
-  async findAll() {
+  async findAll(@Query() pagination: PaginationDto) {
     const zones = await this.zonesService.findAll();
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Zones retrieved successfully',
-      data: zones,
-    };
+    return createSuccessResponse(zones, 'Zones retrieved successfully');
   }
 
   @Post('check-point')
@@ -56,11 +50,7 @@ export class ZonesController {
   async checkPoint(@Body() zoneCheckDto: ZoneCheckDto) {
     const result = await this.zonesService.checkPointInZone(zoneCheckDto);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Point check completed',
-      data: result,
-    };
+    return createSuccessResponse(result, 'Point check completed');
   }
 
   @Post('find-branch')
@@ -69,23 +59,18 @@ export class ZonesController {
   async findBranchForLocation(@Body() zoneCheckDto: ZoneCheckDto) {
     const branch = await this.zonesService.findBestBranchForLocation(zoneCheckDto);
     
-    return {
-      statusCode: HttpStatus.OK,
-      message: branch ? 'Branch found for location' : 'No branch serves this location',
-      data: { branch },
-    };
+    return createSuccessResponse({ branch }, branch ? 'Branch found for location' : 'No branch serves this location');
   }
 
   @Get('branch/:branchId')
   @Version('1')
   @Roles(UserRole.admin)
-  async findByBranch(@Param('branchId', ParseUUIDPipe) branchId: string) {
+  async findByBranch(
+    @Param('branchId', ParseUUIDPipe) branchId: string,
+    @Query() pagination: PaginationDto,
+  ) {
     const zones = await this.zonesService.findByBranch(branchId);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Branch zones retrieved successfully',
-      data: zones,
-    };
+    return createSuccessResponse(zones, 'Branch zones retrieved successfully');
   }
 
   @Get(':id')
@@ -93,11 +78,7 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const zone = await this.zonesService.findOne(id);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Zone retrieved successfully',
-      data: zone,
-    };
+    return createSuccessResponse(zone, 'Zone retrieved successfully');
   }
 
   @Get(':id/stats')
@@ -105,11 +86,7 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async getZoneStats(@Param('id', ParseUUIDPipe) id: string) {
     const stats = await this.zonesService.getZoneStats(id);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Zone statistics retrieved successfully',
-      data: stats,
-    };
+    return createSuccessResponse(stats, 'Zone statistics retrieved successfully');
   }
 
   @Put(':id')
@@ -120,11 +97,7 @@ export class ZonesController {
     @Body() updateZoneDto: UpdateZoneDto,
   ) {
     const zone = await this.zonesService.update(id, updateZoneDto);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Zone updated successfully',
-      data: zone,
-    };
+    return createSuccessResponse(zone, 'Zone updated successfully');
   }
 
   @Patch(':id/toggle-active')
@@ -132,11 +105,7 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async toggleActive(@Param('id', ParseUUIDPipe) id: string) {
     const zone = await this.zonesService.toggleActive(id);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Zone active status toggled successfully',
-      data: zone,
-    };
+    return createSuccessResponse(zone, 'Zone active status toggled successfully');
   }
 
   @Delete(':id')
@@ -144,9 +113,6 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.zonesService.remove(id);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Zone deleted successfully',
-    };
+    return createSuccessResponse(null, 'Zone deleted successfully');
   }
 }

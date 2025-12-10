@@ -10,7 +10,6 @@ import { UsersAdminService } from './users-admin.service';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MailService } from 'src/common/mail/mail.service';
-import { PaginationModule } from 'src/common/pagination/pagination.module';
 
 @Module({
   imports: [
@@ -32,7 +31,6 @@ import { PaginationModule } from 'src/common/pagination/pagination.module';
       },
     }),
     ConfigModule,
-    PaginationModule,
   ],
   controllers: [UsersController, UsersAdminController],
   providers: [UsersService, UsersAdminService, MailService],
