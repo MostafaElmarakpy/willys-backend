@@ -27,13 +27,14 @@ export class Zone {
   @JoinColumn({ name: 'branchId' })
   branch: Branch;
 
-  // Store GeoJSON polygon as JSONB
-  @Column({ type: 'jsonb' })
+  // Store polygon using PostGIS geometry type
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Polygon',
+    srid: 4326, // WGS84 coordinate system
+  })
   @Index({ spatial: true })
-  polygon: {
-    type: 'Polygon';
-    coordinates: number[][][];
-  };
+  polygon: string; // Well-Known Text (WKT) representation
 
   // Alternative radius-based zone (optional)
   @Column({ type: 'decimal', precision: 10, scale: 8, nullable: true })
