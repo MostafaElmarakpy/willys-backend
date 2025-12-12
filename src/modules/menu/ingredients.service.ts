@@ -17,7 +17,10 @@ export class IngredientsService {
     private readonly ingredientCategoryRepository: Repository<IngredientCategory>,
   ) {}
 
-  async createCategory(createIngredientCategoryDto: CreateIngredientCategoryDto, userId: string): Promise<IngredientCategory> {
+  async createCategory(
+    createIngredientCategoryDto: CreateIngredientCategoryDto,
+    userId: string,
+  ): Promise<IngredientCategory> {
     const category = this.ingredientCategoryRepository.create({
       ...createIngredientCategoryDto,
       createdBy: userId,
@@ -25,7 +28,11 @@ export class IngredientsService {
     return await this.ingredientCategoryRepository.save(category);
   }
 
-  async findAllCategories(page: number = 1, limit: number = 10, search?: string) {
+  async findAllCategories(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+  ) {
     const queryBuilder = this.ingredientCategoryRepository
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.ingredients', 'ingredients')
@@ -36,8 +43,8 @@ export class IngredientsService {
 
     if (search) {
       queryBuilder.where(
-        '(category.name ->> \'en\' ILIKE :search OR category.name ->> \'ar\' ILIKE :search)',
-        { search: `%${search}%` }
+        "(category.name ->> 'en' ILIKE :search OR category.name ->> 'ar' ILIKE :search)",
+        { search: `%${search}%` },
       );
     }
 
@@ -62,15 +69,21 @@ export class IngredientsService {
     });
 
     if (!category) {
-      throw new NotFoundException(`Ingredient category with ID ${id} not found`);
+      throw new NotFoundException(
+        `Ingredient category with ID ${id} not found`,
+      );
     }
 
     return category;
   }
 
-  async updateCategory(id: string, updateIngredientCategoryDto: UpdateIngredientCategoryDto, userId: string): Promise<IngredientCategory> {
+  async updateCategory(
+    id: string,
+    updateIngredientCategoryDto: UpdateIngredientCategoryDto,
+    userId: string,
+  ): Promise<IngredientCategory> {
     const category = await this.findOneCategory(id);
-    
+
     Object.assign(category, updateIngredientCategoryDto, {
       updatedBy: userId,
     });
@@ -83,18 +96,26 @@ export class IngredientsService {
     await this.ingredientCategoryRepository.remove(category);
   }
 
-  async createIngredient(createIngredientDto: CreateIngredientDto, userId: string): Promise<Ingredient> {
+  async createIngredient(
+    createIngredientDto: CreateIngredientDto,
+    userId: string,
+  ): Promise<Ingredient> {
     const category = await this.findOneCategory(createIngredientDto.categoryId);
-    
+
     const ingredient = this.ingredientRepository.create({
       ...createIngredientDto,
       createdBy: userId,
     });
-    
+
     return await this.ingredientRepository.save(ingredient);
   }
 
-  async findAllIngredients(page: number = 1, limit: number = 10, search?: string, categoryId?: string) {
+  async findAllIngredients(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    categoryId?: string,
+  ) {
     const queryBuilder = this.ingredientRepository
       .createQueryBuilder('ingredient')
       .leftJoinAndSelect('ingredient.category', 'category')
@@ -104,13 +125,15 @@ export class IngredientsService {
 
     if (search) {
       queryBuilder.where(
-        '(ingredient.name ->> \'en\' ILIKE :search OR ingredient.name ->> \'ar\' ILIKE :search)',
-        { search: `%${search}%` }
+        "(ingredient.name ->> 'en' ILIKE :search OR ingredient.name ->> 'ar' ILIKE :search)",
+        { search: `%${search}%` },
       );
     }
 
     if (categoryId) {
-      queryBuilder.andWhere('ingredient.categoryId = :categoryId', { categoryId });
+      queryBuilder.andWhere('ingredient.categoryId = :categoryId', {
+        categoryId,
+      });
     }
 
     const [ingredients, total] = await queryBuilder
@@ -140,9 +163,13 @@ export class IngredientsService {
     return ingredient;
   }
 
-  async updateIngredient(id: string, updateIngredientDto: UpdateIngredientDto, userId: string): Promise<Ingredient> {
+  async updateIngredient(
+    id: string,
+    updateIngredientDto: UpdateIngredientDto,
+    userId: string,
+  ): Promise<Ingredient> {
     const ingredient = await this.findOneIngredient(id);
-    
+
     Object.assign(ingredient, updateIngredientDto, {
       updatedBy: userId,
     });

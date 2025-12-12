@@ -17,7 +17,10 @@ export class VariantsService {
     private readonly variantValueRepository: Repository<VariantValue>,
   ) {}
 
-  async createVariant(createVariantDto: CreateVariantDto, userId: string): Promise<Variant> {
+  async createVariant(
+    createVariantDto: CreateVariantDto,
+    userId: string,
+  ): Promise<Variant> {
     const variant = this.variantRepository.create({
       ...createVariantDto,
       createdBy: userId,
@@ -37,8 +40,8 @@ export class VariantsService {
 
     if (search) {
       queryBuilder.where(
-        '(variant.name ->> \'en\' ILIKE :search OR variant.name ->> \'ar\' ILIKE :search)',
-        { search: `%${search}%` }
+        "(variant.name ->> 'en' ILIKE :search OR variant.name ->> 'ar' ILIKE :search)",
+        { search: `%${search}%` },
       );
     }
 
@@ -74,9 +77,13 @@ export class VariantsService {
     return variant;
   }
 
-  async updateVariant(id: string, updateVariantDto: UpdateVariantDto, userId: string): Promise<Variant> {
+  async updateVariant(
+    id: string,
+    updateVariantDto: UpdateVariantDto,
+    userId: string,
+  ): Promise<Variant> {
     const variant = await this.findOneVariant(id);
-    
+
     Object.assign(variant, updateVariantDto, {
       updatedBy: userId,
     });
@@ -89,14 +96,17 @@ export class VariantsService {
     await this.variantRepository.remove(variant);
   }
 
-  async createVariantValue(createVariantValueDto: CreateVariantValueDto, userId: string): Promise<VariantValue> {
+  async createVariantValue(
+    createVariantValueDto: CreateVariantValueDto,
+    userId: string,
+  ): Promise<VariantValue> {
     const variant = await this.findOneVariant(createVariantValueDto.variantId);
-    
+
     const variantValue = this.variantValueRepository.create({
       ...createVariantValueDto,
       createdBy: userId,
     });
-    
+
     return await this.variantValueRepository.save(variantValue);
   }
 
@@ -121,9 +131,13 @@ export class VariantsService {
     return variantValue;
   }
 
-  async updateVariantValue(id: string, updateVariantValueDto: UpdateVariantValueDto, userId: string): Promise<VariantValue> {
+  async updateVariantValue(
+    id: string,
+    updateVariantValueDto: UpdateVariantValueDto,
+    userId: string,
+  ): Promise<VariantValue> {
     const variantValue = await this.findOneVariantValue(id);
-    
+
     Object.assign(variantValue, updateVariantValueDto, {
       updatedBy: userId,
     });

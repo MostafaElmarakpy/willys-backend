@@ -12,9 +12,9 @@ import {
   BilingualString,
   BilingualStringOptional,
 } from 'src/common/dto/bilingual-string.dto';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
+import { BundleStatus } from 'src/common/enums/BundleStatus';
 
-export class CreateItemDto {
+export class CreateBundleDto {
   @ValidateNested()
   @Type(() => BilingualString)
   name: BilingualString;
@@ -29,29 +29,20 @@ export class CreateItemDto {
   image?: string;
 
   @IsNotEmpty()
+  @IsString()
+  categoryId: string;
+
+  @IsNotEmpty()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Type(() => Number)
   price: number;
 
   @IsOptional()
-  @IsEnum(ItemStatus)
-  status?: ItemStatus = ItemStatus.DRAFT;
-
-  @IsOptional()
-  @IsNumber()
-  sortOrder?: number = 0;
-
-  @IsNotEmpty()
-  @IsString()
-  categoryId: string;
+  @IsEnum(BundleStatus)
+  status?: BundleStatus = BundleStatus.DRAFT;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  variantIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  ingredientIds?: string[];
+  itemIds?: string[];
 }

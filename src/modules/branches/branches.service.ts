@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Branch } from '../../database/entities/branch.entity';
@@ -19,10 +23,12 @@ export class BranchesService {
         isActive: createBranchDto.isActive ?? true,
         isOpen: createBranchDto.isOpen ?? true,
       });
-      
+
       return await this.branchRepository.save(branch);
     } catch (error) {
-      throw new BadRequestException('Failed to create branch: ' + error.message);
+      throw new BadRequestException(
+        'Failed to create branch: ' + error.message,
+      );
     }
   }
 
@@ -64,13 +70,15 @@ export class BranchesService {
 
   async update(id: string, updateBranchDto: UpdateBranchDto): Promise<Branch> {
     const branch = await this.findOne(id);
-    
+
     Object.assign(branch, updateBranchDto);
-    
+
     try {
       return await this.branchRepository.save(branch);
     } catch (error) {
-      throw new BadRequestException('Failed to update branch: ' + error.message);
+      throw new BadRequestException(
+        'Failed to update branch: ' + error.message,
+      );
     }
   }
 
@@ -81,17 +89,21 @@ export class BranchesService {
 
   async toggleStatus(id: string, status: 'active' | 'open'): Promise<Branch> {
     const branch = await this.findOne(id);
-    
+
     if (status === 'active') {
       branch.isActive = !branch.isActive;
     } else if (status === 'open') {
       branch.isOpen = !branch.isOpen;
     }
-    
+
     return await this.branchRepository.save(branch);
   }
 
-  async findNearby(latitude: number, longitude: number, radiusKm: number = 10): Promise<Branch[]> {
+  async findNearby(
+    latitude: number,
+    longitude: number,
+    radiusKm: number = 10,
+  ): Promise<Branch[]> {
     // Using Haversine formula to find nearby branches
     const query = `
       SELECT *, 
@@ -115,13 +127,13 @@ export class BranchesService {
 
   async getBranchStats(id: string) {
     const branch = await this.findOne(id);
-    
+
     // TODO: Add order statistics when orders module is created
     return {
       branch,
       stats: {
         totalZones: branch.zones?.length || 0,
-        activeZones: branch.zones?.filter(zone => zone.isActive).length || 0,
+        activeZones: branch.zones?.filter((zone) => zone.isActive).length || 0,
         // totalOrders: 0,
         // todaysOrders: 0,
         // avgDeliveryTime: branch.estimatedDeliveryTime,

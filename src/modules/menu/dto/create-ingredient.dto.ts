@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsOptional, IsNumber, IsBoolean, IsString, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { BilingualString } from 'src/common/dto/bilingual-string.dto';
 

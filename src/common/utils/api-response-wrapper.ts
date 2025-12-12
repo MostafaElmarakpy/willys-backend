@@ -67,7 +67,7 @@ export function createPaginatedResponse<T>(
   message: string = 'Data retrieved successfully',
 ): PaginatedResponse<T> {
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     statusCode: HttpStatus.OK,
     message,
@@ -121,10 +121,22 @@ export function throwConflict(message: string = 'Conflict'): never {
   return createErrorResponse(message, HttpStatus.CONFLICT, 'Conflict');
 }
 
-export function throwValidationError(message: string | string[] = 'Validation failed'): never {
-  return createErrorResponse(message, HttpStatus.BAD_REQUEST, 'Validation Error');
+export function throwValidationError(
+  message: string | string[] = 'Validation failed',
+): never {
+  return createErrorResponse(
+    message,
+    HttpStatus.BAD_REQUEST,
+    'Validation Error',
+  );
 }
 
-export function throwInternalError(message: string = 'Internal server error'): never {
-  return createErrorResponse(message, HttpStatus.INTERNAL_SERVER_ERROR, 'Internal Server Error');
+export function throwInternalError(
+  message: string = 'Internal server error',
+): never {
+  return createErrorResponse(
+    message,
+    HttpStatus.INTERNAL_SERVER_ERROR,
+    'Internal Server Error',
+  );
 }

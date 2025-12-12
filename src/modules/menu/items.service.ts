@@ -22,7 +22,7 @@ export class ItemsService {
 
   async create(createItemDto: CreateItemDto, userId: string): Promise<Item> {
     const { variantIds, ingredientIds, ...itemData } = createItemDto;
-    
+
     const item = this.itemRepository.create({
       ...itemData,
       createdBy: userId,
@@ -33,14 +33,26 @@ export class ItemsService {
     }
 
     if (ingredientIds && ingredientIds.length > 0) {
-      item.ingredients = await this.ingredientRepository.findByIds(ingredientIds);
+      item.ingredients =
+        await this.ingredientRepository.findByIds(ingredientIds);
     }
 
     return await this.itemRepository.save(item);
   }
 
   async findAll(filterDto: ItemFilterDto) {
-    const { page = 1, limit = 10, search, status, categoryId, minPrice, maxPrice, sortBy = 'createdAt', sortOrder = 'DESC', variantIds } = filterDto;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+      categoryId,
+      minPrice,
+      maxPrice,
+      sortBy = 'createdAt',
+      sortOrder = 'DESC',
+      variantIds,
+    } = filterDto;
 
     const queryBuilder = this.itemRepository
       .createQueryBuilder('item')
@@ -52,8 +64,8 @@ export class ItemsService {
 
     if (search) {
       queryBuilder.where(
-        '(item.name ->> \'en\' ILIKE :search OR item.name ->> \'ar\' ILIKE :search OR item.description ->> \'en\' ILIKE :search OR item.description ->> \'ar\' ILIKE :search)',
-        { search: `%${search}%` }
+        "(item.name ->> 'en' ILIKE :search OR item.name ->> 'ar' ILIKE :search OR item.description ->> 'en' ILIKE :search OR item.description ->> 'ar' ILIKE :search)",
+        { search: `%${search}%` },
       );
     }
 
@@ -67,7 +79,10 @@ export class ItemsService {
 
     if (minPrice !== undefined || maxPrice !== undefined) {
       if (minPrice !== undefined && maxPrice !== undefined) {
-        queryBuilder.andWhere('item.price BETWEEN :minPrice AND :maxPrice', { minPrice, maxPrice });
+        queryBuilder.andWhere('item.price BETWEEN :minPrice AND :maxPrice', {
+          minPrice,
+          maxPrice,
+        });
       } else if (minPrice !== undefined) {
         queryBuilder.andWhere('item.price >= :minPrice', { minPrice });
       } else if (maxPrice !== undefined) {
@@ -79,9 +94,15 @@ export class ItemsService {
       queryBuilder.andWhere('variants.id IN (:...variantIds)', { variantIds });
     }
 
-    const validSortFields = ['name', 'price', 'createdAt', 'updatedAt', 'sortOrder'];
+    const validSortFields = [
+      'name',
+      'price',
+      'createdAt',
+      'updatedAt',
+      'sortOrder',
+    ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-    
+
     if (sortField === 'name') {
       queryBuilder.orderBy(`item.name ->> 'en'`, sortOrder as 'ASC' | 'DESC');
     } else {
@@ -105,7 +126,14 @@ export class ItemsService {
   async findOne(id: string): Promise<Item> {
     const item = await this.itemRepository.findOne({
       where: { id },
-      relations: ['category', 'variants', 'variants.values', 'ingredients', 'createdByUser', 'updatedByUser'],
+      relations: [
+        'category',
+        'variants',
+        'variants.values',
+        'ingredients',
+        'createdByUser',
+        'updatedByUser',
+      ],
     });
 
     if (!item) {
@@ -115,10 +143,14 @@ export class ItemsService {
     return item;
   }
 
-  async update(id: string, updateItemDto: UpdateItemDto, userId: string): Promise<Item> {
+  async update(
+    id: string,
+    updateItemDto: UpdateItemDto,
+    userId: string,
+  ): Promise<Item> {
     const { variantIds, ingredientIds, ...itemData } = updateItemDto;
     const item = await this.findOne(id);
-    
+
     Object.assign(item, itemData, {
       updatedBy: userId,
     });
@@ -133,7 +165,8 @@ export class ItemsService {
 
     if (ingredientIds !== undefined) {
       if (ingredientIds.length > 0) {
-        item.ingredients = await this.ingredientRepository.findByIds(ingredientIds);
+        item.ingredients =
+          await this.ingredientRepository.findByIds(ingredientIds);
       } else {
         item.ingredients = [];
       }
@@ -157,11 +190,11 @@ export class ItemsService {
 
   async duplicate(id: string, userId: string): Promise<Item> {
     const originalItem = await this.findOne(id);
-    
+
     const duplicatedItem = this.itemRepository.create({
       name: {
         en: `${originalItem.name.en} (Copy)`,
-        ar: `${originalItem.name.ar} (نسخة)`
+        ar: `${originalItem.name.ar} (نسخة)`,
       },
       description: originalItem.description,
       image: originalItem.image,
@@ -179,10 +212,10 @@ export class ItemsService {
 
   async archiveItem(id: string, userId: string): Promise<Item> {
     const item = await this.findOne(id);
-    
+
     item.status = ItemStatus.ARCHIVED;
     item.updatedBy = userId;
-    
+
     return await this.itemRepository.save(item);
   }
 }

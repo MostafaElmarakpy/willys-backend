@@ -22,7 +22,10 @@ import {
 } from 'src/common/interceptor/add-param-to-body-interceptor';
 import { Serialize } from 'src/common/interceptor/serialize-interceptor';
 import { EntityFileInterceptor } from 'src/services/upload-media/entity-file.interceptor';
-import { createSuccessResponse, createCreatedResponse } from 'src/common/utils/api-response-wrapper';
+import {
+  createSuccessResponse,
+  createCreatedResponse,
+} from 'src/common/utils/api-response-wrapper';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -38,7 +41,10 @@ export class UsersAdminController {
   @Version('1')
   @Roles(UserRole.admin)
   async findAll(@Query() pagination: PaginationDto) {
-    const users = await this.usersService.findAll(pagination.page || 1, pagination.limit || 10);
+    const users = await this.usersService.findAll(
+      pagination.page || 1,
+      pagination.limit || 10,
+    );
     return createSuccessResponse(users, 'Users retrieved successfully');
   }
 
@@ -46,8 +52,14 @@ export class UsersAdminController {
   @Version('1')
   @Roles(UserRole.admin)
   async findAllUsersRole(@Query() pagination: PaginationDto) {
-    const users = await this.usersService.findAllUsersRole(pagination.page || 1, pagination.limit || 10);
-    return createSuccessResponse(users, 'Management users retrieved successfully');
+    const users = await this.usersService.findAllUsersRole(
+      pagination.page || 1,
+      pagination.limit || 10,
+    );
+    return createSuccessResponse(
+      users,
+      'Management users retrieved successfully',
+    );
   }
 
   @UseInterceptors(EntityFileInterceptor('user', 'avatar'))

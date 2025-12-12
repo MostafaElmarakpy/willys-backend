@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateBranchesAndZones20241210090000 implements MigrationInterface {
+export class CreateBranchesAndZones20241210090000
+  implements MigrationInterface
+{
   name = 'CreateBranchesAndZones20241210090000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -32,7 +34,7 @@ export class CreateBranchesAndZones20241210090000 implements MigrationInterface 
     await queryRunner.query(`
       CREATE INDEX "IDX_branches_latitude" ON "branches" ("latitude")
     `);
-    
+
     await queryRunner.query(`
       CREATE INDEX "IDX_branches_longitude" ON "branches" ("longitude")
     `);

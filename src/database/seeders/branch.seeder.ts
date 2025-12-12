@@ -7,57 +7,68 @@ import { UserRole } from 'src/common/enums/UserRole';
 export class BranchSeeder {
   constructor(private readonly dataSource: DataSource) {}
 
-  async createZonesForExistingBranches(branchRepository: any, zoneRepository: any, adminUser: any): Promise<void> {
+  async createZonesForExistingBranches(
+    branchRepository: any,
+    zoneRepository: any,
+    adminUser: any,
+  ): Promise<void> {
     const branches = await branchRepository.find();
-    
+
     const zonesData = [
       {
         branchName: 'Downtown Cairo Branch',
         zones: [
           {
             name: { en: 'Downtown Zone', ar: 'منطقة وسط البلد' },
-            polygon: 'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
+            polygon:
+              'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
             isActive: true,
-            priority: 1
-          }
-        ]
+            priority: 1,
+          },
+        ],
       },
       {
         branchName: 'Nasr City Branch',
         zones: [
           {
             name: { en: 'Nasr City Zone', ar: 'منطقة مدينة نصر' },
-            polygon: 'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
+            polygon:
+              'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
             isActive: true,
-            priority: 1
-          }
-        ]
+            priority: 1,
+          },
+        ],
       },
       {
         branchName: 'Zamalek Branch',
         zones: [
           {
             name: { en: 'Zamalek Zone', ar: 'منطقة الزمالك' },
-            polygon: 'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
+            polygon:
+              'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
             isActive: true,
-            priority: 1
-          }
-        ]
-      }
+            priority: 1,
+          },
+        ],
+      },
     ];
 
     for (const zoneData of zonesData) {
-      const branch = branches.find(b => b.name.en === zoneData.branchName);
+      const branch = branches.find((b) => b.name.en === zoneData.branchName);
       if (branch) {
         // Check if this branch already has zones
-        const existingZones = await this.dataSource.query(`
+        const existingZones = await this.dataSource.query(
+          `
           SELECT COUNT(*) as count FROM zones WHERE "branchId" = $1
-        `, [branch.id]);
-        
+        `,
+          [branch.id],
+        );
+
         if (parseInt(existingZones[0].count) === 0) {
           for (const zone of zoneData.zones) {
             // Use raw query to insert geometry properly
-            await this.dataSource.query(`
+            await this.dataSource.query(
+              `
               INSERT INTO zones (id, name, "branchId", polygon, "isActive", priority, "createdById", "createdAt", "updatedAt")
               VALUES (
                 uuid_generate_v4(),
@@ -70,15 +81,19 @@ export class BranchSeeder {
                 NOW(),
                 NOW()
               )
-            `, [
-              JSON.stringify(zone.name),
-              branch.id,
-              zone.polygon,
-              zone.isActive,
-              zone.priority,
-              adminUser.id
-            ]);
-            console.log(`  ✅ Zone created for ${branch.name.en}: ${zone.name.en}`);
+            `,
+              [
+                JSON.stringify(zone.name),
+                branch.id,
+                zone.polygon,
+                zone.isActive,
+                zone.priority,
+                adminUser.id,
+              ],
+            );
+            console.log(
+              `  ✅ Zone created for ${branch.name.en}: ${zone.name.en}`,
+            );
           }
         } else {
           console.log(`  ⚠️  ${branch.name.en} already has zones`);
@@ -94,7 +109,7 @@ export class BranchSeeder {
 
     // Get admin user for created by
     const adminUser = await userRepository.findOne({
-      where: { role: UserRole.admin }
+      where: { role: UserRole.admin },
     });
 
     if (!adminUser) {
@@ -105,12 +120,16 @@ export class BranchSeeder {
     const existingBranches = await branchRepository.count();
     if (existingBranches > 0) {
       console.log('⚠️  Branches already exist');
-      
+
       // Check if zones exist, create them if missing
       const existingZones = await zoneRepository.count();
       if (existingZones === 0) {
         console.log('🗺️  Creating missing zones for existing branches...');
-        await this.createZonesForExistingBranches(branchRepository, zoneRepository, adminUser);
+        await this.createZonesForExistingBranches(
+          branchRepository,
+          zoneRepository,
+          adminUser,
+        );
       } else {
         console.log('⚠️  Zones already exist');
       }
@@ -130,17 +149,18 @@ export class BranchSeeder {
         isOpen: true,
         openingHours: '08:00',
         closingHours: '23:00',
-        deliveryFee: 15.00,
+        deliveryFee: 15.0,
         estimatedDeliveryTime: 30,
         zones: [
           {
             name: { en: 'Downtown Zone', ar: 'منطقة وسط البلد' },
             // Simple polygon around downtown Cairo
-            polygon: 'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
+            polygon:
+              'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
             isActive: true,
-            priority: 1
-          }
-        ]
+            priority: 1,
+          },
+        ],
       },
       {
         name: { en: 'Nasr City Branch', ar: 'فرع مدينة نصر' },
@@ -153,16 +173,17 @@ export class BranchSeeder {
         isOpen: true,
         openingHours: '09:00',
         closingHours: '22:00',
-        deliveryFee: 20.00,
+        deliveryFee: 20.0,
         estimatedDeliveryTime: 25,
         zones: [
           {
             name: { en: 'Nasr City Zone', ar: 'منطقة مدينة نصر' },
-            polygon: 'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
+            polygon:
+              'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
             isActive: true,
-            priority: 1
-          }
-        ]
+            priority: 1,
+          },
+        ],
       },
       {
         name: { en: 'Zamalek Branch', ar: 'فرع الزمالك' },
@@ -175,22 +196,23 @@ export class BranchSeeder {
         isOpen: true,
         openingHours: '10:00',
         closingHours: '24:00',
-        deliveryFee: 18.00,
+        deliveryFee: 18.0,
         estimatedDeliveryTime: 20,
         zones: [
           {
             name: { en: 'Zamalek Zone', ar: 'منطقة الزمالك' },
-            polygon: 'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
+            polygon:
+              'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
             isActive: true,
-            priority: 1
-          }
-        ]
-      }
+            priority: 1,
+          },
+        ],
+      },
     ];
 
     for (const branchData of branchesData) {
       const { zones, ...branchInfo } = branchData;
-      
+
       // Create branch
       const branch = branchRepository.create({
         ...branchInfo,

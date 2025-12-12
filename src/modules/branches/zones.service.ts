@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Zone } from '../../database/entities/zone.entity';
@@ -23,13 +27,15 @@ export class ZonesService {
     });
 
     if (!branch) {
-      throw new NotFoundException(`Branch with ID ${createZoneDto.branchId} not found`);
+      throw new NotFoundException(
+        `Branch with ID ${createZoneDto.branchId} not found`,
+      );
     }
 
     try {
       // Convert GeoJSON polygon to WKT format
       const polygonWkt = this.geoJsonToWkt(createZoneDto.polygon);
-      
+
       const zone = this.zoneRepository.create({
         name: createZoneDto.name,
         branchId: createZoneDto.branchId,
@@ -40,7 +46,7 @@ export class ZonesService {
         isActive: createZoneDto.isActive ?? true,
         priority: createZoneDto.priority ?? 0,
       });
-      
+
       return await this.zoneRepository.save(zone);
     } catch (error) {
       throw new BadRequestException('Failed to create zone: ' + error.message);
@@ -77,9 +83,9 @@ export class ZonesService {
 
   async update(id: string, updateZoneDto: UpdateZoneDto): Promise<Zone> {
     const zone = await this.findOne(id);
-    
+
     Object.assign(zone, updateZoneDto);
-    
+
     try {
       return await this.zoneRepository.save(zone);
     } catch (error) {
@@ -107,7 +113,7 @@ export class ZonesService {
     }>;
   }> {
     const { latitude, longitude } = zoneCheckDto;
-    
+
     // Find all active zones with their branches
     const zones = await this.zoneRepository.find({
       where: { isActive: true },
@@ -143,7 +149,12 @@ export class ZonesService {
       }
 
       // Fallback to radius-based check if polygon check failed
-      if (!isPointInZone && zone.centerLatitude && zone.centerLongitude && zone.radiusKm) {
+      if (
+        !isPointInZone &&
+        zone.centerLatitude &&
+        zone.centerLongitude &&
+        zone.radiusKm
+      ) {
         const distance = this.calculateDistance(
           latitude,
           longitude,
@@ -184,13 +195,15 @@ export class ZonesService {
     };
   }
 
-  async findBestBranchForLocation(zoneCheckDto: ZoneCheckDto): Promise<Branch | null> {
+  async findBestBranchForLocation(
+    zoneCheckDto: ZoneCheckDto,
+  ): Promise<Branch | null> {
     const result = await this.checkPointInZone(zoneCheckDto);
-    
+
     if (result.matchingBranches.length > 0) {
       return result.matchingBranches[0].branch;
     }
-    
+
     return null;
   }
 
@@ -206,7 +219,7 @@ export class ZonesService {
       const xj = polygon[j][0];
       const yj = polygon[j][1];
 
-      if (((yi > y) !== (yj > y)) && (x < ((xj - xi) * (y - yi)) / (yj - yi) + xi)) {
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
         inside = !inside;
       }
     }
@@ -215,18 +228,25 @@ export class ZonesService {
   }
 
   // Calculate distance using Haversine formula
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371; // Radius of Earth in kilometers
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
-    
+
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+      Math.cos(this.toRadians(lat1)) *
+        Math.cos(this.toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
     return R * c; // Distance in kilometers
   }
 
@@ -236,43 +256,53 @@ export class ZonesService {
 
   async getZoneStats(id: string) {
     const zone = await this.findOne(id);
-    
+
     // TODO: Add order statistics when orders module is created
     return {
       zone,
       stats: {
         // ordersCount: 0,
         // todaysOrders: 0,
-        polygonArea: zone.polygon ? this.calculatePolygonArea(this.wktToGeoJson(zone.polygon)) : 0,
+        polygonArea: zone.polygon
+          ? this.calculatePolygonArea(this.wktToGeoJson(zone.polygon))
+          : 0,
         isActive: zone.isActive,
       },
     };
   }
 
   // Convert GeoJSON polygon to WKT format
-  private geoJsonToWkt(polygon: { type: 'Polygon'; coordinates: number[][][] }): string {
+  private geoJsonToWkt(polygon: {
+    type: 'Polygon';
+    coordinates: number[][][];
+  }): string {
     const coords = polygon.coordinates[0]; // First ring (exterior ring)
-    const wktCoords = coords.map(coord => `${coord[0]} ${coord[1]}`).join(', ');
+    const wktCoords = coords
+      .map((coord) => `${coord[0]} ${coord[1]}`)
+      .join(', ');
     return `POLYGON((${wktCoords}))`;
   }
 
   // Convert WKT polygon to GeoJSON format
-  private wktToGeoJson(wkt: string): { type: 'Polygon'; coordinates: number[][][] } {
+  private wktToGeoJson(wkt: string): {
+    type: 'Polygon';
+    coordinates: number[][][];
+  } {
     // Simple WKT parser for POLYGON format
     const match = wkt.match(/POLYGON\(\(([^)]+)\)\)/);
     if (!match) {
       throw new Error('Invalid WKT polygon format');
     }
-    
+
     const coordString = match[1];
-    const coords = coordString.split(', ').map(pair => {
+    const coords = coordString.split(', ').map((pair) => {
       const [x, y] = pair.split(' ').map(Number);
       return [x, y];
     });
-    
+
     return {
       type: 'Polygon',
-      coordinates: [coords]
+      coordinates: [coords],
     };
   }
 
@@ -283,11 +313,11 @@ export class ZonesService {
 
     const coords = polygon.coordinates[0];
     let area = 0;
-    
+
     for (let i = 0; i < coords.length - 1; i++) {
-      area += (coords[i][0] * coords[i + 1][1] - coords[i + 1][0] * coords[i][1]);
+      area += coords[i][0] * coords[i + 1][1] - coords[i + 1][0] * coords[i][1];
     }
-    
+
     return Math.abs(area / 2);
   }
 }

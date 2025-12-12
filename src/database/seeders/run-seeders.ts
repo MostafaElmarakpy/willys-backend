@@ -48,7 +48,6 @@ async function runSeeders() {
 
     const mainSeeder = new MainSeeder(dataSource);
     await mainSeeder.run();
-
   } catch (error) {
     console.error('❌ Error running seeders:', error);
     process.exit(1);

@@ -15,7 +15,10 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/UserRole';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { createSuccessResponse, createCreatedResponse } from 'src/common/utils/api-response-wrapper';
+import {
+  createSuccessResponse,
+  createCreatedResponse,
+} from 'src/common/utils/api-response-wrapper';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { ItemFilterDto } from './dto/item-filter.dto';
@@ -75,7 +78,10 @@ export class ItemsAdminController {
   @Roles(UserRole.admin)
   async findByCategory(@Param('categoryId') categoryId: string) {
     const items = await this.itemsService.findByCategory(categoryId);
-    return createSuccessResponse(items, 'Category items retrieved successfully');
+    return createSuccessResponse(
+      items,
+      'Category items retrieved successfully',
+    );
   }
 
   @Post(':id/duplicate')

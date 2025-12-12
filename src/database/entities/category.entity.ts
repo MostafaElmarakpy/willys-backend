@@ -12,6 +12,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Item } from './item.entity';
+import { Bundle } from './bundle.entity';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
 @Entity('categories')
@@ -57,4 +58,7 @@ export class Category {
 
   @OneToMany(() => Item, (item) => item.category)
   items: Item[];
+
+  @OneToMany(() => Bundle, (bundle) => bundle.category)
+  bundles: Bundle[];
 }

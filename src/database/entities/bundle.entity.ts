@@ -13,13 +13,12 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Category } from './category.entity';
-import { Variant } from './variant.entity';
-import { Ingredient } from './ingredient.entity';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
+import { Item } from './item.entity';
+import { BundleStatus } from 'src/common/enums/BundleStatus';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
-@Entity('items')
-export class Item {
+@Entity('bundles')
+export class Bundle {
   @PrimaryGeneratedColumn('uuid')
   id: string = uuidv4();
 
@@ -32,21 +31,9 @@ export class Item {
   @Column({ nullable: true })
   image?: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number;
-
-  @Column({
-    type: 'enum',
-    enum: ItemStatus,
-    default: ItemStatus.DRAFT,
+  @ManyToOne(() => Category, (category) => category.bundles, {
+    nullable: false,
   })
-  @Index()
-  status: ItemStatus;
-
-  @Column({ default: 0 })
-  sortOrder: number;
-
-  @ManyToOne(() => Category, (category) => category.items, { nullable: false })
   @JoinColumn({ name: 'categoryId' })
   category: Category;
 
@@ -54,21 +41,27 @@ export class Item {
   @Index()
   categoryId: string;
 
-  @ManyToMany(() => Variant, { cascade: true })
-  @JoinTable({
-    name: 'item_variants',
-    joinColumn: { name: 'itemId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'variantId', referencedColumnName: 'id' },
-  })
-  variants: Variant[];
+  @Column({ type: 'int' })
+  numberOfItems: number;
 
-  @ManyToMany(() => Ingredient, { cascade: true })
-  @JoinTable({
-    name: 'item_ingredients',
-    joinColumn: { name: 'itemId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'ingredientId', referencedColumnName: 'id' },
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  price: number;
+
+  @Column({
+    type: 'enum',
+    enum: BundleStatus,
+    default: BundleStatus.DRAFT,
   })
-  ingredients: Ingredient[];
+  @Index()
+  status: BundleStatus;
+
+  @ManyToMany(() => Item, { cascade: true })
+  @JoinTable({
+    name: 'bundle_items',
+    joinColumn: { name: 'bundleId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'itemId', referencedColumnName: 'id' },
+  })
+  items: Item[];
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })

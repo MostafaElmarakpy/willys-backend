@@ -13,10 +13,10 @@ export class UserSeeder {
 
     // Check if users already exist
     const existingAdmin = await userRepository.findOne({
-      where: { email: 'admin@admin.com' }
+      where: { email: 'admin@admin.com' },
     });
     const existingUser = await userRepository.findOne({
-      where: { email: 'user@user.com' }
+      where: { email: 'user@user.com' },
     });
 
     if (!existingAdmin) {

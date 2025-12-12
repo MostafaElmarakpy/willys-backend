@@ -25,7 +25,9 @@ export class OrderRoutingService {
     private readonly branchesService: BranchesService,
   ) {}
 
-  async routeOrder(deliveryLocation: DeliveryLocation): Promise<OrderRoutingResult> {
+  async routeOrder(
+    deliveryLocation: DeliveryLocation,
+  ): Promise<OrderRoutingResult> {
     try {
       const zoneCheck = await this.zonesService.checkPointInZone({
         latitude: deliveryLocation.latitude,
@@ -72,9 +74,7 @@ export class OrderRoutingService {
         deliveryFee: bestBranch.deliveryFee,
       };
     } catch (error) {
-      throw new BadRequestException(
-        `Failed to route order: ${error.message}`,
-      );
+      throw new BadRequestException(`Failed to route order: ${error.message}`);
     }
   }
 
@@ -99,7 +99,7 @@ export class OrderRoutingService {
   ): Promise<Branch[]> {
     // Find all active branches and calculate distances
     const branches = await this.branchesService.findOpen();
-    
+
     const branchesWithDistance = branches.map((branch) => ({
       ...branch,
       distance: this.calculateDistance(
@@ -129,7 +129,7 @@ export class OrderRoutingService {
     // - Available delivery staff
     // - Kitchen capacity
     // - Historical data
-    
+
     return {
       branchId,
       currentLoad: 'low',
@@ -151,20 +151,21 @@ export class OrderRoutingService {
     // - Traveling Salesman Problem (TSP) solver
     // - Google Maps Directions API
     // - Custom routing algorithms
-    
+
     const branch = await this.branchesService.findOne(branchId);
-    
+
     // Simple nearest neighbor approach for demonstration
     const optimizedRoute = [...deliveryLocations];
     let totalDistance = 0;
-    
+
     // Calculate total distance (simplified)
     for (let i = 0; i < optimizedRoute.length; i++) {
-      const from = i === 0 
-        ? { latitude: branch.latitude, longitude: branch.longitude }
-        : optimizedRoute[i - 1];
+      const from =
+        i === 0
+          ? { latitude: branch.latitude, longitude: branch.longitude }
+          : optimizedRoute[i - 1];
       const to = optimizedRoute[i];
-      
+
       totalDistance += this.calculateDistance(
         from.latitude,
         from.longitude,
@@ -180,18 +181,25 @@ export class OrderRoutingService {
     };
   }
 
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371; // Radius of Earth in kilometers
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
-    
+
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+      Math.cos(this.toRadians(lat1)) *
+        Math.cos(this.toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
     return R * c; // Distance in kilometers
   }
 

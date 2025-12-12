@@ -29,7 +29,7 @@ export function EntityFileInterceptor(
     async intercept(context: ExecutionContext, next: CallHandler) {
       // First, let the file upload interceptor handle the upload
       const result = await this.filesInterceptor.intercept(context, next);
-      
+
       // Then validate file size
       const request = context.switchToHttp().getRequest();
       if (request.file) {
@@ -39,7 +39,7 @@ export function EntityFileInterceptor(
           throw error;
         }
       }
-      
+
       return result;
     }
   }

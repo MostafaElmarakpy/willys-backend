@@ -249,15 +249,33 @@ export class CreateMenuModule20241212110000 implements MigrationInterface {
     `);
 
     // Create indexes
-    await queryRunner.query(`CREATE INDEX "IDX_categories_isActive" ON "categories" ("isActive")`);
-    await queryRunner.query(`CREATE INDEX "IDX_ingredients_isOptional" ON "ingredients" ("isOptional")`);
-    await queryRunner.query(`CREATE INDEX "IDX_ingredients_isActive" ON "ingredients" ("isActive")`);
-    await queryRunner.query(`CREATE INDEX "IDX_ingredients_categoryId" ON "ingredients" ("categoryId")`);
-    await queryRunner.query(`CREATE INDEX "IDX_variants_type" ON "variants" ("type")`);
-    await queryRunner.query(`CREATE INDEX "IDX_variants_isActive" ON "variants" ("isActive")`);
-    await queryRunner.query(`CREATE INDEX "IDX_variant_values_isActive" ON "variant_values" ("isActive")`);
-    await queryRunner.query(`CREATE INDEX "IDX_items_status" ON "items" ("status")`);
-    await queryRunner.query(`CREATE INDEX "IDX_items_categoryId" ON "items" ("categoryId")`);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_categories_isActive" ON "categories" ("isActive")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_ingredients_isOptional" ON "ingredients" ("isOptional")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_ingredients_isActive" ON "ingredients" ("isActive")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_ingredients_categoryId" ON "ingredients" ("categoryId")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_variants_type" ON "variants" ("type")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_variants_isActive" ON "variants" ("isActive")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_variant_values_isActive" ON "variant_values" ("isActive")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_items_status" ON "items" ("status")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_items_categoryId" ON "items" ("categoryId")`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -273,25 +291,63 @@ export class CreateMenuModule20241212110000 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "IDX_categories_isActive"`);
 
     // Drop foreign key constraints
-    await queryRunner.query(`ALTER TABLE "item_ingredients" DROP CONSTRAINT "FK_item_ingredients_ingredient"`);
-    await queryRunner.query(`ALTER TABLE "item_ingredients" DROP CONSTRAINT "FK_item_ingredients_item"`);
-    await queryRunner.query(`ALTER TABLE "item_variants" DROP CONSTRAINT "FK_item_variants_variant"`);
-    await queryRunner.query(`ALTER TABLE "item_variants" DROP CONSTRAINT "FK_item_variants_item"`);
-    await queryRunner.query(`ALTER TABLE "items" DROP CONSTRAINT "FK_items_updatedBy"`);
-    await queryRunner.query(`ALTER TABLE "items" DROP CONSTRAINT "FK_items_createdBy"`);
-    await queryRunner.query(`ALTER TABLE "items" DROP CONSTRAINT "FK_items_category"`);
-    await queryRunner.query(`ALTER TABLE "variant_values" DROP CONSTRAINT "FK_variant_values_updatedBy"`);
-    await queryRunner.query(`ALTER TABLE "variant_values" DROP CONSTRAINT "FK_variant_values_createdBy"`);
-    await queryRunner.query(`ALTER TABLE "variant_values" DROP CONSTRAINT "FK_variant_values_variant"`);
-    await queryRunner.query(`ALTER TABLE "variants" DROP CONSTRAINT "FK_variants_updatedBy"`);
-    await queryRunner.query(`ALTER TABLE "variants" DROP CONSTRAINT "FK_variants_createdBy"`);
-    await queryRunner.query(`ALTER TABLE "ingredients" DROP CONSTRAINT "FK_ingredients_updatedBy"`);
-    await queryRunner.query(`ALTER TABLE "ingredients" DROP CONSTRAINT "FK_ingredients_createdBy"`);
-    await queryRunner.query(`ALTER TABLE "ingredients" DROP CONSTRAINT "FK_ingredients_category"`);
-    await queryRunner.query(`ALTER TABLE "ingredient_categories" DROP CONSTRAINT "FK_ingredient_categories_updatedBy"`);
-    await queryRunner.query(`ALTER TABLE "ingredient_categories" DROP CONSTRAINT "FK_ingredient_categories_createdBy"`);
-    await queryRunner.query(`ALTER TABLE "categories" DROP CONSTRAINT "FK_categories_updatedBy"`);
-    await queryRunner.query(`ALTER TABLE "categories" DROP CONSTRAINT "FK_categories_createdBy"`);
+    await queryRunner.query(
+      `ALTER TABLE "item_ingredients" DROP CONSTRAINT "FK_item_ingredients_ingredient"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "item_ingredients" DROP CONSTRAINT "FK_item_ingredients_item"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "item_variants" DROP CONSTRAINT "FK_item_variants_variant"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "item_variants" DROP CONSTRAINT "FK_item_variants_item"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "items" DROP CONSTRAINT "FK_items_updatedBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "items" DROP CONSTRAINT "FK_items_createdBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "items" DROP CONSTRAINT "FK_items_category"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "variant_values" DROP CONSTRAINT "FK_variant_values_updatedBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "variant_values" DROP CONSTRAINT "FK_variant_values_createdBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "variant_values" DROP CONSTRAINT "FK_variant_values_variant"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "variants" DROP CONSTRAINT "FK_variants_updatedBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "variants" DROP CONSTRAINT "FK_variants_createdBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "ingredients" DROP CONSTRAINT "FK_ingredients_updatedBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "ingredients" DROP CONSTRAINT "FK_ingredients_createdBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "ingredients" DROP CONSTRAINT "FK_ingredients_category"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "ingredient_categories" DROP CONSTRAINT "FK_ingredient_categories_updatedBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "ingredient_categories" DROP CONSTRAINT "FK_ingredient_categories_createdBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "categories" DROP CONSTRAINT "FK_categories_updatedBy"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "categories" DROP CONSTRAINT "FK_categories_createdBy"`,
+    );
 
     // Drop tables
     await queryRunner.query(`DROP TABLE "item_ingredients"`);

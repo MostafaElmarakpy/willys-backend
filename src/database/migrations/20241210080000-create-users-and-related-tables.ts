@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateUsersAndRelatedTables20241210080000 implements MigrationInterface {
+export class CreateUsersAndRelatedTables20241210080000
+  implements MigrationInterface
+{
   name = 'CreateUsersAndRelatedTables20241210080000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -204,15 +206,19 @@ export class CreateUsersAndRelatedTables20241210080000 implements MigrationInter
     await queryRunner.query(`DROP INDEX "IDX_upload_media_created_by"`);
     await queryRunner.query(`DROP INDEX "IDX_upload_media_mimetype"`);
     await queryRunner.query(`DROP INDEX "IDX_upload_media_entity_type_id"`);
-    
-    await queryRunner.query(`DROP INDEX "IDX_reset_password_tokens_expires_at"`);
-    await queryRunner.query(`DROP INDEX "IDX_reset_password_tokens_reset_token"`);
-    
+
+    await queryRunner.query(
+      `DROP INDEX "IDX_reset_password_tokens_expires_at"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "IDX_reset_password_tokens_reset_token"`,
+    );
+
     await queryRunner.query(`DROP INDEX "IDX_access_tokens_expiration"`);
     await queryRunner.query(`DROP INDEX "IDX_access_tokens_refresh_token"`);
     await queryRunner.query(`DROP INDEX "IDX_access_tokens_access_token"`);
     await queryRunner.query(`DROP INDEX "IDX_access_tokens_user_id"`);
-    
+
     await queryRunner.query(`DROP INDEX "IDX_users_status"`);
     await queryRunner.query(`DROP INDEX "IDX_users_role"`);
     await queryRunner.query(`DROP INDEX "IDX_users_email"`);

@@ -12,7 +12,10 @@ export class CategoriesService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  async create(createCategoryDto: CreateCategoryDto, userId: string): Promise<Category> {
+  async create(
+    createCategoryDto: CreateCategoryDto,
+    userId: string,
+  ): Promise<Category> {
     const category = this.categoryRepository.create({
       ...createCategoryDto,
       createdBy: userId,
@@ -30,8 +33,8 @@ export class CategoriesService {
 
     if (search) {
       queryBuilder.where(
-        '(category.name ->> \'en\' ILIKE :search OR category.name ->> \'ar\' ILIKE :search)',
-        { search: `%${search}%` }
+        "(category.name ->> 'en' ILIKE :search OR category.name ->> 'ar' ILIKE :search)",
+        { search: `%${search}%` },
       );
     }
 
@@ -62,9 +65,13 @@ export class CategoriesService {
     return category;
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto, userId: string): Promise<Category> {
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+    userId: string,
+  ): Promise<Category> {
     const category = await this.findOne(id);
-    
+
     Object.assign(category, updateCategoryDto, {
       updatedBy: userId,
     });

@@ -31,7 +31,7 @@ export class ActionByUserSubscriber implements EntitySubscriberInterface {
     if (metadata.relations.some((rel) => rel.propertyName === relation)) {
       // Set the foreign key ID directly
       const foreignKeyProperty = relation + 'Id';
-      
+
       if (entity && typeof entity === 'object') {
         entity[foreignKeyProperty] = currentUser.id;
         entity[relation] = currentUser;

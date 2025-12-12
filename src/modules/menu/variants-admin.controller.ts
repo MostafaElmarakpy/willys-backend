@@ -15,7 +15,10 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/UserRole';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { createSuccessResponse, createCreatedResponse } from 'src/common/utils/api-response-wrapper';
+import {
+  createSuccessResponse,
+  createCreatedResponse,
+} from 'src/common/utils/api-response-wrapper';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto';
@@ -37,15 +40,25 @@ export class VariantsAdminController {
   @Roles(UserRole.admin)
   async findAllVariants(@Query() query: VariantQuery) {
     const { page = 1, limit = 10, search } = query;
-    const variants = await this.variantsService.findAllVariants(page, limit, search);
+    const variants = await this.variantsService.findAllVariants(
+      page,
+      limit,
+      search,
+    );
     return createSuccessResponse(variants, 'Variants retrieved successfully');
   }
 
   @Post()
   @Version('1')
   @Roles(UserRole.admin)
-  async createVariant(@Body() createVariantDto: CreateVariantDto, @Request() req: any) {
-    const variant = await this.variantsService.createVariant(createVariantDto, req.user.id);
+  async createVariant(
+    @Body() createVariantDto: CreateVariantDto,
+    @Request() req: any,
+  ) {
+    const variant = await this.variantsService.createVariant(
+      createVariantDto,
+      req.user.id,
+    );
     return createCreatedResponse(variant, 'Variant created successfully');
   }
 
@@ -54,7 +67,10 @@ export class VariantsAdminController {
   @Roles(UserRole.admin)
   async findActiveVariants() {
     const variants = await this.variantsService.findActiveVariants();
-    return createSuccessResponse(variants, 'Active variants retrieved successfully');
+    return createSuccessResponse(
+      variants,
+      'Active variants retrieved successfully',
+    );
   }
 
   @Get(':id')
@@ -73,7 +89,11 @@ export class VariantsAdminController {
     @Body() updateVariantDto: UpdateVariantDto,
     @Request() req: any,
   ) {
-    const variant = await this.variantsService.updateVariant(id, updateVariantDto, req.user.id);
+    const variant = await this.variantsService.updateVariant(
+      id,
+      updateVariantDto,
+      req.user.id,
+    );
     return createSuccessResponse(variant, 'Variant updated successfully');
   }
 
@@ -88,17 +108,30 @@ export class VariantsAdminController {
   @Post('values')
   @Version('1')
   @Roles(UserRole.admin)
-  async createVariantValue(@Body() createVariantValueDto: CreateVariantValueDto, @Request() req: any) {
-    const variantValue = await this.variantsService.createVariantValue(createVariantValueDto, req.user.id);
-    return createCreatedResponse(variantValue, 'Variant value created successfully');
+  async createVariantValue(
+    @Body() createVariantValueDto: CreateVariantValueDto,
+    @Request() req: any,
+  ) {
+    const variantValue = await this.variantsService.createVariantValue(
+      createVariantValueDto,
+      req.user.id,
+    );
+    return createCreatedResponse(
+      variantValue,
+      'Variant value created successfully',
+    );
   }
 
   @Get(':variantId/values')
   @Version('1')
   @Roles(UserRole.admin)
   async findVariantValues(@Param('variantId') variantId: string) {
-    const variantValues = await this.variantsService.findVariantValues(variantId);
-    return createSuccessResponse(variantValues, 'Variant values retrieved successfully');
+    const variantValues =
+      await this.variantsService.findVariantValues(variantId);
+    return createSuccessResponse(
+      variantValues,
+      'Variant values retrieved successfully',
+    );
   }
 
   @Get('values/:id')
@@ -106,7 +139,10 @@ export class VariantsAdminController {
   @Roles(UserRole.admin)
   async findOneVariantValue(@Param('id') id: string) {
     const variantValue = await this.variantsService.findOneVariantValue(id);
-    return createSuccessResponse(variantValue, 'Variant value retrieved successfully');
+    return createSuccessResponse(
+      variantValue,
+      'Variant value retrieved successfully',
+    );
   }
 
   @Patch('values/:id')
@@ -117,8 +153,15 @@ export class VariantsAdminController {
     @Body() updateVariantValueDto: UpdateVariantValueDto,
     @Request() req: any,
   ) {
-    const variantValue = await this.variantsService.updateVariantValue(id, updateVariantValueDto, req.user.id);
-    return createSuccessResponse(variantValue, 'Variant value updated successfully');
+    const variantValue = await this.variantsService.updateVariantValue(
+      id,
+      updateVariantValueDto,
+      req.user.id,
+    );
+    return createSuccessResponse(
+      variantValue,
+      'Variant value updated successfully',
+    );
   }
 
   @Delete('values/:id')

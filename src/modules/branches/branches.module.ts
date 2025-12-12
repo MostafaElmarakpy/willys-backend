@@ -9,9 +9,7 @@ import { Branch } from '../../database/entities/branch.entity';
 import { Zone } from '../../database/entities/zone.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Branch, Zone]),
-  ],
+  imports: [TypeOrmModule.forFeature([Branch, Zone])],
   controllers: [BranchesController, ZonesController],
   providers: [BranchesService, ZonesService, OrderRoutingService],
   exports: [BranchesService, ZonesService, OrderRoutingService],

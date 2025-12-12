@@ -28,14 +28,21 @@ export class Ingredient {
   @Index()
   isOptional: boolean;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, comment: 'Stock percentage (0-100)' })
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    comment: 'Stock percentage (0-100)',
+  })
   stockPercentage: number;
 
   @Column({ default: true })
   @Index()
   isActive: boolean;
 
-  @ManyToOne(() => IngredientCategory, (category) => category.ingredients, { nullable: false })
+  @ManyToOne(() => IngredientCategory, (category) => category.ingredients, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'categoryId' })
   category: IngredientCategory;
 

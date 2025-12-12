@@ -12,7 +12,7 @@ export class MainSeeder {
 
     try {
       // Run seeders in sequence (order matters due to dependencies)
-      
+
       console.log('👥 Seeding users...');
       const userSeeder = new UserSeeder(this.dataSource);
       await userSeeder.run();
@@ -35,7 +35,6 @@ export class MainSeeder {
       console.log('   Admin: admin@admin.com / password');
       console.log('   User:  user@user.com / password');
       console.log('');
-      
     } catch (error) {
       console.error('❌ Seeding failed:', error);
       throw error;

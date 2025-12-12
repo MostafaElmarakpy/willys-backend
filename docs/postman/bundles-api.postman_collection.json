@@ -1,0 +1,378 @@
+{
+	"info": {
+		"name": "Willy's Backend - Bundles API",
+		"description": "Complete API documentation for the Bundles management system. Bundles are collections of menu items grouped together with a specific price.\n\n## Authentication\nAll endpoints require JWT authentication with admin role.\n\n## Base URL\n`{{base_url}}/api/v1/admin/menu/bundles`\n\n## Bundle Status\n- `active`: Bundle is available for customers\n- `draft`: Bundle is being prepared (default)\n- `archived`: Bundle is no longer available",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "bundle_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "category_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Get All Bundles",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles?page=1&limit=10&search=&status=&categoryId=&minPrice=&maxPrice=&sortBy=createdAt&sortOrder=DESC",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles"],
+					"query": [
+						{
+							"key": "page",
+							"value": "1",
+							"description": "Page number for pagination (default: 1)"
+						},
+						{
+							"key": "limit",
+							"value": "10",
+							"description": "Number of items per page (default: 10)"
+						},
+						{
+							"key": "search",
+							"value": "",
+							"description": "Search in bundle names (Arabic/English)"
+						},
+						{
+							"key": "status",
+							"value": "",
+							"description": "Filter by status: active, draft, archived"
+						},
+						{
+							"key": "categoryId",
+							"value": "",
+							"description": "Filter by category ID"
+						},
+						{
+							"key": "minPrice",
+							"value": "",
+							"description": "Minimum price filter"
+						},
+						{
+							"key": "maxPrice",
+							"value": "",
+							"description": "Maximum price filter"
+						},
+						{
+							"key": "sortBy",
+							"value": "createdAt",
+							"description": "Sort field: name, price, createdAt, updatedAt"
+						},
+						{
+							"key": "sortOrder",
+							"value": "DESC",
+							"description": "Sort order: ASC, DESC"
+						}
+					]
+				},
+				"description": "Retrieve a paginated list of bundles with optional filtering and sorting."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/admin/menu/bundles?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "admin", "menu", "bundles"],
+							"query": [
+								{"key": "page", "value": "1"},
+								{"key": "limit", "value": "10"}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Bundles retrieved successfully\",\n  \"data\": {\n    \"data\": [\n      {\n        \"id\": \"uuid\",\n        \"name\": {\n          \"ar\": \"باقة البرجر الكلاسيكي\",\n          \"en\": \"Classic Burger Bundle\"\n        },\n        \"description\": {\n          \"ar\": \"باقة تحتوي على برجر وبطاطس ومشروب\",\n          \"en\": \"Bundle includes burger, fries, and drink\"\n        },\n        \"image\": \"https://example.com/bundle-image.jpg\",\n        \"categoryId\": \"category-uuid\",\n        \"numberOfItems\": 3,\n        \"price\": \"25.50\",\n        \"status\": \"active\",\n        \"createdAt\": \"2024-12-12T14:30:00Z\",\n        \"updatedAt\": \"2024-12-12T14:30:00Z\",\n        \"category\": {\n          \"id\": \"category-uuid\",\n          \"name\": {\n            \"ar\": \"الوجبات\",\n            \"en\": \"Meals\"\n          }\n        },\n        \"items\": [\n          {\n            \"id\": \"item-uuid-1\",\n            \"name\": {\n              \"ar\": \"برجر كلاسيكي\",\n              \"en\": \"Classic Burger\"\n            },\n            \"price\": \"12.00\"\n          }\n        ]\n      }\n    ],\n    \"total\": 25,\n    \"page\": 1,\n    \"limit\": 10,\n    \"pages\": 3\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Create Bundle",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": {\n    \"ar\": \"باقة البرجر الكلاسيكي\",\n    \"en\": \"Classic Burger Bundle\"\n  },\n  \"description\": {\n    \"ar\": \"باقة تحتوي على برجر وبطاطس ومشروب\",\n    \"en\": \"Bundle includes burger, fries, and drink\"\n  },\n  \"image\": \"https://example.com/bundle-image.jpg\",\n  \"categoryId\": \"{{category_id}}\",\n  \"price\": 25.50,\n  \"status\": \"draft\",\n  \"itemIds\": [\n    \"item-uuid-1\",\n    \"item-uuid-2\",\n    \"item-uuid-3\"\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles"]
+				},
+				"description": "Create a new bundle with specified items and pricing."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": {\n    \"ar\": \"باقة البرجر الكلاسيكي\",\n    \"en\": \"Classic Burger Bundle\"\n  },\n  \"categoryId\": \"category-uuid\",\n  \"price\": 25.50,\n  \"itemIds\": [\"item-1\", \"item-2\"]\n}"
+						},
+						"url": "{{base_url}}/api/v1/admin/menu/bundles"
+					},
+					"status": "Created",
+					"code": 201,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Bundle created successfully\",\n  \"data\": {\n    \"id\": \"new-bundle-uuid\",\n    \"name\": {\n      \"ar\": \"باقة البرجر الكلاسيكي\",\n      \"en\": \"Classic Burger Bundle\"\n    },\n    \"categoryId\": \"category-uuid\",\n    \"numberOfItems\": 2,\n    \"price\": \"25.50\",\n    \"status\": \"draft\",\n    \"createdAt\": \"2024-12-12T14:30:00Z\",\n    \"updatedAt\": \"2024-12-12T14:30:00Z\",\n    \"items\": []\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Bundle by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles/{{bundle_id}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles", "{{bundle_id}}"]
+				},
+				"description": "Retrieve a specific bundle by its ID with all related data."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/api/v1/admin/menu/bundles/bundle-uuid"
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Bundle retrieved successfully\",\n  \"data\": {\n    \"id\": \"bundle-uuid\",\n    \"name\": {\n      \"ar\": \"باقة البرجر الكلاسيكي\",\n      \"en\": \"Classic Burger Bundle\"\n    },\n    \"description\": {\n      \"ar\": \"باقة تحتوي على برجر وبطاطس ومشروب\",\n      \"en\": \"Bundle includes burger, fries, and drink\"\n    },\n    \"image\": \"https://example.com/bundle-image.jpg\",\n    \"categoryId\": \"category-uuid\",\n    \"numberOfItems\": 3,\n    \"price\": \"25.50\",\n    \"status\": \"active\",\n    \"createdAt\": \"2024-12-12T14:30:00Z\",\n    \"updatedAt\": \"2024-12-12T14:30:00Z\",\n    \"category\": {\n      \"id\": \"category-uuid\",\n      \"name\": {\n        \"ar\": \"الوجبات\",\n        \"en\": \"Meals\"\n      }\n    },\n    \"items\": [\n      {\n        \"id\": \"item-uuid-1\",\n        \"name\": {\n          \"ar\": \"برجر كلاسيكي\",\n          \"en\": \"Classic Burger\"\n        },\n        \"price\": \"12.00\"\n      }\n    ],\n    \"createdByUser\": {\n      \"id\": \"user-uuid\",\n      \"fullName\": \"Admin User\"\n    }\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Update Bundle",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": {\n    \"ar\": \"باقة البرجر المحدثة\",\n    \"en\": \"Updated Burger Bundle\"\n  },\n  \"description\": {\n    \"ar\": \"باقة محدثة مع عناصر جديدة\",\n    \"en\": \"Updated bundle with new items\"\n  },\n  \"price\": 28.00,\n  \"status\": \"active\",\n  \"itemIds\": [\n    \"item-uuid-1\",\n    \"item-uuid-2\",\n    \"item-uuid-4\"\n  ]\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles/{{bundle_id}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles", "{{bundle_id}}"]
+				},
+				"description": "Update an existing bundle's properties and items."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 28.00,\n  \"status\": \"active\"\n}"
+						},
+						"url": "{{base_url}}/api/v1/admin/menu/bundles/bundle-uuid"
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Bundle updated successfully\",\n  \"data\": {\n    \"id\": \"bundle-uuid\",\n    \"name\": {\n      \"ar\": \"باقة البرجر المحدثة\",\n      \"en\": \"Updated Burger Bundle\"\n    },\n    \"price\": \"28.00\",\n    \"status\": \"active\",\n    \"numberOfItems\": 3,\n    \"updatedAt\": \"2024-12-12T15:30:00Z\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Delete Bundle",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles/{{bundle_id}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles", "{{bundle_id}}"]
+				},
+				"description": "Permanently delete a bundle from the system."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{base_url}}/api/v1/admin/menu/bundles/bundle-uuid"
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Bundle deleted successfully\",\n  \"data\": null\n}"
+				}
+			]
+		},
+		{
+			"name": "Get Bundles by Category",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles/category/{{category_id}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles", "category", "{{category_id}}"]
+				},
+				"description": "Retrieve all bundles belonging to a specific category."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/api/v1/admin/menu/bundles/category/category-uuid"
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Category bundles retrieved successfully\",\n  \"data\": [\n    {\n      \"id\": \"bundle-uuid-1\",\n      \"name\": {\n        \"ar\": \"باقة البرجر\",\n        \"en\": \"Burger Bundle\"\n      },\n      \"categoryId\": \"category-uuid\",\n      \"numberOfItems\": 3,\n      \"price\": \"25.50\",\n      \"status\": \"active\"\n    },\n    {\n      \"id\": \"bundle-uuid-2\",\n      \"name\": {\n        \"ar\": \"باقة البيتزا\",\n        \"en\": \"Pizza Bundle\"\n      },\n      \"categoryId\": \"category-uuid\",\n      \"numberOfItems\": 2,\n      \"price\": \"32.00\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Duplicate Bundle",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles/{{bundle_id}}/duplicate",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles", "{{bundle_id}}", "duplicate"]
+				},
+				"description": "Create a copy of an existing bundle with modified name and draft status."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"url": "{{base_url}}/api/v1/admin/menu/bundles/bundle-uuid/duplicate"
+					},
+					"status": "Created",
+					"code": 201,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Bundle duplicated successfully\",\n  \"data\": {\n    \"id\": \"new-bundle-uuid\",\n    \"name\": {\n      \"ar\": \"باقة البرجر الكلاسيكي - نسخة\",\n      \"en\": \"Classic Burger Bundle - Copy\"\n    },\n    \"description\": {\n      \"ar\": \"باقة تحتوي على برجر وبطاطس ومشروب\",\n      \"en\": \"Bundle includes burger, fries, and drink\"\n    },\n    \"categoryId\": \"category-uuid\",\n    \"numberOfItems\": 3,\n    \"price\": \"25.50\",\n    \"status\": \"draft\",\n    \"createdAt\": \"2024-12-12T15:30:00Z\",\n    \"items\": []\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Archive Bundle",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/admin/menu/bundles/{{bundle_id}}/archive",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "admin", "menu", "bundles", "{{bundle_id}}", "archive"]
+				},
+				"description": "Archive a bundle by setting its status to 'archived'."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "PATCH",
+						"header": [],
+						"url": "{{base_url}}/api/v1/admin/menu/bundles/bundle-uuid/archive"
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"success\": true,\n  \"message\": \"Bundle archived successfully\",\n  \"data\": {\n    \"id\": \"bundle-uuid\",\n    \"name\": {\n      \"ar\": \"باقة البرجر الكلاسيكي\",\n      \"en\": \"Classic Burger Bundle\"\n    },\n    \"status\": \"archived\",\n    \"updatedAt\": \"2024-12-12T15:30:00Z\"\n  }\n}"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-set variables from response",
+					"pm.globals.set('timestamp', new Date().toISOString());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Common tests for all requests",
+					"pm.test('Response time is less than 1000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+					"});",
+					"",
+					"pm.test('Response has success field', function () {",
+					"    pm.expect(pm.response.json()).to.have.property('success');",
+					"});",
+					"",
+					"pm.test('Response has message field', function () {",
+					"    pm.expect(pm.response.json()).to.have.property('message');",
+					"});",
+					"",
+					"// Auto-extract IDs for chaining requests",
+					"if (pm.response.code === 201 || pm.response.code === 200) {",
+					"    const responseJson = pm.response.json();",
+					"    if (responseJson.data && responseJson.data.id) {",
+					"        pm.collectionVariables.set('bundle_id', responseJson.data.id);",
+					"    }",
+					"    if (responseJson.data && responseJson.data.categoryId) {",
+					"        pm.collectionVariables.set('category_id', responseJson.data.categoryId);",
+					"    }",
+					"}"
+				]
+			}
+		}
+	]
+}

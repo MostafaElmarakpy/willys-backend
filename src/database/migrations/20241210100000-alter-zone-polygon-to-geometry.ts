@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AlterZonePolygonToGeometry20241210100000 implements MigrationInterface {
+export class AlterZonePolygonToGeometry20241210100000
+  implements MigrationInterface
+{
   name = 'AlterZonePolygonToGeometry20241210100000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -32,7 +34,9 @@ export class AlterZonePolygonToGeometry20241210100000 implements MigrationInterf
     `);
 
     // Make the polygon column NOT NULL
-    await queryRunner.query(`ALTER TABLE "zones" ALTER COLUMN "polygon" SET NOT NULL`);
+    await queryRunner.query(
+      `ALTER TABLE "zones" ALTER COLUMN "polygon" SET NOT NULL`,
+    );
 
     // Create spatial index using GiST for geometry queries
     await queryRunner.query(`
@@ -45,7 +49,9 @@ export class AlterZonePolygonToGeometry20241210100000 implements MigrationInterf
     await queryRunner.query(`DROP INDEX IF EXISTS "IDX_zones_polygon_gist"`);
 
     // Add temporary JSONB column
-    await queryRunner.query(`ALTER TABLE "zones" ADD COLUMN "polygon_temp" jsonb`);
+    await queryRunner.query(
+      `ALTER TABLE "zones" ADD COLUMN "polygon_temp" jsonb`,
+    );
 
     // Convert geometry back to GeoJSON JSONB
     await queryRunner.query(`
@@ -63,7 +69,9 @@ export class AlterZonePolygonToGeometry20241210100000 implements MigrationInterf
     `);
 
     // Make the polygon column NOT NULL
-    await queryRunner.query(`ALTER TABLE "zones" ALTER COLUMN "polygon" SET NOT NULL`);
+    await queryRunner.query(
+      `ALTER TABLE "zones" ALTER COLUMN "polygon" SET NOT NULL`,
+    );
 
     // Recreate the original GIN index for JSONB
     await queryRunner.query(`

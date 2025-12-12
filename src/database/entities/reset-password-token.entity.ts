@@ -1,5 +1,12 @@
 import { User } from 'src/database/entities/user.entity';
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 
 @Entity('reset_password_tokens')
 export class ResetPasswordToken {

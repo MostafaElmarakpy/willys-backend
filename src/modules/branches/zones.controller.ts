@@ -16,7 +16,10 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/UserRole';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { createSuccessResponse, createCreatedResponse } from '../../common/utils/api-response-wrapper';
+import {
+  createSuccessResponse,
+  createCreatedResponse,
+} from '../../common/utils/api-response-wrapper';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
@@ -49,7 +52,7 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async checkPoint(@Body() zoneCheckDto: ZoneCheckDto) {
     const result = await this.zonesService.checkPointInZone(zoneCheckDto);
-    
+
     return createSuccessResponse(result, 'Point check completed');
   }
 
@@ -57,9 +60,13 @@ export class ZonesController {
   @Version('1')
   @Roles(UserRole.admin)
   async findBranchForLocation(@Body() zoneCheckDto: ZoneCheckDto) {
-    const branch = await this.zonesService.findBestBranchForLocation(zoneCheckDto);
-    
-    return createSuccessResponse({ branch }, branch ? 'Branch found for location' : 'No branch serves this location');
+    const branch =
+      await this.zonesService.findBestBranchForLocation(zoneCheckDto);
+
+    return createSuccessResponse(
+      { branch },
+      branch ? 'Branch found for location' : 'No branch serves this location',
+    );
   }
 
   @Get('branch/:branchId')
@@ -86,7 +93,10 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async getZoneStats(@Param('id', ParseUUIDPipe) id: string) {
     const stats = await this.zonesService.getZoneStats(id);
-    return createSuccessResponse(stats, 'Zone statistics retrieved successfully');
+    return createSuccessResponse(
+      stats,
+      'Zone statistics retrieved successfully',
+    );
   }
 
   @Put(':id')
@@ -105,7 +115,10 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async toggleActive(@Param('id', ParseUUIDPipe) id: string) {
     const zone = await this.zonesService.toggleActive(id);
-    return createSuccessResponse(zone, 'Zone active status toggled successfully');
+    return createSuccessResponse(
+      zone,
+      'Zone active status toggled successfully',
+    );
   }
 
   @Delete(':id')

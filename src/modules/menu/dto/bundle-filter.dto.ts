@@ -1,18 +1,12 @@
-import {
-  IsOptional,
-  IsEnum,
-  IsString,
-  IsNumber,
-  IsArray,
-} from 'class-validator';
+import { IsOptional, IsEnum, IsString, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
+import { BundleStatus } from 'src/common/enums/BundleStatus';
 
-export class ItemFilterDto extends PaginationDto {
+export class BundleFilterDto extends PaginationDto {
   @IsOptional()
-  @IsEnum(ItemStatus)
-  status?: ItemStatus;
+  @IsEnum(BundleStatus)
+  status?: BundleStatus;
 
   @IsOptional()
   @IsString()
@@ -39,9 +33,4 @@ export class ItemFilterDto extends PaginationDto {
   @IsOptional()
   @IsString()
   sortOrder?: 'ASC' | 'DESC' = 'DESC';
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  variantIds?: string[];
 }

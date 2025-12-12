@@ -1,4 +1,4 @@
-export enum ItemStatus {
+export enum BundleStatus {
   ACTIVE = 'active',
   DRAFT = 'draft',
   ARCHIVED = 'archived',

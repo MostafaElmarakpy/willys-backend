@@ -94,10 +94,10 @@ export class UsersAdminService {
 
   async findAll(page: number = 1, limit: number = 10): Promise<User[]> {
     const skip = (page - 1) * limit;
-    
+
     return this.usersRepository.find({
-      where: { 
-        role: UserRole.user 
+      where: {
+        role: UserRole.user,
       },
       select: {
         id: true,
@@ -113,12 +113,15 @@ export class UsersAdminService {
       order: { createdAt: 'DESC' },
     });
   }
-  async findAllUsersRole(page: number = 1, limit: number = 10): Promise<User[]> {
+  async findAllUsersRole(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<User[]> {
     const skip = (page - 1) * limit;
-    
+
     return this.usersRepository.find({
-      where: { 
-        role: UserRole.admin 
+      where: {
+        role: UserRole.admin,
       },
       select: {
         id: true,

@@ -16,7 +16,10 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/UserRole';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { createSuccessResponse, createCreatedResponse } from '../../common/utils/api-response-wrapper';
+import {
+  createSuccessResponse,
+  createCreatedResponse,
+} from '../../common/utils/api-response-wrapper';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { BranchesService } from './branches.service';
 import { CreateBranchDto } from './dto/create-branch.dto';
@@ -48,7 +51,7 @@ export class BranchesController {
     @Query() pagination?: PaginationDto,
   ) {
     let branches: any;
-    
+
     switch (status) {
       case 'active':
         branches = await this.branchesService.findActive();
@@ -78,7 +81,10 @@ export class BranchesController {
       radius,
     );
 
-    return createSuccessResponse(branches, 'Nearby branches retrieved successfully');
+    return createSuccessResponse(
+      branches,
+      'Nearby branches retrieved successfully',
+    );
   }
 
   @Post('check-delivery-zone')
@@ -86,21 +92,28 @@ export class BranchesController {
   @Roles(UserRole.admin)
   async checkDeliveryZone(@Body() zoneCheckDto: ZoneCheckDto) {
     const result = await this.zonesService.checkPointInZone(zoneCheckDto);
-    
-    return createSuccessResponse({
-      canDeliver: result.isInZone,
-      availableBranches: result.matchingBranches,
-      recommendedBranch: result.matchingBranches[0]?.branch || null,
-    }, 'Zone check completed');
+
+    return createSuccessResponse(
+      {
+        canDeliver: result.isInZone,
+        availableBranches: result.matchingBranches,
+        recommendedBranch: result.matchingBranches[0]?.branch || null,
+      },
+      'Zone check completed',
+    );
   }
 
   @Post('find-serving-branch')
   @Version('1')
   @Roles(UserRole.admin)
   async findServingBranch(@Body() zoneCheckDto: ZoneCheckDto) {
-    const branch = await this.zonesService.findBestBranchForLocation(zoneCheckDto);
-    
-    return createSuccessResponse({ branch }, branch ? 'Serving branch found' : 'No serving branch found');
+    const branch =
+      await this.zonesService.findBestBranchForLocation(zoneCheckDto);
+
+    return createSuccessResponse(
+      { branch },
+      branch ? 'Serving branch found' : 'No serving branch found',
+    );
   }
 
   @Get(':id')
@@ -108,7 +121,7 @@ export class BranchesController {
   @Roles(UserRole.admin)
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const branch = await this.branchesService.findOne(id);
-    
+
     return createSuccessResponse(branch, 'Branch retrieved successfully');
   }
 
@@ -117,8 +130,11 @@ export class BranchesController {
   @Roles(UserRole.admin)
   async getBranchStats(@Param('id', ParseUUIDPipe) id: string) {
     const stats = await this.branchesService.getBranchStats(id);
-    
-    return createSuccessResponse(stats, 'Branch statistics retrieved successfully');
+
+    return createSuccessResponse(
+      stats,
+      'Branch statistics retrieved successfully',
+    );
   }
 
   @Get(':id/zones')
@@ -126,7 +142,7 @@ export class BranchesController {
   @Roles(UserRole.admin)
   async getBranchZones(@Param('id', ParseUUIDPipe) id: string) {
     const zones = await this.zonesService.findByBranch(id);
-    
+
     return createSuccessResponse(zones, 'Branch zones retrieved successfully');
   }
 
@@ -138,7 +154,7 @@ export class BranchesController {
     @Body() updateBranchDto: UpdateBranchDto,
   ) {
     const branch = await this.branchesService.update(id, updateBranchDto);
-    
+
     return createSuccessResponse(branch, 'Branch updated successfully');
   }
 
@@ -150,8 +166,11 @@ export class BranchesController {
     @Body('status') status: 'active' | 'open',
   ) {
     const branch = await this.branchesService.toggleStatus(id, status);
-    
-    return createSuccessResponse(branch, `Branch ${status} status toggled successfully`);
+
+    return createSuccessResponse(
+      branch,
+      `Branch ${status} status toggled successfully`,
+    );
   }
 
   @Delete(':id')
@@ -159,7 +178,7 @@ export class BranchesController {
   @Roles(UserRole.admin)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.branchesService.remove(id);
-    
+
     return createSuccessResponse(null, 'Branch deleted successfully');
   }
 }
