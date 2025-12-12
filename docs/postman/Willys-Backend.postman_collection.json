@@ -60,6 +60,11 @@
       "key": "ingredient_id",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "duplicated_item_id",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -854,6 +859,55 @@
               "host": ["{{base_url}}"],
               "path": ["admin", "menu", "items", "category", "{{category_id}}"]
             }
+          }
+        },
+        {
+          "name": "Duplicate Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('duplicated_item_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items/{{item_id}}/duplicate",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items", "{{item_id}}", "duplicate"]
+            },
+            "description": "Creates a duplicate of an existing item with '(Copy)' appended to the name. The duplicated item will have status 'draft' and sort order reset to 0."
+          }
+        },
+        {
+          "name": "Archive Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items/{{item_id}}/archive",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items", "{{item_id}}", "archive"]
+            },
+            "description": "Changes the item status to 'archived' without permanently deleting it. The item will no longer appear in active lists but can be retrieved for reference."
           }
         }
       ]

@@ -4,12 +4,6 @@
 /* prettier-ignore */
 import { Path } from "nestjs-i18n";
 /* prettier-ignore */
-export type I18nTranslations = {
-    "validation": {
-        "required": string;
-        "length": string;
-        "string": string;
-    };
-};
+export type I18nTranslations = {};
 /* prettier-ignore */
 export type I18nPath = Path<I18nTranslations>;

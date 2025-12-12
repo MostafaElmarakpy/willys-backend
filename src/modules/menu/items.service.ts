@@ -154,4 +154,35 @@ export class ItemsService {
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
   }
+
+  async duplicate(id: string, userId: string): Promise<Item> {
+    const originalItem = await this.findOne(id);
+    
+    const duplicatedItem = this.itemRepository.create({
+      name: {
+        en: `${originalItem.name.en} (Copy)`,
+        ar: `${originalItem.name.ar} (نسخة)`
+      },
+      description: originalItem.description,
+      image: originalItem.image,
+      price: originalItem.price,
+      status: ItemStatus.DRAFT,
+      sortOrder: 0,
+      categoryId: originalItem.categoryId,
+      createdBy: userId,
+      variants: originalItem.variants,
+      ingredients: originalItem.ingredients,
+    });
+
+    return await this.itemRepository.save(duplicatedItem);
+  }
+
+  async archiveItem(id: string, userId: string): Promise<Item> {
+    const item = await this.findOne(id);
+    
+    item.status = ItemStatus.ARCHIVED;
+    item.updatedBy = userId;
+    
+    return await this.itemRepository.save(item);
+  }
 }

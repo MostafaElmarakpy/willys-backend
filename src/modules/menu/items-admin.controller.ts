@@ -77,4 +77,20 @@ export class ItemsAdminController {
     const items = await this.itemsService.findByCategory(categoryId);
     return createSuccessResponse(items, 'Category items retrieved successfully');
   }
+
+  @Post(':id/duplicate')
+  @Version('1')
+  @Roles(UserRole.admin)
+  async duplicate(@Param('id') id: string, @Request() req: any) {
+    const item = await this.itemsService.duplicate(id, req.user.id);
+    return createCreatedResponse(item, 'Item duplicated successfully');
+  }
+
+  @Patch(':id/archive')
+  @Version('1')
+  @Roles(UserRole.admin)
+  async archive(@Param('id') id: string, @Request() req: any) {
+    const item = await this.itemsService.archiveItem(id, req.user.id);
+    return createSuccessResponse(item, 'Item archived successfully');
+  }
 }
