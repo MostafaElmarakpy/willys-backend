@@ -27,8 +27,16 @@ export class ZonesService {
     }
 
     try {
+      // Convert GeoJSON polygon to WKT format
+      const polygonWkt = this.geoJsonToWkt(createZoneDto.polygon);
+      
       const zone = this.zoneRepository.create({
-        ...createZoneDto,
+        name: createZoneDto.name,
+        branchId: createZoneDto.branchId,
+        polygon: polygonWkt,
+        centerLatitude: createZoneDto.centerLatitude,
+        centerLongitude: createZoneDto.centerLongitude,
+        radiusKm: createZoneDto.radiusKm,
         isActive: createZoneDto.isActive ?? true,
         priority: createZoneDto.priority ?? 0,
       });
@@ -122,11 +130,16 @@ export class ZonesService {
       let isPointInZone = false;
 
       // Check polygon-based zone
-      if (zone.polygon && zone.polygon.coordinates) {
-        isPointInZone = this.pointInPolygon(
-          [longitude, latitude],
-          zone.polygon.coordinates[0], // First ring of polygon
-        );
+      if (zone.polygon) {
+        try {
+          const geoJsonPolygon = this.wktToGeoJson(zone.polygon);
+          isPointInZone = this.pointInPolygon(
+            [longitude, latitude],
+            geoJsonPolygon.coordinates[0], // First ring of polygon
+          );
+        } catch (error) {
+          console.warn(`Failed to parse polygon for zone ${zone.id}:`, error);
+        }
       }
 
       // Fallback to radius-based check if polygon check failed
@@ -230,9 +243,36 @@ export class ZonesService {
       stats: {
         // ordersCount: 0,
         // todaysOrders: 0,
-        polygonArea: this.calculatePolygonArea(zone.polygon),
+        polygonArea: zone.polygon ? this.calculatePolygonArea(this.wktToGeoJson(zone.polygon)) : 0,
         isActive: zone.isActive,
       },
+    };
+  }
+
+  // Convert GeoJSON polygon to WKT format
+  private geoJsonToWkt(polygon: { type: 'Polygon'; coordinates: number[][][] }): string {
+    const coords = polygon.coordinates[0]; // First ring (exterior ring)
+    const wktCoords = coords.map(coord => `${coord[0]} ${coord[1]}`).join(', ');
+    return `POLYGON((${wktCoords}))`;
+  }
+
+  // Convert WKT polygon to GeoJSON format
+  private wktToGeoJson(wkt: string): { type: 'Polygon'; coordinates: number[][][] } {
+    // Simple WKT parser for POLYGON format
+    const match = wkt.match(/POLYGON\(\(([^)]+)\)\)/);
+    if (!match) {
+      throw new Error('Invalid WKT polygon format');
+    }
+    
+    const coordString = match[1];
+    const coords = coordString.split(', ').map(pair => {
+      const [x, y] = pair.split(' ').map(Number);
+      return [x, y];
+    });
+    
+    return {
+      type: 'Polygon',
+      coordinates: [coords]
     };
   }
 
