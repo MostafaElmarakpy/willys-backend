@@ -11,6 +11,7 @@ Welcome to the Willy's Restaurant Backend API documentation. This directory cont
 ## 🚀 API Documentation
 
 ### Core APIs
+- **[Menu Management API](./api/menu-management.md)** - Complete menu system with categories, items, variants, and ingredients
 - **[Branches & Zones API](./api/branches-zones.md)** - Restaurant management with delivery zones
 - **Authentication API** - JWT-based user authentication
 - **Users API** - User profile and admin operations
@@ -29,7 +30,9 @@ Welcome to the Willy's Restaurant Backend API documentation. This directory cont
 ```
 docs/
 ├── README.md                                    # Documentation index
-├── api/branches-zones.md                       # API reference
+├── api/
+│   ├── menu-management.md                      # Menu management API reference
+│   └── branches-zones.md                       # Branches & zones API reference
 ├── architecture/system-overview.md             # System architecture
 ├── postman/Willys-Backend.postman_collection.json  # Postman collection
 └── MIGRATION_SUMMARY.md                        # Database migrations

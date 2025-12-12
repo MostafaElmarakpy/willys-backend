@@ -25,6 +25,41 @@
       "key": "access_token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "item_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "variant_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "variant_value_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ingredient_category_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ingredient_id",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -32,7 +67,7 @@
       "name": "Authentication",
       "item": [
         {
-          "name": "Register User",
+          "name": "Register User (Email)",
           "request": {
             "method": "POST",
             "header": [
@@ -43,7 +78,28 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Ahmed Mohamed\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"1234567890\",\n  \"phoneNumberCountryCode\": \"EG\",\n  \"userLocale\": \"ar\",\n  \"gender\": \"male\"\n}"
+              "raw": "{\n  \"registerMethod\": \"email\",\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"Ahmed Mohamed\",\n  \"gender\": \"male\",\n  \"userLocale\": \"ar\",\n  \"provider\": \"system\",\n  \"callbackUrl\": \"http://localhost:3000/verify-email\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register User (Phone)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registerMethod\": \"phone\",\n  \"phoneNumber\": \"1234567890\",\n  \"phoneNumberCountryCode\": \"EG\",\n  \"password\": \"password123\",\n  \"fullName\": \"Ahmed Mohamed\",\n  \"gender\": \"male\",\n  \"userLocale\": \"ar\",\n  \"provider\": \"system\",\n  \"callbackUrl\": \"http://localhost:3000/verify-phone\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -62,6 +118,7 @@
                   "if (pm.response.code === 200) {",
                   "    const response = pm.response.json();",
                   "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', response.data.refreshToken);",
                   "}"
                 ]
               }
@@ -77,12 +134,239 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"admin@admin.com\",\n  \"password\": \"password\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
               "host": ["{{base_url}}"],
               "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.data.accessToken);",
+                  "    pm.collectionVariables.set('refresh_token', response.data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Ahmed Mohamed Updated\",\n  \"gender\": \"male\",\n  \"birthday\": \"1990-01-01\",\n  \"userLocale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "forgot-password"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"resetToken\": \"reset-token-here\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "change-password"]
+            }
+          }
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"verificationCode\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-email",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "verify-email"]
+            }
+          }
+        },
+        {
+          "name": "Resend Verification Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ahmed@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/resend-verification-email",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "resend-verification-email"]
+            }
+          }
+        },
+        {
+          "name": "Change Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newEmail\": \"newemail@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/change-email",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "change-email"]
+            }
+          }
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/delete-account",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "delete-account"]
             }
           }
         }
@@ -325,6 +609,691 @@
               "raw": "{{base_url}}/zones/{{zone_id}}",
               "host": ["{{base_url}}"],
               "path": ["zones", "{{zone_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menu - Categories (Admin)",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/categories?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "categories"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit", 
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('category_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Main Dishes\",\n    \"ar\": \"الأطباق الرئيسية\"\n  },\n  \"description\": {\n    \"en\": \"Our signature main courses\",\n    \"ar\": \"أطباقنا الرئيسية المميزة\"\n  },\n  \"image\": \"https://example.com/main-dishes.jpg\",\n  \"isActive\": true,\n  \"sortOrder\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/categories",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/categories/active",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "categories", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "categories", "{{category_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": {\n    \"en\": \"Updated main dishes description\",\n    \"ar\": \"وصف محدث للأطباق الرئيسية\"\n  },\n  \"sortOrder\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "categories", "{{category_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "categories", "{{category_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menu - Items (Admin)",
+      "item": [
+        {
+          "name": "Get All Items",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items?page=1&limit=10&search=&categoryId=&status=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "categoryId",
+                  "value": ""
+                },
+                {
+                  "key": "status",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('item_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Grilled Chicken Caesar Salad\",\n    \"ar\": \"سلطة قيصر بالدجاج المشوي\"\n  },\n  \"description\": {\n    \"en\": \"Fresh romaine lettuce with grilled chicken, parmesan cheese, and caesar dressing\",\n    \"ar\": \"خس روماني طازج مع دجاج مشوي وجبن بارميزان وصوص قيصر\"\n  },\n  \"image\": \"https://example.com/caesar-salad.jpg\",\n  \"price\": 45.00,\n  \"status\": \"active\",\n  \"sortOrder\": 1,\n  \"categoryId\": \"{{category_id}}\",\n  \"variantIds\": [],\n  \"ingredientIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items"]
+            }
+          }
+        },
+        {
+          "name": "Get Item by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items/{{item_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items", "{{item_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Item",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 50.00,\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items/{{item_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items", "{{item_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items/{{item_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items", "{{item_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Items by Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/items/category/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "items", "category", "{{category_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menu - Variants (Admin)",
+      "item": [
+        {
+          "name": "Get All Variants",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Variant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('variant_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Size\",\n    \"ar\": \"الحجم\"\n  },\n  \"type\": \"default\",\n  \"isActive\": true,\n  \"sortOrder\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Variants",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/active",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get Variant by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/{{variant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "{{variant_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Variant",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sortOrder\": 2,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/{{variant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "{{variant_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Variant",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/{{variant_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "{{variant_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Variant Value",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('variant_value_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Large\",\n    \"ar\": \"كبير\"\n  },\n  \"price\": 20.00,\n  \"isActive\": true,\n  \"sortOrder\": 2,\n  \"variantId\": \"{{variant_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/values",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "values"]
+            }
+          }
+        },
+        {
+          "name": "Get Variant Values",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/{{variant_id}}/values",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "{{variant_id}}", "values"]
+            }
+          }
+        },
+        {
+          "name": "Get Variant Value by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/values/{{variant_value_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "values", "{{variant_value_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Variant Value",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 25.00,\n  \"sortOrder\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/values/{{variant_value_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "values", "{{variant_value_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Variant Value",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/variants/values/{{variant_value_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "variants", "values", "{{variant_value_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menu - Ingredients (Admin)",
+      "item": [
+        {
+          "name": "Get All Ingredient Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/categories?page=1&limit=10&search=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "categories"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Ingredient Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('ingredient_category_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Vegetables\",\n    \"ar\": \"الخضروات\"\n  },\n  \"description\": {\n    \"en\": \"Fresh vegetables and greens\",\n    \"ar\": \"خضروات ورقيات طازجة\"\n  },\n  \"isActive\": true,\n  \"sortOrder\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/categories",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Ingredient Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/categories/active",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "categories", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get Ingredient Category by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/categories/{{ingredient_category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "categories", "{{ingredient_category_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Ingredient Category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": {\n    \"en\": \"Updated vegetables description\",\n    \"ar\": \"وصف محدث للخضروات\"\n  },\n  \"sortOrder\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/categories/{{ingredient_category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "categories", "{{ingredient_category_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Ingredient Category",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/categories/{{ingredient_category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "categories", "{{ingredient_category_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Ingredients",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients?page=1&limit=10&search=&categoryId=",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "categoryId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Ingredient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('ingredient_id', response.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": {\n    \"en\": \"Tomatoes\",\n    \"ar\": \"طماطم\"\n  },\n  \"quantity\": 100.50,\n  \"isOptional\": false,\n  \"stockPercentage\": 85.0,\n  \"isActive\": true,\n  \"categoryId\": \"{{ingredient_category_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients"]
+            }
+          }
+        },
+        {
+          "name": "Get Ingredient by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/{{ingredient_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "{{ingredient_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Ingredient",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 120.0,\n  \"stockPercentage\": 90.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/{{ingredient_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "{{ingredient_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Ingredient",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/{{ingredient_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "{{ingredient_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Ingredients by Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/menu/ingredients/categories/{{ingredient_category_id}}/ingredients",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "menu", "ingredients", "categories", "{{ingredient_category_id}}", "ingredients"]
             }
           }
         }
