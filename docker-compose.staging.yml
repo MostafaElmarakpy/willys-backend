@@ -1,7 +1,7 @@
 services:
   db:
     image: postgis/postgis:17-3.4
-    container_name: willys-db
+    container_name: willys-db-staging
     ports:
       - '5433:5432'
     environment:
@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-willysDB}
     volumes:
-      - postgres_data_container:/var/lib/postgresql/data
+      - postgres_data_container_staging:/var/lib/postgresql/data
       - ./postgresql.conf:/etc/postgresql/postgresql.conf
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d willysDB"]
@@ -21,9 +21,8 @@ services:
 
   willys-backend:
     build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: willys-backend
+      dockerfile: ${DOCKERFILE:-Dockerfile.staging}
+    container_name: willys-backend-staging
     ports:
       - '8080:8080'
     env_file:
@@ -34,11 +33,11 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ['yarn', 'start:dev']
+    command: ['yarn', 'start:prod']
     restart: always
     mem_limit: 2g
     mem_reservation: 1g
-  
+
 volumes:
-  postgres_data_container:
+  postgres_data_container_staging:
     driver: local

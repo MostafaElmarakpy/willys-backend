@@ -224,17 +224,32 @@ export class BranchSeeder {
       const savedBranch = await branchRepository.save(branch);
       console.log(`✅ Branch created: ${branchData.name.en}`);
 
-      // Create zones for this branch
+      // Create zones for this branch using raw query (same as createZonesForExistingBranches)
       for (const zoneData of zones) {
-        const zone = zoneRepository.create({
-          ...zoneData,
-          branchId: savedBranch.id,
-          createdById: adminUser.id,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-
-        await zoneRepository.save(zone);
+        await this.dataSource.query(
+          `
+          INSERT INTO zones (id, name, "branchId", polygon, "isActive", priority, "createdById", "createdAt", "updatedAt")
+          VALUES (
+            uuid_generate_v4(),
+            $1,
+            $2,
+            ST_GeomFromText($3, 4326),
+            $4,
+            $5,
+            $6,
+            NOW(),
+            NOW()
+          )
+        `,
+          [
+            JSON.stringify(zoneData.name),
+            savedBranch.id,
+            zoneData.polygon,
+            zoneData.isActive,
+            zoneData.priority,
+            adminUser.id,
+          ],
+        );
         console.log(`  ✅ Zone created: ${zoneData.name.en}`);
       }
     }

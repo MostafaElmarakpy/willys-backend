@@ -22,10 +22,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "docker-compose exec willys-backend npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migrate": "npm run typeorm migration:run -- -d src/database/typeorm.config.ts",
+    "seed": "docker-compose exec willys-backend npx ts-node -r tsconfig-paths/register src/database/seeders/run-seeders.ts",
     "typeorm:prod": "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migrate:prod": "npm run typeorm:prod migration:run -- -d dist/database/typeorm.config.js",
-    "seed": "docker-compose exec willys-backend npx ts-node -r tsconfig-paths/register src/database/seeders/run-seeders.ts",
-    "seed:local": "npx ts-node -r tsconfig-paths/register src/database/seeders/run-seeders.ts"
+    "seed:prod": "node dist/database/seeders/run-seeders.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.616.0",

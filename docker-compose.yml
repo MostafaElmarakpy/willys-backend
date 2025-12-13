@@ -26,6 +26,8 @@ services:
     container_name: willys-backend
     ports:
       - '8080:8080'
+    env_file:
+      - .env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.willys-backend.rule=Host(`api.dev-tbm.xyz`)"

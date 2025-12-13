@@ -1,6 +1,7 @@
-import { ConfigService, registerAs } from '@nestjs/config';
+import { registerAs } from '@nestjs/config';
 import { ActionByUserSubscriber } from 'src/common/subscribers/action-by-user.subscriber';
 import { LocaleSubscriber } from 'src/common/subscribers/locale.subscriber';
+import { ConfigService } from 'src/config/config.service';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 let databaseConfig: any = null;
@@ -8,37 +9,13 @@ let databaseConfig: any = null;
 async function initializeDatabaseConfig() {
   const configService = new ConfigService();
 
-  if (
-    !configService.get('databaseHost') ||
-    !configService.get('databasePort') ||
-    !configService.get('databaseUsername') ||
-    !configService.get('databasePassword') ||
-    !configService.get('databaseName')
-  ) {
-    console.error('Missing required database configuration');
-    process.exit(1);
-  }
-
-  const {
-    databaseHost,
-    databasePort,
-    databaseUsername,
-    databasePassword,
-    databaseName,
-  } =
-    configService.get('databaseHost') ||
-    !configService.get('databasePort') ||
-    !configService.get('databaseUsername') ||
-    !configService.get('databasePassword') ||
-    !configService.get('databaseName');
-
   databaseConfig = {
     type: 'postgres',
-    host: `${databaseHost}`,
-    port: parseInt(`${databasePort}`),
-    username: `${databaseUsername}`,
-    password: `${databasePassword}`,
-    database: `${databaseName}`,
+    host: configService.get('databaseHost') as string,
+    port: configService.get('databasePort') as number,
+    username: configService.get('databaseUsername') as string,
+    password: configService.get('databasePassword') as string,
+    database: configService.get('databaseName') as string,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: ['dist/database/migrations/*.js'],
     subscribers: [ActionByUserSubscriber, LocaleSubscriber],
@@ -50,7 +27,7 @@ async function initializeDatabaseConfig() {
       migrationsDir: 'dist/database/migrations',
       subscribersDir: 'dist/subscribers',
     },
-    synchronize: `${process.env.NODE_ENV}` === 'development' ? true : false,
+    synchronize: configService.get('databaseSync') as boolean,
   };
 }
 
