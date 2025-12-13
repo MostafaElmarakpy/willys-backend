@@ -28,7 +28,7 @@ services:
       - '8080:8080'
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.willys-backend.rule=Host(`api.willys.com`)"
+      - "traefik.http.routers.willys-backend.rule=Host(`api.dev-tbm.xyz`)"
       - "traefik.http.routers.willys-backend.entrypoints=websecure"
       - "traefik.http.routers.willys-backend.tls.certresolver=myresolver"
       - "traefik.http.services.willys-backend.loadbalancer.server.port=8080"
