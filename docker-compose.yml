@@ -47,7 +47,7 @@ services:
     mem_limit: 2g
     mem_reservation: 1g
   traefik:
-    image: traefik:v3.0
+    image: traefik:latest
     command:
       - --log.level=DEBUG
       - --accesslog=true
