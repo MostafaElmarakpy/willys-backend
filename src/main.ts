@@ -1,11 +1,11 @@
-import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { useContainer, ValidationError } from 'class-validator';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 import { AppModule } from './app.module';
 import { LocaleInterceptor } from './common/interceptor/locale.interceptor';
-import { createErrorResponse } from './common/utils/api-response-wrapper';
+import { ValidationErrorFactory } from './common/factories/validation-error.factory';
 import { ConfigService } from './config/config.service';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -53,17 +53,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transformOptions: { enableImplicitConversion: true },
       exceptionFactory: (errors: ValidationError[]) => {
-        const formattedErrors = errors.reduce(
-          (acc: Record<string, string[]>, err) => {
-            acc[err.property] = err.constraints
-              ? Object.values(err.constraints)
-              : ['Invalid value'];
-            return acc;
-          },
-          {},
-        );
-
-        return createErrorResponse('Validation failed', HttpStatus.BAD_REQUEST);
+        return ValidationErrorFactory.createValidationException(errors);
       },
     }),
   );

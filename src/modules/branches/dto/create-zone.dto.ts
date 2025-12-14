@@ -1,69 +1,72 @@
 import {
-  IsString,
-  IsNotEmpty,
   IsOptional,
   IsBoolean,
   IsNumber,
-  IsArray,
   ValidateNested,
   IsUUID,
+  Min,
+  Max,
 } from 'class-validator';
+import { IsValidPolygon } from '../../../common/decorators/is-valid-polygon.decorator';
+import { BranchExists } from '../../../common/decorators/is-branch-exists.decorator';
 import { Type } from 'class-transformer';
 import { BilingualStringOptional } from '../../../common/dto/bilingual-string.dto';
 
-class CoordinatesDto {
-  @IsArray()
-  @IsNumber({}, { each: true })
-  coordinates: number[];
-}
-
-class PolygonDto {
-  @IsString()
-  type: 'Polygon';
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CoordinatesDto)
-  coordinates: number[][][];
-}
-
 export class CreateZoneDto {
   @IsOptional()
-  @ValidateNested()
+  @ValidateNested({
+    message:
+      'Zone name must be provided in both Arabic and English if specified',
+  })
   @Type(() => BilingualStringOptional)
   name?: BilingualStringOptional;
 
-  @IsUUID()
+  @IsUUID(4, { message: 'Branch ID must be a valid UUID' })
+  @BranchExists({ message: 'Branch with this ID does not exist' })
   branchId: string;
 
-  @ValidateNested()
-  @Type(() => PolygonDto)
+  @IsValidPolygon({
+    message:
+      'Polygon must be a valid GeoJSON polygon with proper coordinate structure',
+  })
   polygon: {
     type: 'Polygon';
     coordinates: number[][][];
   };
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Center latitude must be a valid number' })
+  @Min(-90, { message: 'Center latitude must be between -90 and 90 degrees' })
+  @Max(90, { message: 'Center latitude must be between -90 and 90 degrees' })
   @Type(() => Number)
   centerLatitude?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Center longitude must be a valid number' })
+  @Min(-180, {
+    message: 'Center longitude must be between -180 and 180 degrees',
+  })
+  @Max(180, {
+    message: 'Center longitude must be between -180 and 180 degrees',
+  })
   @Type(() => Number)
   centerLongitude?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Radius must be a valid number' })
+  @Min(0.1, { message: 'Radius must be at least 0.1 kilometers' })
+  @Max(100, { message: 'Radius cannot exceed 100 kilometers' })
   @Type(() => Number)
   radiusKm?: number;
 
   @IsOptional()
-  @IsBoolean()
+  @IsBoolean({ message: 'Active status must be true or false' })
   isActive?: boolean;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Priority must be a valid number' })
+  @Min(0, { message: 'Priority cannot be negative' })
+  @Max(100, { message: 'Priority cannot exceed 100' })
   @Type(() => Number)
   priority?: number;
 }
