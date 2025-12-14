@@ -30,7 +30,11 @@ export class HealthController {
       () => this.db.pingCheck('database'),
       () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
       () => this.memory.checkRSS('memory_rss', 150 * 1024 * 1024),
-      () => this.disk.checkStorage('storage', { path: '/', threshold: 250 * 1024 * 1024 * 1024 }),
+      () =>
+        this.disk.checkStorage('storage', {
+          path: '/',
+          threshold: 250 * 1024 * 1024 * 1024,
+        }),
     ]);
   }
 
@@ -40,9 +44,7 @@ export class HealthController {
   @ApiResponse({ status: 503, description: 'Database is unhealthy' })
   @HealthCheck()
   checkDatabase() {
-    return this.health.check([
-      () => this.db.pingCheck('database'),
-    ]);
+    return this.health.check([() => this.db.pingCheck('database')]);
   }
 
   @Get('memory')
@@ -64,7 +66,11 @@ export class HealthController {
   @HealthCheck()
   checkDisk() {
     return this.health.check([
-      () => this.disk.checkStorage('storage', { path: '/', threshold: 250 * 1024 * 1024 * 1024 }),
+      () =>
+        this.disk.checkStorage('storage', {
+          path: '/',
+          threshold: 250 * 1024 * 1024 * 1024,
+        }),
     ]);
   }
 
@@ -77,7 +83,9 @@ export class HealthController {
   }
 
   @Get('detailed')
-  @ApiOperation({ summary: 'Get detailed health information including system metrics' })
+  @ApiOperation({
+    summary: 'Get detailed health information including system metrics',
+  })
   @ApiResponse({ status: 200, description: 'Detailed health information' })
   async getDetailedHealth() {
     return this.healthService.getDetailedHealthInfo();

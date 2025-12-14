@@ -50,20 +50,22 @@ export class BranchesController {
     @Query('status') status?: 'all' | 'active' | 'open',
     @Query() pagination?: PaginationDto,
   ) {
-    let branches: any;
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 10;
+    let result: any;
 
     switch (status) {
       case 'active':
-        branches = await this.branchesService.findActive();
+        result = await this.branchesService.findActive(page, limit);
         break;
       case 'open':
-        branches = await this.branchesService.findOpen();
+        result = await this.branchesService.findOpen(page, limit);
         break;
       default:
-        branches = await this.branchesService.findAll();
+        result = await this.branchesService.findAll(page, limit);
     }
 
-    return createSuccessResponse(branches, 'Branches retrieved successfully');
+    return createSuccessResponse(result, 'Branches retrieved successfully');
   }
 
   @Get('nearby')
@@ -73,7 +75,6 @@ export class BranchesController {
     @Query('latitude') latitude: number,
     @Query('longitude') longitude: number,
     @Query('radius') radius?: number,
-    @Query() pagination?: PaginationDto,
   ) {
     const branches = await this.branchesService.findNearby(
       latitude,

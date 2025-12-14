@@ -53,11 +53,34 @@ export class ZonesService {
     }
   }
 
-  async findAll(): Promise<Zone[]> {
-    return this.zoneRepository.find({
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    zones: Zone[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const [zones, total] = await this.zoneRepository.findAndCount({
       relations: ['branch'],
       order: { priority: 'DESC', createdAt: 'ASC' },
+      skip,
+      take: limit,
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      zones,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   async findByBranch(branchId: string): Promise<Zone[]> {

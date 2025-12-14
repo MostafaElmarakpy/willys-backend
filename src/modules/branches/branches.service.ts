@@ -32,27 +32,96 @@ export class BranchesService {
     }
   }
 
-  async findAll(): Promise<Branch[]> {
-    return this.branchRepository.find({
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    branches: Branch[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const [branches, total] = await this.branchRepository.findAndCount({
       relations: ['zones'],
       order: { name: 'ASC' },
+      skip,
+      take: limit,
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      branches,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
-  async findActive(): Promise<Branch[]> {
-    return this.branchRepository.find({
+  async findActive(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    branches: Branch[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true },
       relations: ['zones'],
       order: { name: 'ASC' },
+      skip,
+      take: limit,
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      branches,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
-  async findOpen(): Promise<Branch[]> {
-    return this.branchRepository.find({
+  async findOpen(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    branches: Branch[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true, isOpen: true },
       relations: ['zones'],
       order: { name: 'ASC' },
+      skip,
+      take: limit,
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      branches,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   async findOne(id: string): Promise<Branch> {

@@ -43,8 +43,11 @@ export class ZonesController {
   @Version('1')
   @Roles(UserRole.admin)
   async findAll(@Query() pagination: PaginationDto) {
-    const zones = await this.zonesService.findAll();
-    return createSuccessResponse(zones, 'Zones retrieved successfully');
+    const result = await this.zonesService.findAll(
+      pagination.page,
+      pagination.limit,
+    );
+    return createSuccessResponse(result, 'Zones retrieved successfully');
   }
 
   @Post('check-point')
@@ -74,7 +77,6 @@ export class ZonesController {
   @Roles(UserRole.admin)
   async findByBranch(
     @Param('branchId', ParseUUIDPipe) branchId: string,
-    @Query() pagination: PaginationDto,
   ) {
     const zones = await this.zonesService.findByBranch(branchId);
     return createSuccessResponse(zones, 'Branch zones retrieved successfully');

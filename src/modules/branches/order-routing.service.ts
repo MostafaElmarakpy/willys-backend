@@ -98,9 +98,9 @@ export class OrderRoutingService {
     limit: number = 5,
   ): Promise<Branch[]> {
     // Find all active branches and calculate distances
-    const branches = await this.branchesService.findOpen();
+    const branchesResult = await this.branchesService.findOpen();
 
-    const branchesWithDistance = branches.map((branch) => ({
+    const branchesWithDistance = branchesResult.branches.map((branch) => ({
       ...branch,
       distance: this.calculateDistance(
         latitude,

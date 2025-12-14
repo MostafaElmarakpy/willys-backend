@@ -5,10 +5,7 @@ import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 
 @Module({
-  imports: [
-    TerminusModule,
-    TypeOrmModule.forFeature([]),
-  ],
+  imports: [TerminusModule, TypeOrmModule.forFeature([])],
   controllers: [HealthController],
   providers: [HealthService],
   exports: [HealthService],
