@@ -51,7 +51,7 @@ export class VariantsService {
       .getManyAndCount();
 
     return {
-      data: variants,
+      variants,
       total,
       page,
       limit,

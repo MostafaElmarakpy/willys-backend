@@ -54,7 +54,7 @@ export class IngredientsService {
       .getManyAndCount();
 
     return {
-      data: categories,
+      categories,
       total,
       page,
       limit,
@@ -142,7 +142,7 @@ export class IngredientsService {
       .getManyAndCount();
 
     return {
-      data: ingredients,
+      ingredients,
       total,
       page,
       limit,

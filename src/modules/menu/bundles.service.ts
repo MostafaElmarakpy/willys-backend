@@ -91,11 +91,11 @@ export class BundlesService {
       .getMany();
 
     return {
-      data: bundles,
+      bundles,
       total,
       page,
       limit,
-      pages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / limit),
     };
   }
 

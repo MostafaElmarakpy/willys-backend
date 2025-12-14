@@ -115,7 +115,7 @@ export class ItemsService {
       .getManyAndCount();
 
     return {
-      data: items,
+      items,
       total,
       page,
       limit,

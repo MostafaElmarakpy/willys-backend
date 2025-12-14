@@ -75,9 +75,7 @@ export class ZonesController {
   @Get('branch/:branchId')
   @Version('1')
   @Roles(UserRole.admin)
-  async findByBranch(
-    @Param('branchId', ParseUUIDPipe) branchId: string,
-  ) {
+  async findByBranch(@Param('branchId', ParseUUIDPipe) branchId: string) {
     const zones = await this.zonesService.findByBranch(branchId);
     return createSuccessResponse(zones, 'Branch zones retrieved successfully');
   }

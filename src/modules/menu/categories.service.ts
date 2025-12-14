@@ -44,7 +44,7 @@ export class CategoriesService {
       .getManyAndCount();
 
     return {
-      data: categories,
+      categories,
       total,
       page,
       limit,
