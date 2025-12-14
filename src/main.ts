@@ -84,6 +84,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen((configService.get('port') as number) ?? 5555);
+  await app.listen((configService.get('port') as number) ?? 8080);
 }
 bootstrap();
