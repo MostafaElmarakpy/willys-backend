@@ -30,7 +30,7 @@ export class MailService implements OnModuleInit {
     }
 
     await this.transporter.sendMail({
-      from: this.configService.get('senderEmail'),
+      from: this.configService.get('roundCubeUser'),
       to: options.to,
       subject: options.subject,
       html: options.html,

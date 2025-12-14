@@ -35,7 +35,7 @@ docker compose -f docker-compose.yml up
 docker compose exec willys-backend yarn migrate:prod
 
 # Run seeders in production (Note: Currently has entity relationship issues)
-docker-compose exec willys-backend yarn seed:prod
+docker compose exec willys-backend yarn seed:prod
 ```
 ## Environment Files
 
