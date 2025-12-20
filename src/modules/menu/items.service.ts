@@ -8,6 +8,7 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { ItemFilterDto } from './dto/item-filter.dto';
 import { ItemStatus } from 'src/common/enums/ItemStatus';
+import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
 
 @Injectable()
 export class ItemsService {
@@ -18,15 +19,30 @@ export class ItemsService {
     private readonly variantRepository: Repository<Variant>,
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
 
-  async create(createItemDto: CreateItemDto, userId: string): Promise<Item> {
+  async create(
+    createItemDto: CreateItemDto,
+    userId: string,
+    files: { [fieldName: string]: Express.Multer.File[] },
+  ): Promise<Item> {
     const { variantIds, ingredientIds, ...itemData } = createItemDto;
 
     const item = this.itemRepository.create({
       ...itemData,
       createdBy: userId,
     });
+
+    if (files['image']) {
+      item.image = (
+        await this.uploadMediaService.saveOneFile(
+          files?.image,
+          'properties',
+          item.id,
+        )
+      )?.url;
+    }
 
     if (variantIds && variantIds.length > 0) {
       item.variants = await this.variantRepository.findByIds(variantIds);
@@ -46,53 +62,15 @@ export class ItemsService {
       limit = 10,
       search,
       status,
-      categoryId,
+      categoriesIds,
       minPrice,
       maxPrice,
       sortBy = 'createdAt',
       sortOrder = 'DESC',
       variantIds,
+      fromDate,
+      toDate,
     } = filterDto;
-
-    const queryBuilder = this.itemRepository
-      .createQueryBuilder('item')
-      .leftJoinAndSelect('item.category', 'category')
-      .leftJoinAndSelect('item.variants', 'variants')
-      .leftJoinAndSelect('item.ingredients', 'ingredients')
-      .leftJoinAndSelect('item.createdByUser', 'createdBy')
-      .leftJoinAndSelect('item.updatedByUser', 'updatedBy');
-
-    if (search) {
-      queryBuilder.where(
-        "(item.name ->> 'en' ILIKE :search OR item.name ->> 'ar' ILIKE :search OR item.description ->> 'en' ILIKE :search OR item.description ->> 'ar' ILIKE :search)",
-        { search: `%${search}%` },
-      );
-    }
-
-    if (status) {
-      queryBuilder.andWhere('item.status = :status', { status });
-    }
-
-    if (categoryId) {
-      queryBuilder.andWhere('item.categoryId = :categoryId', { categoryId });
-    }
-
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      if (minPrice !== undefined && maxPrice !== undefined) {
-        queryBuilder.andWhere('item.price BETWEEN :minPrice AND :maxPrice', {
-          minPrice,
-          maxPrice,
-        });
-      } else if (minPrice !== undefined) {
-        queryBuilder.andWhere('item.price >= :minPrice', { minPrice });
-      } else if (maxPrice !== undefined) {
-        queryBuilder.andWhere('item.price <= :maxPrice', { maxPrice });
-      }
-    }
-
-    if (variantIds && variantIds.length > 0) {
-      queryBuilder.andWhere('variants.id IN (:...variantIds)', { variantIds });
-    }
 
     const validSortFields = [
       'name',
@@ -103,16 +81,145 @@ export class ItemsService {
     ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    if (sortField === 'name') {
-      queryBuilder.orderBy(`item.name ->> 'en'`, sortOrder as 'ASC' | 'DESC');
-    } else {
-      queryBuilder.orderBy(`item.${sortField}`, sortOrder as 'ASC' | 'DESC');
+    let whereConditions: string[] = [];
+    let parameters: any[] = [];
+    let paramIndex = 1;
+
+    if (search) {
+      whereConditions.push(
+        `(i.name ->> 'en' ILIKE $${paramIndex} OR i.name ->> 'ar' ILIKE $${paramIndex} OR i.description ->> 'en' ILIKE $${paramIndex} OR i.description ->> 'ar' ILIKE $${paramIndex})`,
+      );
+      parameters.push(`%${search}%`);
+      paramIndex++;
     }
 
-    const [items, total] = await queryBuilder
-      .take(limit)
-      .skip((page - 1) * limit)
-      .getManyAndCount();
+    if (status) {
+      whereConditions.push(`i.status = $${paramIndex}`);
+      parameters.push(status);
+      paramIndex++;
+    }
+
+    if (categoriesIds && categoriesIds.length > 0) {
+      whereConditions.push(`i."categoryId" = ANY($${paramIndex})`);
+      parameters.push(categoriesIds);
+      paramIndex++;
+    }
+
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      whereConditions.push(
+        `i.price BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+      );
+      parameters.push(minPrice, maxPrice);
+      paramIndex += 2;
+    } else if (minPrice !== undefined) {
+      whereConditions.push(`i.price >= $${paramIndex}`);
+      parameters.push(minPrice);
+      paramIndex++;
+    } else if (maxPrice !== undefined) {
+      whereConditions.push(`i.price <= $${paramIndex}`);
+      parameters.push(maxPrice);
+      paramIndex++;
+    }
+
+    if (variantIds && variantIds.length > 0) {
+      whereConditions.push(`v.id = ANY($${paramIndex})`);
+      parameters.push(variantIds);
+      paramIndex++;
+    }
+
+    if (fromDate && toDate) {
+      whereConditions.push(
+        `i."updatedAt" BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+      );
+      parameters.push(fromDate, toDate);
+      paramIndex += 2;
+    } else if (fromDate) {
+      whereConditions.push(`i."updatedAt" >= $${paramIndex}`);
+      parameters.push(fromDate);
+      paramIndex++;
+    } else if (toDate) {
+      whereConditions.push(`i."updatedAt" <= $${paramIndex}`);
+      parameters.push(toDate);
+      paramIndex++;
+    }
+
+    const whereClause =
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(' AND ')}`
+        : '';
+
+    let orderByClause = '';
+    if (sortField === 'name') {
+      orderByClause = `ORDER BY i.name ->> 'en' ${sortOrder}`;
+    } else {
+      orderByClause = `ORDER BY i."${sortField}" ${sortOrder}`;
+    }
+
+    const itemsQuery = `
+      SELECT 
+        i.id,
+        i.name,
+        i.description,
+        i.image,
+        i.price,
+        i.status,
+        i."sortOrder",
+        i."categoryId",
+        i."createdBy",
+        i."updatedBy",
+        i."createdAt",
+        i."updatedAt",
+        c.name as "categoryName",
+        COALESCE(variant_count.count, 0) as "variantCount"
+      FROM items i
+      LEFT JOIN categories c ON c.id = i."categoryId"
+      LEFT JOIN (
+        SELECT 
+          iv."itemId", 
+          COUNT(DISTINCT v.id) as count
+        FROM item_variants iv
+        LEFT JOIN variants v ON v.id = iv."variantId"
+        GROUP BY iv."itemId"
+      ) variant_count ON variant_count."itemId" = i.id
+      ${
+        variantIds && variantIds.length > 0
+          ? `
+      INNER JOIN item_variants iv ON iv."itemId" = i.id
+      INNER JOIN variants v ON v.id = iv."variantId"
+      `
+          : ''
+      }
+      ${whereClause}
+      ${variantIds && variantIds.length > 0 ? 'GROUP BY i.id, c.name, variant_count.count' : ''}
+      ${orderByClause}
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    const countQuery = `
+      SELECT COUNT(DISTINCT i.id) as total
+      FROM items i
+      LEFT JOIN categories c ON c.id = i."categoryId"
+      ${
+        variantIds && variantIds.length > 0
+          ? `
+      INNER JOIN item_variants iv ON iv."itemId" = i.id
+      INNER JOIN variants v ON v.id = iv."variantId"
+      `
+          : ''
+      }
+      ${whereClause}
+    `;
+
+    // Add pagination parameters
+    const itemsParameters = [...parameters, limit, (page - 1) * limit];
+    const countParameters = [...parameters];
+
+    const [items, countResult] = await Promise.all([
+      this.itemRepository.query(itemsQuery, itemsParameters),
+      this.itemRepository.query(countQuery, countParameters),
+    ]);
+
+    const total = parseInt(countResult[0].total);
 
     return {
       items,
@@ -147,6 +254,7 @@ export class ItemsService {
     id: string,
     updateItemDto: UpdateItemDto,
     userId: string,
+    files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Item> {
     const { variantIds, ingredientIds, ...itemData } = updateItemDto;
     const item = await this.findOne(id);
@@ -161,6 +269,16 @@ export class ItemsService {
       } else {
         item.variants = [];
       }
+    }
+
+    if (files['image']) {
+      item.image = (
+        await this.uploadMediaService.saveOneFile(
+          files?.image,
+          'properties',
+          item.id,
+        )
+      )?.url;
     }
 
     if (ingredientIds !== undefined) {

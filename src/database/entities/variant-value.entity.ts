@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Variant } from './variant.entity';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
+import { QuantityType } from 'src/common/enums/QuantityType';
 
 @Entity('variant_values')
 export class VariantValue {
@@ -23,6 +24,17 @@ export class VariantValue {
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  quantity?: number;
+
+  @Column({
+    type: 'enum',
+    enum: QuantityType,
+    nullable: true,
+  })
+  @Index()
+  quantityType?: QuantityType;
 
   @Column({ default: true })
   @Index()

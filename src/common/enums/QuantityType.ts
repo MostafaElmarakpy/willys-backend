@@ -1,0 +1,17 @@
+export enum QuantityType {
+  PIECE = 'piece',
+  SLICE = 'slice', 
+  SCOOP = 'scoop',
+  DASH = 'dash',
+  PINCH = 'pinch',
+  SPLASH = 'splash',
+  DRIZZLE = 'drizzle',
+  HANDFUL = 'handful',
+  SPRINKLE = 'sprinkle',
+  LAYER = 'layer',
+  PUMP = 'pump',
+  SHOT = 'shot',
+  CUP = 'cup',
+  SPOON = 'spoon',
+  PORTION = 'portion'
+}

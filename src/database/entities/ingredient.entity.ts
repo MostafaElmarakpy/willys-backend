@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { IngredientCategory } from './ingredient-category.entity';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
+import { QuantityType } from 'src/common/enums/QuantityType';
 
 @Entity('ingredients')
 export class Ingredient {
@@ -23,6 +24,14 @@ export class Ingredient {
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   quantity: number;
+
+  @Column({
+    type: 'enum',
+    enum: QuantityType,
+    default: QuantityType.PIECE,
+  })
+  @Index()
+  quantityType: QuantityType;
 
   @Column({ default: false })
   @Index()

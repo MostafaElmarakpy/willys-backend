@@ -15,8 +15,9 @@ export class ItemFilterDto extends PaginationDto {
   status?: ItemStatus;
 
   @IsOptional()
-  @IsString()
-  categoryId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  categoriesIds?: string[];
 
   @IsOptional()
   @IsString()
@@ -44,4 +45,12 @@ export class ItemFilterDto extends PaginationDto {
   @IsArray()
   @IsString({ each: true })
   variantIds?: string[];
+
+  @IsOptional()
+  @Type(() => Date)
+  fromDate?: Date;
+
+  @IsOptional()
+  @Type(() => Date)
+  toDate?: Date;
 }

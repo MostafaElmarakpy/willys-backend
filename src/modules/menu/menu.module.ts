@@ -18,6 +18,7 @@ import { ItemsAdminController } from './items-admin.controller';
 import { BundlesAdminController } from './bundles-admin.controller';
 import { VariantsAdminController } from './variants-admin.controller';
 import { IngredientsAdminController } from './ingredients-admin.controller';
+import { UploadMediaModule } from 'src/services/upload-media/upload-media.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { IngredientsAdminController } from './ingredients-admin.controller';
       IngredientCategory,
     ]),
     ConfigModule,
+    UploadMediaModule,
   ],
   controllers: [
     CategoriesAdminController,

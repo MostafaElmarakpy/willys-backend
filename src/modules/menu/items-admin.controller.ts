@@ -10,6 +10,8 @@ import {
   UseGuards,
   Version,
   Request,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/UserRole';
@@ -23,6 +25,7 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { ItemFilterDto } from './dto/item-filter.dto';
 import { ItemsService } from './items.service';
+import { EntityFilesInterceptor } from 'src/services/upload-media/entity-files.interceptor';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin/menu/items')
@@ -40,8 +43,19 @@ export class ItemsAdminController {
   @Post()
   @Version('1')
   @Roles(UserRole.admin)
-  async create(@Body() createItemDto: CreateItemDto, @Request() req: any) {
-    const item = await this.itemsService.create(createItemDto, req.user.id);
+  @UseInterceptors(
+    EntityFilesInterceptor('menu-items', [{ name: 'image', maxCount: 1 }]),
+  )
+  async create(
+    @UploadedFiles() files: { [fieldName: string]: Express.Multer.File[] },
+    @Body() createItemDto: CreateItemDto,
+    @Request() req: any,
+  ) {
+    const item = await this.itemsService.create(
+      createItemDto,
+      req.user.id,
+      files,
+    );
     return createCreatedResponse(item, 'Item created successfully');
   }
 
@@ -56,12 +70,21 @@ export class ItemsAdminController {
   @Patch(':id')
   @Version('1')
   @Roles(UserRole.admin)
+  @UseInterceptors(
+    EntityFilesInterceptor('menu-items', [{ name: 'image', maxCount: 1 }]),
+  )
   async update(
     @Param('id') id: string,
+    @UploadedFiles() files: { [fieldName: string]: Express.Multer.File[] },
     @Body() updateItemDto: UpdateItemDto,
     @Request() req: any,
   ) {
-    const item = await this.itemsService.update(id, updateItemDto, req.user.id);
+    const item = await this.itemsService.update(
+      id,
+      updateItemDto,
+      req.user.id,
+      files,
+    );
     return createSuccessResponse(item, 'Item updated successfully');
   }
 
