@@ -15,9 +15,7 @@ export class ItemFilterDto extends PaginationDto {
   status?: ItemStatus;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  categoriesIds?: string[];
+  categoriesIds?: string | string[];
 
   @IsOptional()
   @IsString()

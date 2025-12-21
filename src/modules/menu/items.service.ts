@@ -99,10 +99,13 @@ export class ItemsService {
       paramIndex++;
     }
 
-    if (categoriesIds && categoriesIds.length > 0) {
-      whereConditions.push(`i."categoryId" = ANY($${paramIndex})`);
-      parameters.push(categoriesIds);
-      paramIndex++;
+    if (categoriesIds) {
+      const categoryIdsArray = Array.isArray(categoriesIds) ? categoriesIds : [categoriesIds];
+      if (categoryIdsArray.length > 0) {
+        whereConditions.push(`i."categoryId" = ANY($${paramIndex})`);
+        parameters.push(categoryIdsArray);
+        paramIndex++;
+      }
     }
 
     if (minPrice !== undefined && maxPrice !== undefined) {
