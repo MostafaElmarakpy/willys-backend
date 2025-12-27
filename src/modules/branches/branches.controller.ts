@@ -28,7 +28,7 @@ import { ZoneCheckDto } from './dto/zone-check.dto';
 import { ZonesService } from './zones.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('branches')
+@Controller('admin/branches')
 export class BranchesController {
   constructor(
     private readonly branchesService: BranchesService,

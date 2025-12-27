@@ -27,7 +27,7 @@ import { UpdateZoneDto } from './dto/update-zone.dto';
 import { ZoneCheckDto } from './dto/zone-check.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('zones')
+@Controller('admin/zones')
 export class ZonesController {
   constructor(private readonly zonesService: ZonesService) {}
 

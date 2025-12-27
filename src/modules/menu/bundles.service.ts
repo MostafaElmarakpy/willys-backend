@@ -45,11 +45,13 @@ export class BundlesService {
       limit = 10,
       search,
       status,
-      categoryId,
+      categoriesIds,
       minPrice,
       maxPrice,
       sortBy = 'createdAt',
       sortOrder = 'DESC',
+      fromDate,
+      toDate,
     } = filterDto;
 
     const queryBuilder = this.bundleRepository
@@ -68,8 +70,15 @@ export class BundlesService {
       queryBuilder.andWhere('bundle.status = :status', { status });
     }
 
-    if (categoryId) {
-      queryBuilder.andWhere('bundle.categoryId = :categoryId', { categoryId });
+    if (categoriesIds) {
+      const categoryIdsArray = Array.isArray(categoriesIds)
+        ? categoriesIds
+        : [categoriesIds];
+      if (categoryIdsArray.length > 0) {
+        queryBuilder.andWhere('bundle.categoryId IN (:...categoryIds)', {
+          categoryIds: categoryIdsArray,
+        });
+      }
     }
 
     if (minPrice !== undefined) {
@@ -78,6 +87,17 @@ export class BundlesService {
 
     if (maxPrice !== undefined) {
       queryBuilder.andWhere('bundle.price <= :maxPrice', { maxPrice });
+    }
+
+    if (fromDate && toDate) {
+      queryBuilder.andWhere('bundle.updatedAt BETWEEN :fromDate AND :toDate', {
+        fromDate,
+        toDate,
+      });
+    } else if (fromDate) {
+      queryBuilder.andWhere('bundle.updatedAt >= :fromDate', { fromDate });
+    } else if (toDate) {
+      queryBuilder.andWhere('bundle.updatedAt <= :toDate', { toDate });
     }
 
     queryBuilder.orderBy(`bundle.${sortBy}`, sortOrder);

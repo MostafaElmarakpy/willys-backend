@@ -9,8 +9,7 @@ export class BundleFilterDto extends PaginationDto {
   status?: BundleStatus;
 
   @IsOptional()
-  @IsString()
-  categoryId?: string;
+  categoriesIds?: string | string[];
 
   @IsOptional()
   @IsString()
@@ -33,4 +32,12 @@ export class BundleFilterDto extends PaginationDto {
   @IsOptional()
   @IsString()
   sortOrder?: 'ASC' | 'DESC' = 'DESC';
+
+  @IsOptional()
+  @Type(() => Date)
+  fromDate?: Date;
+
+  @IsOptional()
+  @Type(() => Date)
+  toDate?: Date;
 }
