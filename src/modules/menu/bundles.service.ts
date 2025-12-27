@@ -54,20 +54,31 @@ export class BundlesService {
       toDate,
     } = filterDto;
 
-    const queryBuilder = this.bundleRepository
-      .createQueryBuilder('bundle')
-      .leftJoinAndSelect('bundle.category', 'category')
-      .leftJoinAndSelect('bundle.items', 'items');
+    const validSortFields = [
+      'name',
+      'price',
+      'createdAt',
+      'updatedAt',
+      'status',
+    ];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
+    let whereConditions: string[] = [];
+    let parameters: any[] = [];
+    let paramIndex = 1;
 
     if (search) {
-      queryBuilder.andWhere(
-        "(LOWER(bundle.name->>'ar') LIKE LOWER(:search) OR LOWER(bundle.name->>'en') LIKE LOWER(:search))",
-        { search: `%${search}%` },
+      whereConditions.push(
+        `(b.name ->> 'en' ILIKE $${paramIndex} OR b.name ->> 'ar' ILIKE $${paramIndex} OR b.description ->> 'en' ILIKE $${paramIndex} OR b.description ->> 'ar' ILIKE $${paramIndex})`,
       );
+      parameters.push(`%${search}%`);
+      paramIndex++;
     }
 
     if (status) {
-      queryBuilder.andWhere('bundle.status = :status', { status });
+      whereConditions.push(`b.status = $${paramIndex}`);
+      parameters.push(status);
+      paramIndex++;
     }
 
     if (categoriesIds) {
@@ -75,38 +86,94 @@ export class BundlesService {
         ? categoriesIds
         : [categoriesIds];
       if (categoryIdsArray.length > 0) {
-        queryBuilder.andWhere('bundle.categoryId IN (:...categoryIds)', {
-          categoryIds: categoryIdsArray,
-        });
+        whereConditions.push(`b."categoryId" = ANY($${paramIndex})`);
+        parameters.push(categoryIdsArray);
+        paramIndex++;
       }
     }
 
-    if (minPrice !== undefined) {
-      queryBuilder.andWhere('bundle.price >= :minPrice', { minPrice });
-    }
-
-    if (maxPrice !== undefined) {
-      queryBuilder.andWhere('bundle.price <= :maxPrice', { maxPrice });
+    if (minPrice !== undefined && maxPrice !== undefined) {
+      whereConditions.push(
+        `b.price BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+      );
+      parameters.push(minPrice, maxPrice);
+      paramIndex += 2;
+    } else if (minPrice !== undefined) {
+      whereConditions.push(`b.price >= $${paramIndex}`);
+      parameters.push(minPrice);
+      paramIndex++;
+    } else if (maxPrice !== undefined) {
+      whereConditions.push(`b.price <= $${paramIndex}`);
+      parameters.push(maxPrice);
+      paramIndex++;
     }
 
     if (fromDate && toDate) {
-      queryBuilder.andWhere('bundle.updatedAt BETWEEN :fromDate AND :toDate', {
-        fromDate,
-        toDate,
-      });
+      whereConditions.push(
+        `b."updatedAt" BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+      );
+      parameters.push(fromDate, toDate);
+      paramIndex += 2;
     } else if (fromDate) {
-      queryBuilder.andWhere('bundle.updatedAt >= :fromDate', { fromDate });
+      whereConditions.push(`b."updatedAt" >= $${paramIndex}`);
+      parameters.push(fromDate);
+      paramIndex++;
     } else if (toDate) {
-      queryBuilder.andWhere('bundle.updatedAt <= :toDate', { toDate });
+      whereConditions.push(`b."updatedAt" <= $${paramIndex}`);
+      parameters.push(toDate);
+      paramIndex++;
     }
 
-    queryBuilder.orderBy(`bundle.${sortBy}`, sortOrder);
+    const whereClause =
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(' AND ')}`
+        : '';
 
-    const total = await queryBuilder.getCount();
-    const bundles = await queryBuilder
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
+    let orderByClause = '';
+    if (sortField === 'name') {
+      orderByClause = `ORDER BY b.name ->> 'en' ${sortOrder}`;
+    } else {
+      orderByClause = `ORDER BY b."${sortField}" ${sortOrder}`;
+    }
+
+    const bundlesQuery = `
+      SELECT
+        b.id,
+        b.name,
+        b.description,
+        b.image,
+        b."categoryId",
+        b."numberOfItems",
+        b.price,
+        b.status,
+        b."createdBy",
+        b."updatedBy",
+        b."createdAt",
+        b."updatedAt",
+        c.name as "categoryName"
+      FROM bundles b
+      LEFT JOIN categories c ON c.id = b."categoryId"
+      ${whereClause}
+      ${orderByClause}
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    const countQuery = `
+      SELECT COUNT(DISTINCT b.id) as total
+      FROM bundles b
+      ${whereClause}
+    `;
+
+    // Add pagination parameters
+    const bundlesParameters = [...parameters, limit, (page - 1) * limit];
+    const countParameters = [...parameters];
+
+    const [bundles, countResult] = await Promise.all([
+      this.bundleRepository.query(bundlesQuery, bundlesParameters),
+      this.bundleRepository.query(countQuery, countParameters),
+    ]);
+
+    const total = parseInt(countResult[0].total);
 
     return {
       bundles,
