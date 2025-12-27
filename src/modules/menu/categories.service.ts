@@ -4,6 +4,7 @@ import { Repository, Like } from 'typeorm';
 import { Category } from 'src/database/entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoryOrderBy } from './dto/category-filter.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -23,19 +24,59 @@ export class CategoriesService {
     return await this.categoryRepository.save(category);
   }
 
-  async findAll(page: number = 1, limit: number = 10, search?: string) {
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    isActive?: string,
+    sortBy?: CategoryOrderBy,
+    sortOrder: 'ASC' | 'DESC' = 'ASC',
+  ) {
     const queryBuilder = this.categoryRepository
       .createQueryBuilder('category')
-      .leftJoinAndSelect('category.createdByUser', 'createdBy')
-      .leftJoinAndSelect('category.updatedByUser', 'updatedBy')
-      .orderBy('category.sortOrder', 'ASC')
-      .addOrderBy('category.createdAt', 'DESC');
+      .loadRelationCountAndMap('category.itemsCount', 'category.items');
 
+    // Search filter
     if (search) {
-      queryBuilder.where(
+      queryBuilder.andWhere(
         "(category.name ->> 'en' ILIKE :search OR category.name ->> 'ar' ILIKE :search)",
         { search: `%${search}%` },
       );
+    }
+
+    // Status filter
+    if (isActive === 'true' || isActive === 'false') {
+      const isActiveBoolean = isActive === 'true';
+      queryBuilder.andWhere('category.isActive = :isActive', {
+        isActive: isActiveBoolean,
+      });
+    }
+
+    // Handle ordering based on sortBy parameter
+    if (sortBy) {
+      switch (sortBy) {
+        case CategoryOrderBy.SORT_ORDER:
+          queryBuilder.orderBy('category.sortOrder', sortOrder);
+          break;
+        case CategoryOrderBy.UPDATED_AT:
+          queryBuilder.orderBy('category.updatedAt', sortOrder);
+          break;
+        case CategoryOrderBy.ITEMS_COUNT:
+          // For ordering by items count, we need to use a subquery approach
+          queryBuilder
+            .addSelect((qb) => {
+              return qb
+                .select('COUNT(items.id)')
+                .from('items', 'items')
+                .where('items.categoryId = category.id');
+            }, 'items_count')
+            .orderBy('items_count', sortOrder);
+          break;
+        default:
+          queryBuilder.orderBy('category.sortOrder', sortOrder);
+      }
+    } else {
+      queryBuilder.orderBy('category.sortOrder', sortOrder);
     }
 
     const [categories, total] = await queryBuilder
@@ -55,7 +96,7 @@ export class CategoriesService {
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { id },
-      relations: ['createdByUser', 'updatedByUser', 'items'],
+      relations: ['items'],
     });
 
     if (!category) {

@@ -23,10 +23,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoriesService } from './categories.service';
-
-interface CategoryQuery extends PaginationDto {
-  search?: string;
-}
+import { CategoryFilterDto } from './dto/category-filter.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin/menu/categories')
@@ -36,12 +33,22 @@ export class CategoriesAdminController {
   @Get()
   @Version('1')
   @Roles(UserRole.admin)
-  async findAll(@Query() query: CategoryQuery) {
-    const { page = 1, limit = 10, search } = query;
+  async findAll(@Query() query: CategoryFilterDto) {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      isActive,
+      sortBy,
+      sortOrder = 'ASC',
+    } = query;
     const categories = await this.categoriesService.findAll(
       page,
       limit,
       search,
+      isActive,
+      sortBy,
+      sortOrder,
     );
     return createSuccessResponse(
       categories,

@@ -36,10 +36,7 @@ export class IngredientsService {
     const queryBuilder = this.ingredientCategoryRepository
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.ingredients', 'ingredients')
-      .leftJoinAndSelect('category.createdByUser', 'createdBy')
-      .leftJoinAndSelect('category.updatedByUser', 'updatedBy')
-      .orderBy('category.sortOrder', 'ASC')
-      .addOrderBy('category.createdAt', 'DESC');
+      .orderBy('category.sortOrder', 'ASC');
 
     if (search) {
       queryBuilder.where(
@@ -65,7 +62,7 @@ export class IngredientsService {
   async findOneCategory(id: string): Promise<IngredientCategory> {
     const category = await this.ingredientCategoryRepository.findOne({
       where: { id },
-      relations: ['ingredients', 'createdByUser', 'updatedByUser'],
+      relations: ['ingredients'],
     });
 
     if (!category) {
@@ -119,8 +116,6 @@ export class IngredientsService {
     const queryBuilder = this.ingredientRepository
       .createQueryBuilder('ingredient')
       .leftJoinAndSelect('ingredient.category', 'category')
-      .leftJoinAndSelect('ingredient.createdByUser', 'createdBy')
-      .leftJoinAndSelect('ingredient.updatedByUser', 'updatedBy')
       .orderBy('ingredient.createdAt', 'DESC');
 
     if (search) {
@@ -153,7 +148,7 @@ export class IngredientsService {
   async findOneIngredient(id: string): Promise<Ingredient> {
     const ingredient = await this.ingredientRepository.findOne({
       where: { id },
-      relations: ['category', 'createdByUser', 'updatedByUser'],
+      relations: ['category'],
     });
 
     if (!ingredient) {

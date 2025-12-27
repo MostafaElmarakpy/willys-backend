@@ -100,7 +100,9 @@ export class ItemsService {
     }
 
     if (categoriesIds) {
-      const categoryIdsArray = Array.isArray(categoriesIds) ? categoriesIds : [categoriesIds];
+      const categoryIdsArray = Array.isArray(categoriesIds)
+        ? categoriesIds
+        : [categoriesIds];
       if (categoryIdsArray.length > 0) {
         whereConditions.push(`i."categoryId" = ANY($${paramIndex})`);
         parameters.push(categoryIdsArray);
@@ -236,14 +238,7 @@ export class ItemsService {
   async findOne(id: string): Promise<Item> {
     const item = await this.itemRepository.findOne({
       where: { id },
-      relations: [
-        'category',
-        'variants',
-        'variants.values',
-        'ingredients',
-        'createdByUser',
-        'updatedByUser',
-      ],
+      relations: ['category', 'variants', 'variants.values', 'ingredients'],
     });
 
     if (!item) {

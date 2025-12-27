@@ -32,8 +32,6 @@ export class VariantsService {
     const queryBuilder = this.variantRepository
       .createQueryBuilder('variant')
       .leftJoinAndSelect('variant.values', 'values')
-      .leftJoinAndSelect('variant.createdByUser', 'createdBy')
-      .leftJoinAndSelect('variant.updatedByUser', 'updatedBy')
       .orderBy('variant.sortOrder', 'ASC')
       .addOrderBy('variant.createdAt', 'DESC')
       .addOrderBy('values.sortOrder', 'ASC');
@@ -62,7 +60,7 @@ export class VariantsService {
   async findOneVariant(id: string): Promise<Variant> {
     const variant = await this.variantRepository.findOne({
       where: { id },
-      relations: ['values', 'createdByUser', 'updatedByUser'],
+      relations: ['values'],
       order: {
         values: {
           sortOrder: 'ASC',
@@ -114,14 +112,13 @@ export class VariantsService {
     return await this.variantValueRepository.find({
       where: { variantId },
       order: { sortOrder: 'ASC', createdAt: 'ASC' },
-      relations: ['createdByUser', 'updatedByUser'],
     });
   }
 
   async findOneVariantValue(id: string): Promise<VariantValue> {
     const variantValue = await this.variantValueRepository.findOne({
       where: { id },
-      relations: ['variant', 'createdByUser', 'updatedByUser'],
+      relations: ['variant'],
     });
 
     if (!variantValue) {

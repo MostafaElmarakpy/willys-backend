@@ -55,9 +55,7 @@ export class BundlesService {
     const queryBuilder = this.bundleRepository
       .createQueryBuilder('bundle')
       .leftJoinAndSelect('bundle.category', 'category')
-      .leftJoinAndSelect('bundle.items', 'items')
-      .leftJoinAndSelect('bundle.createdByUser', 'createdBy')
-      .leftJoinAndSelect('bundle.updatedByUser', 'updatedBy');
+      .leftJoinAndSelect('bundle.items', 'items');
 
     if (search) {
       queryBuilder.andWhere(
@@ -102,7 +100,7 @@ export class BundlesService {
   async findOne(id: string): Promise<Bundle> {
     const bundle = await this.bundleRepository.findOne({
       where: { id },
-      relations: ['category', 'items', 'createdByUser', 'updatedByUser'],
+      relations: ['category', 'items'],
     });
 
     if (!bundle) {
@@ -145,7 +143,7 @@ export class BundlesService {
   async findByCategory(categoryId: string): Promise<Bundle[]> {
     return await this.bundleRepository.find({
       where: { categoryId },
-      relations: ['category', 'items', 'createdByUser', 'updatedByUser'],
+      relations: ['category', 'items'],
     });
   }
 
