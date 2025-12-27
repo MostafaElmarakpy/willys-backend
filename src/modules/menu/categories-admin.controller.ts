@@ -20,10 +20,10 @@ import {
   createCreatedResponse,
 } from 'src/common/utils/api-response-wrapper';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CreateCategoryDto } from './dto/category/create-category.dto';
+import { UpdateCategoryDto } from './dto/category/update-category.dto';
 import { CategoriesService } from './categories.service';
-import { CategoryFilterDto } from './dto/category-filter.dto';
+import { CategoryFilterDto } from './dto/category/category-filter.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin/menu/categories')

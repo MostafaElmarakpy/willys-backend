@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Variant } from 'src/database/entities/variant.entity';
 import { VariantValue } from 'src/database/entities/variant-value.entity';
-import { CreateVariantDto } from './dto/create-variant.dto';
-import { UpdateVariantDto } from './dto/update-variant.dto';
-import { CreateVariantValueDto } from './dto/create-variant-value.dto';
-import { UpdateVariantValueDto } from './dto/update-variant-value.dto';
+import { CreateVariantDto } from './dto/variant/create-variant.dto';
+import { UpdateVariantDto } from './dto/variant/update-variant.dto';
+import { CreateVariantValueDto } from './dto/variant/create-variant-value.dto';
+import { UpdateVariantValueDto } from './dto/variant/update-variant-value.dto';
 
 @Injectable()
 export class VariantsService {

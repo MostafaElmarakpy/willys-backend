@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Between } from 'typeorm';
 import { Bundle } from 'src/database/entities/bundle.entity';
 import { Item } from 'src/database/entities/item.entity';
-import { CreateBundleDto } from './dto/create-bundle.dto';
-import { UpdateBundleDto } from './dto/update-bundle.dto';
-import { BundleFilterDto } from './dto/bundle-filter.dto';
+import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
+import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';
+import { BundleFilterDto } from './dto/bundle/bundle-filter.dto';
 import { BundleStatus } from 'src/common/enums/BundleStatus';
 
 @Injectable()

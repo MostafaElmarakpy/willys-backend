@@ -19,9 +19,9 @@ import {
   createSuccessResponse,
   createCreatedResponse,
 } from 'src/common/utils/api-response-wrapper';
-import { CreateBundleDto } from './dto/create-bundle.dto';
-import { UpdateBundleDto } from './dto/update-bundle.dto';
-import { BundleFilterDto } from './dto/bundle-filter.dto';
+import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
+import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';
+import { BundleFilterDto } from './dto/bundle/bundle-filter.dto';
 import { BundlesService } from './bundles.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)

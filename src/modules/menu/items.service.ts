@@ -4,9 +4,9 @@ import { Repository, Like, Between } from 'typeorm';
 import { Item } from 'src/database/entities/item.entity';
 import { Variant } from 'src/database/entities/variant.entity';
 import { Ingredient } from 'src/database/entities/ingredient.entity';
-import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
-import { ItemFilterDto } from './dto/item-filter.dto';
+import { CreateItemDto } from './dto/item/create-item.dto';
+import { UpdateItemDto } from './dto/item/update-item.dto';
+import { ItemFilterDto } from './dto/item/item-filter.dto';
 import { ItemStatus } from 'src/common/enums/ItemStatus';
 import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
 

@@ -21,9 +21,9 @@ import {
   createSuccessResponse,
   createCreatedResponse,
 } from 'src/common/utils/api-response-wrapper';
-import { CreateItemDto } from './dto/create-item.dto';
-import { UpdateItemDto } from './dto/update-item.dto';
-import { ItemFilterDto } from './dto/item-filter.dto';
+import { CreateItemDto } from './dto/item/create-item.dto';
+import { UpdateItemDto } from './dto/item/update-item.dto';
+import { ItemFilterDto } from './dto/item/item-filter.dto';
 import { ItemsService } from './items.service';
 import { EntityFilesInterceptor } from 'src/services/upload-media/entity-files.interceptor';
 

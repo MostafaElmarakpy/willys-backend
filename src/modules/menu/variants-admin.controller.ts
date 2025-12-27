@@ -20,10 +20,10 @@ import {
   createCreatedResponse,
 } from 'src/common/utils/api-response-wrapper';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { CreateVariantDto } from './dto/create-variant.dto';
-import { UpdateVariantDto } from './dto/update-variant.dto';
-import { CreateVariantValueDto } from './dto/create-variant-value.dto';
-import { UpdateVariantValueDto } from './dto/update-variant-value.dto';
+import { CreateVariantDto } from './dto/variant/create-variant.dto';
+import { UpdateVariantDto } from './dto/variant/update-variant.dto';
+import { CreateVariantValueDto } from './dto/variant/create-variant-value.dto';
+import { UpdateVariantValueDto } from './dto/variant/update-variant-value.dto';
 import { VariantsService } from './variants.service';
 
 interface VariantQuery extends PaginationDto {

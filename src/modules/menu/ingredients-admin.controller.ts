@@ -20,10 +20,10 @@ import {
   createCreatedResponse,
 } from 'src/common/utils/api-response-wrapper';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { CreateIngredientDto } from './dto/create-ingredient.dto';
-import { UpdateIngredientDto } from './dto/update-ingredient.dto';
-import { CreateIngredientCategoryDto } from './dto/create-ingredient-category.dto';
-import { UpdateIngredientCategoryDto } from './dto/update-ingredient-category.dto';
+import { CreateIngredientDto } from './dto/ingredient/create-ingredient.dto';
+import { UpdateIngredientDto } from './dto/ingredient/update-ingredient.dto';
+import { CreateIngredientCategoryDto } from './dto/ingredient/create-ingredient-category.dto';
+import { UpdateIngredientCategoryDto } from './dto/ingredient/update-ingredient-category.dto';
 import { IngredientsService } from './ingredients.service';
 
 interface IngredientQuery extends PaginationDto {

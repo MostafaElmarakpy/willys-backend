@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ingredient } from 'src/database/entities/ingredient.entity';
 import { IngredientCategory } from 'src/database/entities/ingredient-category.entity';
-import { CreateIngredientDto } from './dto/create-ingredient.dto';
-import { UpdateIngredientDto } from './dto/update-ingredient.dto';
-import { CreateIngredientCategoryDto } from './dto/create-ingredient-category.dto';
-import { UpdateIngredientCategoryDto } from './dto/update-ingredient-category.dto';
+import { CreateIngredientDto } from './dto/ingredient/create-ingredient.dto';
+import { UpdateIngredientDto } from './dto/ingredient/update-ingredient.dto';
+import { CreateIngredientCategoryDto } from './dto/ingredient/create-ingredient-category.dto';
+import { UpdateIngredientCategoryDto } from './dto/ingredient/update-ingredient-category.dto';
 
 @Injectable()
 export class IngredientsService {
