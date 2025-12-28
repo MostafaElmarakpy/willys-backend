@@ -13,7 +13,6 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Category } from './category.entity';
-import { Variant } from './variant.entity';
 import { Ingredient } from './ingredient.entity';
 import { ItemStatus } from 'src/common/enums/ItemStatus';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
@@ -75,13 +74,6 @@ export class Item {
   @Index()
   categoryId: string;
 
-  @ManyToMany(() => Variant, { cascade: true })
-  @JoinTable({
-    name: 'item_variants',
-    joinColumn: { name: 'itemId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'variantId', referencedColumnName: 'id' },
-  })
-  variants: Variant[];
 
   @ManyToMany(() => Ingredient, { cascade: true })
   @JoinTable({

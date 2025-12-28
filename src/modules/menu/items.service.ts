@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Between } from 'typeorm';
 import { Item } from 'src/database/entities/item.entity';
-import { Variant } from 'src/database/entities/variant.entity';
 import { Ingredient } from 'src/database/entities/ingredient.entity';
 import { CreateItemDto } from './dto/item/create-item.dto';
 import { UpdateItemDto } from './dto/item/update-item.dto';
@@ -15,8 +14,6 @@ export class ItemsService {
   constructor(
     @InjectRepository(Item)
     private readonly itemRepository: Repository<Item>,
-    @InjectRepository(Variant)
-    private readonly variantRepository: Repository<Variant>,
     @InjectRepository(Ingredient)
     private readonly ingredientRepository: Repository<Ingredient>,
     private readonly uploadMediaService: UploadMediaService,
@@ -27,23 +24,25 @@ export class ItemsService {
     userId: string,
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Item> {
-    const { variantIds, ingredientIds, ingredients, extras, tags, pricing, ...itemData } = createItemDto;
+    const { ingredientIds, ingredients, extras, tags, pricing, ...itemData } =
+      createItemDto;
 
     // Convert pricing to the correct format for the entity
-    let pricingValue: number | {
-      price?: string;
-      variants: Array<{
-        name: string;
-        sortOrder?: number;
-        values: Array<{
-          value: string;
-          price: string;
-          sortOrder?: number;
-        }>;
-      }>;
-      type: 'number' | 'object';
-    };
-
+    let pricingValue:
+      | number
+      | {
+          price?: string;
+          variants: Array<{
+            name: string;
+            sortOrder?: number;
+            values: Array<{
+              value: string;
+              price: string;
+              sortOrder?: number;
+            }>;
+          }>;
+          type: 'number' | 'object';
+        };
     if (typeof pricing === 'number') {
       // Direct number value
       pricingValue = pricing;
@@ -54,14 +53,17 @@ export class ItemsService {
         throw new Error('Invalid price string');
       }
       pricingValue = price;
-    } else if (typeof pricing === 'object' && pricing.type === 'number' && pricing.price) {
+    } else if (
+      typeof pricing === 'object' &&
+      pricing.type === 'number' &&
+      pricing.price
+    ) {
       // Object with type: 'number' and price field
       pricingValue = parseFloat(pricing.price);
       if (isNaN(pricingValue)) {
         throw new Error('Invalid price in pricing object');
       }
     } else {
-      // Object with variants (type: 'object')
       pricingValue = pricing as any;
     }
 
@@ -84,12 +86,6 @@ export class ItemsService {
       )?.url;
     }
 
-    if (variantIds && variantIds.length > 0) {
-      item.variants = await this.variantRepository.findBy({
-        id: variantIds as any,
-      });
-    }
-
     if (ingredientIds && ingredientIds.length > 0) {
       item.ingredients = await this.ingredientRepository.findBy({
         id: ingredientIds as any,
@@ -110,7 +106,6 @@ export class ItemsService {
       maxPrice,
       sortBy = 'createdAt',
       sortOrder = 'DESC',
-      variantIds,
       fromDate,
       toDate,
     } = filterDto;
@@ -160,18 +155,16 @@ export class ItemsService {
       parameters.push(minPrice, maxPrice);
       paramIndex += 2;
     } else if (minPrice !== undefined) {
-      whereConditions.push(`(CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) >= $${paramIndex}`);
+      whereConditions.push(
+        `(CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) >= $${paramIndex}`,
+      );
       parameters.push(minPrice);
       paramIndex++;
     } else if (maxPrice !== undefined) {
-      whereConditions.push(`(CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) <= $${paramIndex}`);
+      whereConditions.push(
+        `(CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) <= $${paramIndex}`,
+      );
       parameters.push(maxPrice);
-      paramIndex++;
-    }
-
-    if (variantIds && variantIds.length > 0) {
-      whereConditions.push(`v.id = ANY($${paramIndex})`);
-      parameters.push(variantIds);
       paramIndex++;
     }
 
@@ -225,16 +218,7 @@ export class ItemsService {
         c.name as "categoryName"
       FROM items i
       LEFT JOIN categories c ON c.id = i."categoryId"
-      ${
-        variantIds && variantIds.length > 0
-          ? `
-      INNER JOIN item_variants iv ON iv."itemId" = i.id
-      INNER JOIN variants v ON v.id = iv."variantId"
-      `
-          : ''
-      }
       ${whereClause}
-      ${variantIds && variantIds.length > 0 ? 'GROUP BY i.id, c.name' : ''}
       ${orderByClause}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
@@ -243,14 +227,6 @@ export class ItemsService {
       SELECT COUNT(DISTINCT i.id) as total
       FROM items i
       LEFT JOIN categories c ON c.id = i."categoryId"
-      ${
-        variantIds && variantIds.length > 0
-          ? `
-      INNER JOIN item_variants iv ON iv."itemId" = i.id
-      INNER JOIN variants v ON v.id = iv."variantId"
-      `
-          : ''
-      }
       ${whereClause}
     `;
 
@@ -277,7 +253,7 @@ export class ItemsService {
   async findOne(id: string): Promise<Item> {
     const item = await this.itemRepository.findOne({
       where: { id },
-      relations: ['category', 'variants', 'variants.values', 'ingredients'],
+      relations: ['category', 'ingredients'],
     });
 
     if (!item) {
@@ -293,7 +269,8 @@ export class ItemsService {
     userId: string,
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Item> {
-    const { variantIds, ingredientIds, ingredients, extras, tags, pricing, ...itemData } = updateItemDto;
+    const { ingredientIds, ingredients, extras, tags, pricing, ...itemData } =
+      updateItemDto;
     const item = await this.findOne(id);
 
     Object.assign(item, itemData, {
@@ -312,7 +289,11 @@ export class ItemsService {
           throw new Error('Invalid price string');
         }
         item.pricing = price;
-      } else if (typeof pricing === 'object' && pricing.type === 'number' && pricing.price) {
+      } else if (
+        typeof pricing === 'object' &&
+        pricing.type === 'number' &&
+        pricing.price
+      ) {
         // Object with type: 'number' and price field
         const price = parseFloat(pricing.price);
         if (isNaN(price)) {
@@ -320,7 +301,7 @@ export class ItemsService {
         }
         item.pricing = price;
       } else {
-        // Object with variants (type: 'object')
+        // Direct assignment for other pricing formats
         item.pricing = pricing as any;
       }
     }
@@ -335,16 +316,6 @@ export class ItemsService {
 
     if (ingredients !== undefined) {
       item.ingredientsWithQuantity = ingredients;
-    }
-
-    if (variantIds !== undefined) {
-      if (variantIds.length > 0) {
-        item.variants = await this.variantRepository.findBy({
-          id: variantIds as any,
-        });
-      } else {
-        item.variants = [];
-      }
     }
 
     if (files['image']) {
@@ -378,7 +349,7 @@ export class ItemsService {
   async findByCategory(categoryId: string): Promise<Item[]> {
     return await this.itemRepository.find({
       where: { categoryId, status: ItemStatus.ACTIVE },
-      relations: ['variants', 'variants.values', 'ingredients'],
+      relations: ['ingredients'],
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
   }
@@ -401,7 +372,6 @@ export class ItemsService {
       sortOrder: 0,
       categoryId: originalItem.categoryId,
       createdBy: userId,
-      variants: originalItem.variants,
       ingredients: originalItem.ingredients,
     });
 

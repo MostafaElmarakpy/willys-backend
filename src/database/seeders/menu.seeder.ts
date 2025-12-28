@@ -3,11 +3,8 @@ import { User } from '../entities/user.entity';
 import { Category } from '../entities/category.entity';
 import { IngredientCategory } from '../entities/ingredient-category.entity';
 import { Ingredient } from '../entities/ingredient.entity';
-import { Variant } from '../entities/variant.entity';
-import { VariantValue } from '../entities/variant-value.entity';
 import { Item } from '../entities/item.entity';
 import { UserRole } from 'src/common/enums/UserRole';
-import { VariantType } from 'src/common/enums/VariantType';
 import { ItemStatus } from 'src/common/enums/ItemStatus';
 
 export class MenuSeeder {
@@ -19,8 +16,6 @@ export class MenuSeeder {
     const ingredientCategoryRepository =
       this.dataSource.getRepository(IngredientCategory);
     const ingredientRepository = this.dataSource.getRepository(Ingredient);
-    const variantRepository = this.dataSource.getRepository(Variant);
-    const variantValueRepository = this.dataSource.getRepository(VariantValue);
     const itemRepository = this.dataSource.getRepository(Item);
 
     // Get admin user
@@ -237,111 +232,7 @@ export class MenuSeeder {
       console.log(`  ✅ Ingredient created: ${ingredientData.name.en}`);
     }
 
-    console.log('📏 Creating variants...');
 
-    // Create Variants
-    const variantsData = [
-      { name: { en: 'Size', ar: 'الحجم' }, type: VariantType.DEFAULT },
-      { name: { en: 'Extras', ar: 'إضافات' }, type: VariantType.EXTRA },
-      {
-        name: { en: 'Spice Level', ar: 'مستوى الحرارة' },
-        type: VariantType.DEFAULT,
-      },
-    ];
-
-    const savedVariants: Variant[] = [];
-    for (const variantData of variantsData) {
-      const variant = variantRepository.create({
-        ...variantData,
-        isActive: true,
-        sortOrder: savedVariants.length,
-        createdBy: adminUser.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      const saved = await variantRepository.save(variant);
-      savedVariants.push(saved);
-      console.log(`  ✅ Variant created: ${variantData.name.en}`);
-    }
-
-    console.log('🏷️  Creating variant values...');
-
-    // Create Variant Values
-    const variantValuesData = [
-      // Size variant values
-      {
-        name: { en: 'Small', ar: 'صغير' },
-        price: 0,
-        variantIndex: 0,
-        sortOrder: 0,
-      },
-      {
-        name: { en: 'Medium', ar: 'متوسط' },
-        price: 10,
-        variantIndex: 0,
-        sortOrder: 1,
-      },
-      {
-        name: { en: 'Large', ar: 'كبير' },
-        price: 20,
-        variantIndex: 0,
-        sortOrder: 2,
-      },
-      // Extras variant values
-      {
-        name: { en: 'Extra Cheese', ar: 'جبن إضافي' },
-        price: 15,
-        variantIndex: 1,
-        sortOrder: 0,
-      },
-      {
-        name: { en: 'Extra Meat', ar: 'لحم إضافي' },
-        price: 25,
-        variantIndex: 1,
-        sortOrder: 1,
-      },
-      {
-        name: { en: 'Extra Vegetables', ar: 'خضروات إضافية' },
-        price: 10,
-        variantIndex: 1,
-        sortOrder: 2,
-      },
-      // Spice level variant values
-      {
-        name: { en: 'Mild', ar: 'خفيف' },
-        price: 0,
-        variantIndex: 2,
-        sortOrder: 0,
-      },
-      {
-        name: { en: 'Medium', ar: 'متوسط' },
-        price: 0,
-        variantIndex: 2,
-        sortOrder: 1,
-      },
-      {
-        name: { en: 'Hot', ar: 'حار' },
-        price: 0,
-        variantIndex: 2,
-        sortOrder: 2,
-      },
-    ];
-
-    const savedVariantValues: VariantValue[] = [];
-    for (const valueData of variantValuesData) {
-      const { variantIndex, ...data } = valueData;
-      const variantValue = variantValueRepository.create({
-        ...data,
-        variantId: savedVariants[variantIndex].id,
-        isActive: true,
-        createdBy: adminUser.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      const saved = await variantValueRepository.save(variantValue);
-      savedVariantValues.push(saved);
-      console.log(`  ✅ Variant value created: ${valueData.name.en}`);
-    }
 
     console.log('🍽️  Creating menu items...');
 
@@ -424,7 +315,6 @@ export class MenuSeeder {
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
-        variantIndexes: [0, 1, 2], // Size, Extras, and Spice Level
         ingredientIndexes: [0, 1, 2, 4, 6, 8], // Tomatoes, Lettuce, Onions, Ground Beef, Cheddar Cheese, Salt
       },
       {
@@ -458,7 +348,6 @@ export class MenuSeeder {
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
-        variantIndexes: [0, 1], // Size and Extras
         ingredientIndexes: [0, 5, 8], // Tomatoes, Mozzarella Cheese, Salt
       },
       {
@@ -493,7 +382,6 @@ export class MenuSeeder {
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 0, // Appetizers
-        variantIndexes: [0, 2], // Size and Spice Level
         ingredientIndexes: [3, 7, 8], // Chicken Breast, Black Pepper, Salt
       },
       {
@@ -505,7 +393,6 @@ export class MenuSeeder {
         pricing: 25.0, // Simple number pricing for dessert
         status: ItemStatus.ACTIVE,
         categoryIndex: 2, // Desserts
-        variantIndexes: [0], // Size only
         ingredientIndexes: [], // No specific ingredients for dessert
       },
       {
@@ -517,7 +404,6 @@ export class MenuSeeder {
         pricing: 15.0, // Simple number pricing for beverage
         status: ItemStatus.ACTIVE,
         categoryIndex: 3, // Beverages
-        variantIndexes: [0], // Size only
         ingredientIndexes: [], // No specific ingredients for beverage
       },
       {
@@ -552,7 +438,6 @@ export class MenuSeeder {
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
-        variantIndexes: [0, 2], // Size and Spice Level
         ingredientIndexes: [3, 7, 8, 9], // Chicken Breast, Black Pepper, Salt, Rice
       },
     ];
@@ -582,11 +467,6 @@ export class MenuSeeder {
 
       const savedItem = await itemRepository.save(item);
 
-      // Add variants to item (many-to-many relationship)
-      if (variantIndexes && variantIndexes.length > 0) {
-        const variants = variantIndexes.map((index: number) => savedVariants[index]);
-        savedItem.variants = variants;
-      }
 
       // Add ingredients to item (many-to-many relationship)
       if (ingredientIndexes && ingredientIndexes.length > 0) {
