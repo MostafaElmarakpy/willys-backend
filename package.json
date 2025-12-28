@@ -25,7 +25,8 @@
     "seed": "docker-compose exec willys-backend npx ts-node -r tsconfig-paths/register src/database/seeders/run-seeders.ts",
     "typeorm:prod": "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migrate:prod": "npm run typeorm:prod migration:run -- -d dist/database/typeorm.config.js",
-    "seed:prod": "node dist/database/seeders/run-seeders.js"
+    "seed:prod": "node dist/database/seeders/run-seeders.js",
+    "migrate:reset:prod": "npm run typeorm:prod schema:drop -- -d dist/database/typeorm.config.js && npm run migrate:prod"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.616.0",

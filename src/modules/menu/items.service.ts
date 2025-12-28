@@ -222,18 +222,9 @@ export class ItemsService {
         i."updatedBy",
         i."createdAt",
         i."updatedAt",
-        c.name as "categoryName",
-        COALESCE(variant_count.count, 0) as "variantCount"
+        c.name as "categoryName"
       FROM items i
       LEFT JOIN categories c ON c.id = i."categoryId"
-      LEFT JOIN (
-        SELECT
-          iv."itemId",
-          COUNT(DISTINCT v.id) as count
-        FROM item_variants iv
-        LEFT JOIN variants v ON v.id = iv."variantId"
-        GROUP BY iv."itemId"
-      ) variant_count ON variant_count."itemId" = i.id
       ${
         variantIds && variantIds.length > 0
           ? `
@@ -243,7 +234,7 @@ export class ItemsService {
           : ''
       }
       ${whereClause}
-      ${variantIds && variantIds.length > 0 ? 'GROUP BY i.id, c.name, variant_count.count' : ''}
+      ${variantIds && variantIds.length > 0 ? 'GROUP BY i.id, c.name' : ''}
       ${orderByClause}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
