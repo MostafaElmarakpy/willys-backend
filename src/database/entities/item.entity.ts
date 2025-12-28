@@ -32,8 +32,29 @@ export class Item {
   @Column({ nullable: true })
   image?: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  price: number;
+  @Column({ type: 'jsonb' })
+  pricing: number | {
+    price?: string;
+    variants: Array<{
+      name: string;
+      sortOrder?: number;
+      values: Array<{
+        value: string;
+        price: string;
+        sortOrder?: number;
+      }>;
+    }>;
+    type: 'number' | 'object';
+  };
+
+  @Column({ type: 'jsonb', nullable: true })
+  tags?: string[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  extras?: Array<{
+    id: string;
+    quantity: string;
+  }>;
 
   @Column({
     type: 'enum',
@@ -69,6 +90,12 @@ export class Item {
     inverseJoinColumn: { name: 'ingredientId', referencedColumnName: 'id' },
   })
   ingredients: Ingredient[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  ingredientsWithQuantity?: Array<{
+    id: string;
+    quantity: string;
+  }>;
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })

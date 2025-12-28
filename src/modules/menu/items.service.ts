@@ -27,11 +27,51 @@ export class ItemsService {
     userId: string,
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Item> {
-    const { variantIds, ingredientIds, ...itemData } = createItemDto;
+    const { variantIds, ingredientIds, ingredients, extras, tags, pricing, ...itemData } = createItemDto;
+
+    // Convert pricing to the correct format for the entity
+    let pricingValue: number | {
+      price?: string;
+      variants: Array<{
+        name: string;
+        sortOrder?: number;
+        values: Array<{
+          value: string;
+          price: string;
+          sortOrder?: number;
+        }>;
+      }>;
+      type: 'number' | 'object';
+    };
+
+    if (typeof pricing === 'number') {
+      // Direct number value
+      pricingValue = pricing;
+    } else if (typeof pricing === 'string') {
+      // String number value
+      const price = parseFloat(pricing);
+      if (isNaN(price)) {
+        throw new Error('Invalid price string');
+      }
+      pricingValue = price;
+    } else if (typeof pricing === 'object' && pricing.type === 'number' && pricing.price) {
+      // Object with type: 'number' and price field
+      pricingValue = parseFloat(pricing.price);
+      if (isNaN(pricingValue)) {
+        throw new Error('Invalid price in pricing object');
+      }
+    } else {
+      // Object with variants (type: 'object')
+      pricingValue = pricing as any;
+    }
 
     const item = this.itemRepository.create({
       ...itemData,
       createdBy: userId,
+      pricing: pricingValue,
+      tags: tags || [],
+      extras: extras || [],
+      ingredientsWithQuantity: ingredients || [],
     });
 
     if (files['image']) {
@@ -45,12 +85,15 @@ export class ItemsService {
     }
 
     if (variantIds && variantIds.length > 0) {
-      item.variants = await this.variantRepository.findByIds(variantIds);
+      item.variants = await this.variantRepository.findBy({
+        id: variantIds as any,
+      });
     }
 
     if (ingredientIds && ingredientIds.length > 0) {
-      item.ingredients =
-        await this.ingredientRepository.findByIds(ingredientIds);
+      item.ingredients = await this.ingredientRepository.findBy({
+        id: ingredientIds as any,
+      });
     }
 
     return await this.itemRepository.save(item);
@@ -74,7 +117,7 @@ export class ItemsService {
 
     const validSortFields = [
       'name',
-      'price',
+      'pricing',
       'createdAt',
       'updatedAt',
       'sortOrder',
@@ -112,16 +155,16 @@ export class ItemsService {
 
     if (minPrice !== undefined && maxPrice !== undefined) {
       whereConditions.push(
-        `i.price BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
+        `(CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
       );
       parameters.push(minPrice, maxPrice);
       paramIndex += 2;
     } else if (minPrice !== undefined) {
-      whereConditions.push(`i.price >= $${paramIndex}`);
+      whereConditions.push(`(CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) >= $${paramIndex}`);
       parameters.push(minPrice);
       paramIndex++;
     } else if (maxPrice !== undefined) {
-      whereConditions.push(`i.price <= $${paramIndex}`);
+      whereConditions.push(`(CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) <= $${paramIndex}`);
       parameters.push(maxPrice);
       paramIndex++;
     }
@@ -156,17 +199,22 @@ export class ItemsService {
     let orderByClause = '';
     if (sortField === 'name') {
       orderByClause = `ORDER BY i.name ->> 'en' ${sortOrder}`;
+    } else if (sortField === 'pricing') {
+      orderByClause = `ORDER BY (CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) ${sortOrder}`;
     } else {
       orderByClause = `ORDER BY i."${sortField}" ${sortOrder}`;
     }
 
     const itemsQuery = `
-      SELECT 
+      SELECT
         i.id,
         i.name,
         i.description,
         i.image,
-        i.price,
+        i.pricing,
+        i.tags,
+        i.extras,
+        i."ingredientsWithQuantity",
         i.status,
         i."sortOrder",
         i."categoryId",
@@ -179,8 +227,8 @@ export class ItemsService {
       FROM items i
       LEFT JOIN categories c ON c.id = i."categoryId"
       LEFT JOIN (
-        SELECT 
-          iv."itemId", 
+        SELECT
+          iv."itemId",
           COUNT(DISTINCT v.id) as count
         FROM item_variants iv
         LEFT JOIN variants v ON v.id = iv."variantId"
@@ -254,16 +302,55 @@ export class ItemsService {
     userId: string,
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Item> {
-    const { variantIds, ingredientIds, ...itemData } = updateItemDto;
+    const { variantIds, ingredientIds, ingredients, extras, tags, pricing, ...itemData } = updateItemDto;
     const item = await this.findOne(id);
 
     Object.assign(item, itemData, {
       updatedBy: userId,
     });
 
+    if (pricing !== undefined) {
+      // Convert pricing to the correct format for the entity
+      if (typeof pricing === 'number') {
+        // Direct number value
+        item.pricing = pricing;
+      } else if (typeof pricing === 'string') {
+        // String number value
+        const price = parseFloat(pricing);
+        if (isNaN(price)) {
+          throw new Error('Invalid price string');
+        }
+        item.pricing = price;
+      } else if (typeof pricing === 'object' && pricing.type === 'number' && pricing.price) {
+        // Object with type: 'number' and price field
+        const price = parseFloat(pricing.price);
+        if (isNaN(price)) {
+          throw new Error('Invalid price in pricing object');
+        }
+        item.pricing = price;
+      } else {
+        // Object with variants (type: 'object')
+        item.pricing = pricing as any;
+      }
+    }
+
+    if (tags !== undefined) {
+      item.tags = tags;
+    }
+
+    if (extras !== undefined) {
+      item.extras = extras;
+    }
+
+    if (ingredients !== undefined) {
+      item.ingredientsWithQuantity = ingredients;
+    }
+
     if (variantIds !== undefined) {
       if (variantIds.length > 0) {
-        item.variants = await this.variantRepository.findByIds(variantIds);
+        item.variants = await this.variantRepository.findBy({
+          id: variantIds as any,
+        });
       } else {
         item.variants = [];
       }
@@ -281,8 +368,9 @@ export class ItemsService {
 
     if (ingredientIds !== undefined) {
       if (ingredientIds.length > 0) {
-        item.ingredients =
-          await this.ingredientRepository.findByIds(ingredientIds);
+        item.ingredients = await this.ingredientRepository.findBy({
+          id: ingredientIds as any,
+        });
       } else {
         item.ingredients = [];
       }
@@ -314,7 +402,10 @@ export class ItemsService {
       },
       description: originalItem.description,
       image: originalItem.image,
-      price: originalItem.price,
+      pricing: originalItem.pricing,
+      tags: originalItem.tags,
+      extras: originalItem.extras,
+      ingredientsWithQuantity: originalItem.ingredientsWithQuantity,
       status: ItemStatus.DRAFT,
       sortOrder: 0,
       categoryId: originalItem.categoryId,

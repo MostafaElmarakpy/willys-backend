@@ -345,7 +345,7 @@ export class MenuSeeder {
 
     console.log('🍽️  Creating menu items...');
 
-    // Create Items
+    // Create Items with new pricing structure
     const itemsData = [
       {
         name: {
@@ -356,7 +356,29 @@ export class MenuSeeder {
           en: 'Fresh romaine lettuce with grilled chicken, parmesan cheese, and caesar dressing',
           ar: 'خس روماني طازج مع دجاج مشوي وجبن بارميزان وصوص قيصر',
         },
-        price: 45.0,
+        pricing: {
+          price: '45.0',
+          variants: [
+            {
+              name: 'Size',
+              sortOrder: 0,
+              values: [
+                { value: 'Small', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '10', sortOrder: 1 },
+                { value: 'Large', price: '20', sortOrder: 2 },
+              ],
+            },
+            {
+              name: 'Extras',
+              sortOrder: 1,
+              values: [
+                { value: 'Extra Cheese', price: '15', sortOrder: 0 },
+                { value: 'Extra Vegetables', price: '10', sortOrder: 1 },
+              ],
+            },
+          ],
+          type: 'object' as const,
+        },
         status: ItemStatus.ACTIVE,
         categoryIndex: 4, // Salads
         variantIndexes: [0, 1], // Size and Extras
@@ -368,7 +390,38 @@ export class MenuSeeder {
           en: 'Juicy beef patty with cheese, lettuce, tomato, and our special sauce',
           ar: 'قطعة لحم عصيرة مع الجبن والخس والطماطم وصوصنا الخاص',
         },
-        price: 65.0,
+        pricing: {
+          price: '65.0',
+          variants: [
+            {
+              name: 'Size',
+              sortOrder: 0,
+              values: [
+                { value: 'Small', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '10', sortOrder: 1 },
+                { value: 'Large', price: '20', sortOrder: 2 },
+              ],
+            },
+            {
+              name: 'Extras',
+              sortOrder: 1,
+              values: [
+                { value: 'Extra Cheese', price: '15', sortOrder: 0 },
+                { value: 'Extra Meat', price: '25', sortOrder: 1 },
+              ],
+            },
+            {
+              name: 'Spice Level',
+              sortOrder: 2,
+              values: [
+                { value: 'Mild', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '0', sortOrder: 1 },
+                { value: 'Hot', price: '0', sortOrder: 2 },
+              ],
+            },
+          ],
+          type: 'object' as const,
+        },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
         variantIndexes: [0, 1, 2], // Size, Extras, and Spice Level
@@ -380,7 +433,29 @@ export class MenuSeeder {
           en: 'Classic pizza with tomato sauce, mozzarella cheese, and fresh basil',
           ar: 'بيتزا كلاسيكية بصلصة الطماطم وجبن الموزاريلا والريحان الطازج',
         },
-        price: 55.0,
+        pricing: {
+          price: '55.0',
+          variants: [
+            {
+              name: 'Size',
+              sortOrder: 0,
+              values: [
+                { value: 'Small', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '10', sortOrder: 1 },
+                { value: 'Large', price: '20', sortOrder: 2 },
+              ],
+            },
+            {
+              name: 'Extras',
+              sortOrder: 1,
+              values: [
+                { value: 'Extra Cheese', price: '15', sortOrder: 0 },
+                { value: 'Extra Vegetables', price: '10', sortOrder: 1 },
+              ],
+            },
+          ],
+          type: 'object' as const,
+        },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
         variantIndexes: [0, 1], // Size and Extras
@@ -392,7 +467,30 @@ export class MenuSeeder {
           en: 'Crispy chicken wings with your choice of sauce',
           ar: 'أجنحة دجاج مقرمشة مع الصوص المفضل لديك',
         },
-        price: 35.0,
+        pricing: {
+          price: '35.0',
+          variants: [
+            {
+              name: 'Size',
+              sortOrder: 0,
+              values: [
+                { value: 'Small', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '10', sortOrder: 1 },
+                { value: 'Large', price: '20', sortOrder: 2 },
+              ],
+            },
+            {
+              name: 'Spice Level',
+              sortOrder: 1,
+              values: [
+                { value: 'Mild', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '0', sortOrder: 1 },
+                { value: 'Hot', price: '0', sortOrder: 2 },
+              ],
+            },
+          ],
+          type: 'object' as const,
+        },
         status: ItemStatus.ACTIVE,
         categoryIndex: 0, // Appetizers
         variantIndexes: [0, 2], // Size and Spice Level
@@ -404,7 +502,7 @@ export class MenuSeeder {
           en: 'Rich chocolate cake with chocolate ganache',
           ar: 'كعكة شوكولاتة غنية مع غاناش الشوكولاتة',
         },
-        price: 25.0,
+        pricing: 25.0, // Simple number pricing for dessert
         status: ItemStatus.ACTIVE,
         categoryIndex: 2, // Desserts
         variantIndexes: [0], // Size only
@@ -416,7 +514,7 @@ export class MenuSeeder {
           en: 'Freshly squeezed orange juice',
           ar: 'عصير برتقال طازج',
         },
-        price: 15.0,
+        pricing: 15.0, // Simple number pricing for beverage
         status: ItemStatus.ACTIVE,
         categoryIndex: 3, // Beverages
         variantIndexes: [0], // Size only
@@ -428,7 +526,30 @@ export class MenuSeeder {
           en: 'Aromatic basmati rice with tender chicken and spices',
           ar: 'أرز بسمتي عطري مع دجاج طري وتوابل',
         },
-        price: 70.0,
+        pricing: {
+          price: '70.0',
+          variants: [
+            {
+              name: 'Size',
+              sortOrder: 0,
+              values: [
+                { value: 'Small', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '10', sortOrder: 1 },
+                { value: 'Large', price: '20', sortOrder: 2 },
+              ],
+            },
+            {
+              name: 'Spice Level',
+              sortOrder: 1,
+              values: [
+                { value: 'Mild', price: '0', sortOrder: 0 },
+                { value: 'Medium', price: '0', sortOrder: 1 },
+                { value: 'Hot', price: '0', sortOrder: 2 },
+              ],
+            },
+          ],
+          type: 'object' as const,
+        },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
         variantIndexes: [0, 2], // Size and Spice Level
@@ -440,7 +561,7 @@ export class MenuSeeder {
       const { categoryIndex, variantIndexes, ingredientIndexes, ...data } =
         itemData;
 
-      // Create item
+      // Create item with new schema fields
       const item = itemRepository.create({
         ...data,
         categoryId: savedCategories[categoryIndex].id,
@@ -448,20 +569,29 @@ export class MenuSeeder {
         createdBy: adminUser.id,
         createdAt: new Date(),
         updatedAt: new Date(),
+        // Add new fields that are now required
+        ingredientsWithQuantity: ingredientIndexes && ingredientIndexes.length > 0 
+          ? ingredientIndexes.map((index: number) => ({
+              id: savedIngredients[index].id,
+              quantity: '1', // Default quantity
+            }))
+          : undefined,
+        extras: undefined, // No extras for seeded items initially
+        tags: undefined, // No tags for seeded items initially
       });
 
       const savedItem = await itemRepository.save(item);
 
-      // Add variants to item
+      // Add variants to item (many-to-many relationship)
       if (variantIndexes && variantIndexes.length > 0) {
-        const variants = variantIndexes.map((index) => savedVariants[index]);
+        const variants = variantIndexes.map((index: number) => savedVariants[index]);
         savedItem.variants = variants;
       }
 
-      // Add ingredients to item
+      // Add ingredients to item (many-to-many relationship)
       if (ingredientIndexes && ingredientIndexes.length > 0) {
         const ingredients = ingredientIndexes.map(
-          (index) => savedIngredients[index],
+          (index: number) => savedIngredients[index],
         );
         savedItem.ingredients = ingredients;
       }

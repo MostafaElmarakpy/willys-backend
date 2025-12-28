@@ -1,18 +1,24 @@
+import { Transform, Type } from 'class-transformer';
 import {
-  IsNotEmpty,
-  IsOptional,
-  IsNumber,
-  IsString,
-  IsEnum,
   IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import {
   BilingualString,
   BilingualStringOptional,
 } from 'src/common/dto/bilingual-string.dto';
 import { ItemStatus } from 'src/common/enums/ItemStatus';
+import {
+  ItemExtra,
+  ItemIngredient,
+  PricingObject,
+  transformPricing,
+} from './pricing.dto';
 
 export class CreateItemDto {
   @ValidateNested()
@@ -29,9 +35,25 @@ export class CreateItemDto {
   image?: string;
 
   @IsNotEmpty()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Type(() => Number)
-  price: number;
+  @Transform(transformPricing)
+  pricing: PricingObject | string | number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ItemIngredient)
+  ingredients?: ItemIngredient[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ItemExtra)
+  extras?: ItemExtra[];
 
   @IsOptional()
   @IsEnum(ItemStatus)
