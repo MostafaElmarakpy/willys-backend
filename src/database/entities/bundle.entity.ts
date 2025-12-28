@@ -5,15 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  ManyToMany,
   JoinColumn,
-  JoinTable,
   Index,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Category } from './category.entity';
-import { Item } from './item.entity';
 import { BundleStatus } from 'src/common/enums/BundleStatus';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
@@ -55,13 +52,17 @@ export class Bundle {
   @Index()
   status: BundleStatus;
 
-  @ManyToMany(() => Item, { cascade: true })
-  @JoinTable({
-    name: 'bundle_items',
-    joinColumn: { name: 'bundleId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'itemId', referencedColumnName: 'id' },
-  })
-  items: Item[];
+  @Column({ type: 'jsonb', nullable: true })
+  items?: Array<{
+    id: string;
+    quantity: string;
+  }>;
+
+  @Column({ type: 'jsonb', nullable: true })
+  extras?: Array<{
+    id: string;
+    quantity: string;
+  }>;
 
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })

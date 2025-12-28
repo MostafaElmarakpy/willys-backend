@@ -10,6 +10,8 @@ import {
   UseGuards,
   Version,
   Request,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/common/enums/UserRole';
@@ -23,6 +25,7 @@ import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
 import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';
 import { BundleFilterDto } from './dto/bundle/bundle-filter.dto';
 import { BundlesService } from './bundles.service';
+import { EntityFilesInterceptor } from 'src/services/upload-media/entity-files.interceptor';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin/menu/bundles')
@@ -40,10 +43,18 @@ export class BundlesAdminController {
   @Post()
   @Version('1')
   @Roles(UserRole.admin)
-  async create(@Body() createBundleDto: CreateBundleDto, @Request() req: any) {
+  @UseInterceptors(
+    EntityFilesInterceptor('menu-bundles', [{ name: 'image', maxCount: 1 }]),
+  )
+  async create(
+    @UploadedFiles() files: { [fieldName: string]: Express.Multer.File[] },
+    @Body() createBundleDto: CreateBundleDto,
+    @Request() req: any,
+  ) {
     const bundle = await this.bundlesService.create(
       createBundleDto,
       req.user.id,
+      files,
     );
     return createCreatedResponse(bundle, 'Bundle created successfully');
   }
@@ -59,7 +70,11 @@ export class BundlesAdminController {
   @Patch(':id')
   @Version('1')
   @Roles(UserRole.admin)
+  @UseInterceptors(
+    EntityFilesInterceptor('menu-bundles', [{ name: 'image', maxCount: 1 }]),
+  )
   async update(
+    @UploadedFiles() files: { [fieldName: string]: Express.Multer.File[] },
     @Param('id') id: string,
     @Body() updateBundleDto: UpdateBundleDto,
     @Request() req: any,
@@ -68,6 +83,7 @@ export class BundlesAdminController {
       id,
       updateBundleDto,
       req.user.id,
+      files,
     );
     return createSuccessResponse(bundle, 'Bundle updated successfully');
   }

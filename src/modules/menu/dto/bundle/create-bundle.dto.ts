@@ -13,6 +13,7 @@ import {
   BilingualStringOptional,
 } from 'src/common/dto/bilingual-string.dto';
 import { BundleStatus } from 'src/common/enums/BundleStatus';
+import { ItemExtra, BundledItem } from '../item/pricing.dto';
 
 export class CreateBundleDto {
   @ValidateNested()
@@ -43,6 +44,13 @@ export class CreateBundleDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  itemIds?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => BundledItem)
+  items?: BundledItem[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ItemExtra)
+  extras?: ItemExtra[];
 }

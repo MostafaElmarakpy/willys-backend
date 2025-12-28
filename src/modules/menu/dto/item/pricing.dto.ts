@@ -97,3 +97,14 @@ export class ItemExtra {
   @IsString()
   quantity: string;
 }
+
+export class BundledItem {
+  @IsNotEmpty()
+  @IsString()
+  id: string;
+
+  @IsNotEmpty()
+  @IsString()
+  quantity: string;
+}
+

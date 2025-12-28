@@ -2,38 +2,51 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Between } from 'typeorm';
 import { Bundle } from 'src/database/entities/bundle.entity';
-import { Item } from 'src/database/entities/item.entity';
 import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
 import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';
 import { BundleFilterDto } from './dto/bundle/bundle-filter.dto';
 import { BundleStatus } from 'src/common/enums/BundleStatus';
+import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
 
 @Injectable()
 export class BundlesService {
   constructor(
     @InjectRepository(Bundle)
     private readonly bundleRepository: Repository<Bundle>,
-    @InjectRepository(Item)
-    private readonly itemRepository: Repository<Item>,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
 
   async create(
     createBundleDto: CreateBundleDto,
     userId: string,
+    files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Bundle> {
-    const { itemIds, ...bundleData } = createBundleDto;
+    const { items, extras, ...bundleData } = createBundleDto;
 
     const bundle = this.bundleRepository.create({
       ...bundleData,
       createdBy: userId,
     });
 
-    if (itemIds && itemIds.length > 0) {
-      const items = await this.itemRepository.findByIds(itemIds);
+    if (files['image']) {
+      bundle.image = (
+        await this.uploadMediaService.saveOneFile(
+          files?.image,
+          'properties',
+          bundle.id,
+        )
+      )?.url;
+    }
+
+    if (items && items.length > 0) {
       bundle.items = items;
       bundle.numberOfItems = items.length;
     } else {
       bundle.numberOfItems = 0;
+    }
+
+    if (extras && extras.length > 0) {
+      bundle.extras = extras;
     }
 
     return await this.bundleRepository.save(bundle);
@@ -187,7 +200,7 @@ export class BundlesService {
   async findOne(id: string): Promise<Bundle> {
     const bundle = await this.bundleRepository.findOne({
       where: { id },
-      relations: ['category', 'items'],
+      relations: ['category'],
     });
 
     if (!bundle) {
@@ -201,22 +214,36 @@ export class BundlesService {
     id: string,
     updateBundleDto: UpdateBundleDto,
     userId: string,
+    files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Bundle> {
     const bundle = await this.findOne(id);
-    const { itemIds, ...bundleData } = updateBundleDto;
+    const { items, extras, ...bundleData } = updateBundleDto;
 
     Object.assign(bundle, bundleData);
     bundle.updatedBy = userId;
 
-    if (itemIds !== undefined) {
-      if (itemIds.length > 0) {
-        const items = await this.itemRepository.findByIds(itemIds);
+    if (items !== undefined) {
+      if (items.length > 0) {
         bundle.items = items;
         bundle.numberOfItems = items.length;
       } else {
         bundle.items = [];
         bundle.numberOfItems = 0;
       }
+    }
+
+    if (extras !== undefined) {
+      bundle.extras = extras;
+    }
+
+    if (files['image']) {
+      bundle.image = (
+        await this.uploadMediaService.saveOneFile(
+          files?.image,
+          'properties',
+          bundle.id,
+        )
+      )?.url;
     }
 
     return await this.bundleRepository.save(bundle);
@@ -230,7 +257,7 @@ export class BundlesService {
   async findByCategory(categoryId: string): Promise<Bundle[]> {
     return await this.bundleRepository.find({
       where: { categoryId },
-      relations: ['category', 'items'],
+      relations: ['category'],
     });
   }
 
@@ -249,6 +276,7 @@ export class BundlesService {
       price: originalBundle.price,
       status: BundleStatus.DRAFT,
       items: originalBundle.items,
+      extras: originalBundle.extras,
       createdBy: userId,
     });
 
