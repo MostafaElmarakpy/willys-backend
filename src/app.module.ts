@@ -23,6 +23,7 @@ import { UsersModule } from './modules/users/users.module';
 import { BranchesModule } from './modules/branches/branches.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { HealthModule } from './modules/health/health.module';
+import { DiscountsModule } from './modules/discounts/discounts.module';
 import { UploadMediaModule } from './services/upload-media/upload-media.module';
 
 @Module({
@@ -68,6 +69,7 @@ import { UploadMediaModule } from './services/upload-media/upload-media.module';
     BranchesModule,
     MenuModule,
     HealthModule,
+    DiscountsModule,
     UploadMediaModule,
   ],
   providers: [LocaleSubscriber, YcI18nService, MailService],
