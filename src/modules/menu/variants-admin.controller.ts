@@ -39,11 +39,13 @@ export class VariantsAdminController {
   @Version('1')
   @Roles(UserRole.admin)
   async findAllVariants(@Query() query: VariantQuery) {
-    const { page = 1, limit = 10, search } = query;
+    const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = query;
     const variants = await this.variantsService.findAllVariants(
       page,
       limit,
       search,
+      sortBy,
+      sortOrder,
     );
     return createSuccessResponse(variants, 'Variants retrieved successfully');
   }

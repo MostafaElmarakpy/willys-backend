@@ -44,11 +44,13 @@ export class IngredientsAdminController {
   @Version('1')
   @Roles(UserRole.admin)
   async findAllCategories(@Query() query: CategoryQuery) {
-    const { page = 1, limit = 10, search } = query;
+    const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = query;
     const categories = await this.ingredientsService.findAllCategories(
       page,
       limit,
       search,
+      sortBy,
+      sortOrder,
     );
     return createSuccessResponse(
       categories,
@@ -129,12 +131,14 @@ export class IngredientsAdminController {
   @Version('1')
   @Roles(UserRole.admin)
   async findAllIngredients(@Query() query: IngredientQuery) {
-    const { page = 1, limit = 10, search, categoryId } = query;
+    const { page = 1, limit = 10, search, categoryId, sortBy, sortOrder = 'DESC' } = query;
     const ingredients = await this.ingredientsService.findAllIngredients(
       page,
       limit,
       search,
       categoryId,
+      sortBy,
+      sortOrder,
     );
     return createSuccessResponse(
       ingredients,

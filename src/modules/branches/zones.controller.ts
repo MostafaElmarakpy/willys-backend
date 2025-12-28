@@ -46,6 +46,8 @@ export class ZonesController {
     const result = await this.zonesService.findAll(
       pagination.page,
       pagination.limit,
+      pagination.sortBy,
+      pagination.sortOrder || 'DESC',
     );
     return createSuccessResponse(result, 'Zones retrieved successfully');
   }

@@ -62,6 +62,8 @@ export class ZonesService {
   async findAll(
     page: number = 1,
     limit: number = 10,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
   ): Promise<{
     zones: Zone[];
     total: number;
@@ -70,10 +72,19 @@ export class ZonesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
+    const allowedSortFields = ['name', 'priority', 'createdAt', 'updatedAt'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'priority';
+
+    let orderConfig: any;
+    if (orderField === 'name') {
+      orderConfig = { name: sortOrder, createdAt: 'ASC' };
+    } else {
+      orderConfig = { [orderField]: sortOrder, createdAt: 'ASC' };
+    }
 
     const [zones, total] = await this.zoneRepository.findAndCount({
       relations: ['branch'],
-      order: { priority: 'DESC', createdAt: 'ASC' },
+      order: orderConfig,
       skip,
       take: limit,
     });

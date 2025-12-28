@@ -28,19 +28,36 @@ export class VariantsService {
     return await this.variantRepository.save(variant);
   }
 
-  async findAllVariants(page: number = 1, limit: number = 10, search?: string) {
+  async findAllVariants(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
+  ) {
+    const allowedSortFields = ['name', 'sortOrder', 'createdAt', 'updatedAt'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'sortOrder';
+    
     const queryBuilder = this.variantRepository
       .createQueryBuilder('variant')
-      .leftJoinAndSelect('variant.values', 'values')
-      .orderBy('variant.sortOrder', 'ASC')
-      .addOrderBy('variant.createdAt', 'DESC')
-      .addOrderBy('values.sortOrder', 'ASC');
+      .leftJoinAndSelect('variant.values', 'values');
 
     if (search) {
       queryBuilder.where(
         "(variant.name ->> 'en' ILIKE :search OR variant.name ->> 'ar' ILIKE :search)",
         { search: `%${search}%` },
       );
+    }
+
+    // Handle dynamic ordering
+    if (orderField === 'name') {
+      queryBuilder
+        .orderBy("variant.name ->> 'en'", sortOrder)
+        .addOrderBy('values.sortOrder', 'ASC');
+    } else {
+      queryBuilder
+        .orderBy(`variant.${orderField}`, sortOrder)
+        .addOrderBy('values.sortOrder', 'ASC');
     }
 
     const [variants, total] = await queryBuilder

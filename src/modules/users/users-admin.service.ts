@@ -92,10 +92,24 @@ export class UsersAdminService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
-  async findAll(page: number = 1, limit: number = 10): Promise<User[]> {
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
+  ): Promise<{
+    users: User[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const skip = (page - 1) * limit;
+    
+    const allowedSortFields = ['id', 'email', 'fullName', 'phoneNumber', 'phoneNumberCountryCode', 'createdAt', 'updatedAt'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    return this.usersRepository.find({
+    const [users, total] = await this.usersRepository.findAndCount({
       where: {
         role: UserRole.user,
       },
@@ -110,16 +124,35 @@ export class UsersAdminService {
       },
       skip,
       take: limit,
-      order: { createdAt: 'DESC' },
+      order: { [orderField]: sortOrder },
     });
+
+    return {
+      users,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
   async findAllUsersRole(
     page: number = 1,
     limit: number = 10,
-  ): Promise<User[]> {
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
+  ): Promise<{
+    users: User[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const skip = (page - 1) * limit;
+    
+    const allowedSortFields = ['id', 'email', 'fullName', 'phoneNumber', 'phoneNumberCountryCode', 'role', 'createdAt', 'updatedAt'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    return this.usersRepository.find({
+    const [users, total] = await this.usersRepository.findAndCount({
       where: {
         role: UserRole.admin,
       },
@@ -135,8 +168,16 @@ export class UsersAdminService {
       },
       skip,
       take: limit,
-      order: { createdAt: 'DESC' },
+      order: { [orderField]: sortOrder },
     });
+
+    return {
+      users,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, avatar: any) {

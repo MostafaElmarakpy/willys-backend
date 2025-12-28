@@ -52,17 +52,19 @@ export class BranchesController {
   ) {
     const page = pagination?.page || 1;
     const limit = pagination?.limit || 10;
+    const sortBy = pagination?.sortBy;
+    const sortOrder = pagination?.sortOrder || 'DESC';
     let result: any;
 
     switch (status) {
       case 'active':
-        result = await this.branchesService.findActive(page, limit);
+        result = await this.branchesService.findActive(page, limit, sortBy, sortOrder);
         break;
       case 'open':
-        result = await this.branchesService.findOpen(page, limit);
+        result = await this.branchesService.findOpen(page, limit, sortBy, sortOrder);
         break;
       default:
-        result = await this.branchesService.findAll(page, limit);
+        result = await this.branchesService.findAll(page, limit, sortBy, sortOrder);
     }
 
     return createSuccessResponse(result, 'Branches retrieved successfully');

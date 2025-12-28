@@ -35,6 +35,8 @@ export class BranchesService {
   async findAll(
     page: number = 1,
     limit: number = 10,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
   ): Promise<{
     branches: Branch[];
     total: number;
@@ -43,10 +45,12 @@ export class BranchesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
+    const allowedSortFields = ['name', 'createdAt', 'updatedAt', 'city', 'area'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
 
     const [branches, total] = await this.branchRepository.findAndCount({
       relations: ['zones'],
-      order: { name: 'ASC' },
+      order: { [orderField]: sortOrder },
       skip,
       take: limit,
     });
@@ -65,6 +69,8 @@ export class BranchesService {
   async findActive(
     page: number = 1,
     limit: number = 10,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
   ): Promise<{
     branches: Branch[];
     total: number;
@@ -73,11 +79,13 @@ export class BranchesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
+    const allowedSortFields = ['name', 'createdAt', 'updatedAt', 'city', 'area'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
 
     const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true },
       relations: ['zones'],
-      order: { name: 'ASC' },
+      order: { [orderField]: sortOrder },
       skip,
       take: limit,
     });
@@ -96,6 +104,8 @@ export class BranchesService {
   async findOpen(
     page: number = 1,
     limit: number = 10,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
   ): Promise<{
     branches: Branch[];
     total: number;
@@ -104,11 +114,13 @@ export class BranchesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
+    const allowedSortFields = ['name', 'createdAt', 'updatedAt', 'city', 'area'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
 
     const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true, isOpen: true },
       relations: ['zones'],
-      order: { name: 'ASC' },
+      order: { [orderField]: sortOrder },
       skip,
       take: limit,
     });

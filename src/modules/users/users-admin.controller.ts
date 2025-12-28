@@ -44,6 +44,8 @@ export class UsersAdminController {
     const users = await this.usersService.findAll(
       pagination.page || 1,
       pagination.limit || 10,
+      pagination.sortBy,
+      pagination.sortOrder || 'DESC',
     );
     return createSuccessResponse(users, 'Users retrieved successfully');
   }
@@ -55,6 +57,8 @@ export class UsersAdminController {
     const users = await this.usersService.findAllUsersRole(
       pagination.page || 1,
       pagination.limit || 10,
+      pagination.sortBy,
+      pagination.sortOrder || 'DESC',
     );
     return createSuccessResponse(
       users,

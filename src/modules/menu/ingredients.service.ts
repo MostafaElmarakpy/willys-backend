@@ -32,17 +32,28 @@ export class IngredientsService {
     page: number = 1,
     limit: number = 10,
     search?: string,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
   ) {
+    const allowedSortFields = ['name', 'sortOrder', 'createdAt', 'updatedAt'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'sortOrder';
+    
     const queryBuilder = this.ingredientCategoryRepository
       .createQueryBuilder('category')
-      .leftJoinAndSelect('category.ingredients', 'ingredients')
-      .orderBy('category.sortOrder', 'ASC');
+      .leftJoinAndSelect('category.ingredients', 'ingredients');
 
     if (search) {
       queryBuilder.where(
         "(category.name ->> 'en' ILIKE :search OR category.name ->> 'ar' ILIKE :search)",
         { search: `%${search}%` },
       );
+    }
+
+    // Handle dynamic ordering
+    if (orderField === 'name') {
+      queryBuilder.orderBy("category.name ->> 'en'", sortOrder);
+    } else {
+      queryBuilder.orderBy(`category.${orderField}`, sortOrder);
     }
 
     const [categories, total] = await queryBuilder
@@ -112,11 +123,15 @@ export class IngredientsService {
     limit: number = 10,
     search?: string,
     categoryId?: string,
+    sortBy?: string,
+    sortOrder: 'ASC' | 'DESC' = 'DESC',
   ) {
+    const allowedSortFields = ['name', 'price', 'createdAt', 'updatedAt'];
+    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    
     const queryBuilder = this.ingredientRepository
       .createQueryBuilder('ingredient')
-      .leftJoinAndSelect('ingredient.category', 'category')
-      .orderBy('ingredient.createdAt', 'DESC');
+      .leftJoinAndSelect('ingredient.category', 'category');
 
     if (search) {
       queryBuilder.where(
@@ -129,6 +144,13 @@ export class IngredientsService {
       queryBuilder.andWhere('ingredient.categoryId = :categoryId', {
         categoryId,
       });
+    }
+
+    // Handle dynamic ordering
+    if (orderField === 'name') {
+      queryBuilder.orderBy("ingredient.name ->> 'en'", sortOrder);
+    } else {
+      queryBuilder.orderBy(`ingredient.${orderField}`, sortOrder);
     }
 
     const [ingredients, total] = await queryBuilder
