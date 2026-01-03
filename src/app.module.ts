@@ -24,6 +24,7 @@ import { BranchesModule } from './modules/branches/branches.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { HealthModule } from './modules/health/health.module';
 import { DiscountsModule } from './modules/discounts/discounts.module';
+import { BranchMenuModule } from './modules/branch-menu/branch-menu.module';
 import { UploadMediaModule } from './services/upload-media/upload-media.module';
 
 @Module({
@@ -68,6 +69,7 @@ import { UploadMediaModule } from './services/upload-media/upload-media.module';
     UsersModule,
     BranchesModule,
     MenuModule,
+    BranchMenuModule,
     HealthModule,
     DiscountsModule,
     UploadMediaModule,
