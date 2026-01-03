@@ -1,4 +1,3 @@
-[x] menu based on branch what to active and whatnot
 [x] ordering from a branch 
 [x] payment with paymob 
 [x] Move Delivery Fee to Zone 
