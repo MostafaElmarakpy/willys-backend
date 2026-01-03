@@ -1,17 +1,14 @@
 import {
   Column,
   Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   OneToMany,
   JoinColumn,
   Index,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Item } from './item.entity';
+import { BaseEntity } from './base.entity';
 import { DiscountType } from 'src/common/enums/DiscountType';
 import { DiscountStatus } from 'src/common/enums/DiscountStatus';
 import { DiscountTargetType } from 'src/common/enums/DiscountTargetType';
@@ -21,9 +18,7 @@ import { ItemDiscount } from './item-discount.entity';
 import { DiscountUsageLog } from './discount-usage-log.entity';
 
 @Entity('discounts')
-export class Discount {
-  @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+export class Discount extends BaseEntity {
 
   @Column({ nullable: true, unique: true })
   code?: string;
@@ -117,9 +112,4 @@ export class Discount {
   @Column({ nullable: true })
   updatedBy?: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

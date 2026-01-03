@@ -1,21 +1,17 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
   Index,
 } from 'typeorm';
 import { Branch } from './branch.entity';
 import { User } from './user.entity';
+import { BaseEntity } from './base.entity';
 import { BilingualStringObject } from '../../common/dto/bilingual-string.dto';
 
 @Entity('zones')
-export class Zone {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Zone extends BaseEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   name?: BilingualStringObject;
@@ -66,9 +62,4 @@ export class Zone {
   @JoinColumn({ name: 'updatedById' })
   updatedBy?: User;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

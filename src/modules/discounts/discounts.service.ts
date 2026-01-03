@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Discount } from 'src/database/entities/discount.entity';
 import { UserDiscount } from 'src/database/entities/user-discount.entity';
 import { ItemDiscount } from 'src/database/entities/item-discount.entity';
@@ -75,7 +75,7 @@ export class DiscountsService {
     ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    let whereConditions: string[] = [];
+    let whereConditions: string[] = ['d."deletedAt" IS NULL'];
     let parameters: any[] = [];
     let paramIndex = 1;
 
@@ -207,7 +207,7 @@ export class DiscountsService {
 
   async findOne(id: string): Promise<Discount> {
     const discount = await this.discountRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: IsNull() },
       relations: ['freeItem', 'createdByUser', 'updatedByUser'],
     });
 
@@ -241,8 +241,8 @@ export class DiscountsService {
   }
 
   async remove(id: string): Promise<void> {
-    const discount = await this.findOne(id);
-    await this.discountRepository.remove(discount);
+    await this.findOne(id);
+    await this.discountRepository.softDelete(id);
   }
 
   async duplicate(id: string, userId: string): Promise<Discount> {

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, Between } from 'typeorm';
+import { Repository, Like, Between, IsNull } from 'typeorm';
 import { Item } from 'src/database/entities/item.entity';
 import { Ingredient } from 'src/database/entities/ingredient.entity';
 import { CreateItemDto } from './dto/item/create-item.dto';
@@ -119,7 +119,7 @@ export class ItemsService {
     ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    let whereConditions: string[] = [];
+    let whereConditions: string[] = ['i."deletedAt" IS NULL'];
     let parameters: any[] = [];
     let paramIndex = 1;
 
@@ -252,7 +252,7 @@ export class ItemsService {
 
   async findOne(id: string): Promise<Item> {
     const item = await this.itemRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: IsNull() },
       relations: ['category', 'ingredients'],
     });
 
@@ -342,13 +342,13 @@ export class ItemsService {
   }
 
   async remove(id: string): Promise<void> {
-    const item = await this.findOne(id);
-    await this.itemRepository.remove(item);
+    await this.findOne(id);
+    await this.itemRepository.softDelete(id);
   }
 
   async findByCategory(categoryId: string): Promise<Item[]> {
     return await this.itemRepository.find({
-      where: { categoryId, status: ItemStatus.ACTIVE },
+      where: { categoryId, status: ItemStatus.ACTIVE, deletedAt: IsNull() },
       relations: ['ingredients'],
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });

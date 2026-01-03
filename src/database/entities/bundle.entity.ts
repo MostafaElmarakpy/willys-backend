@@ -1,23 +1,18 @@
 import {
   Column,
   Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
   Index,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Category } from './category.entity';
+import { BaseEntity } from './base.entity';
 import { BundleStatus } from 'src/common/enums/BundleStatus';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
 @Entity('bundles')
-export class Bundle {
-  @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+export class Bundle extends BaseEntity {
 
   @Column({ type: 'json' })
   name: BilingualStringObject;
@@ -78,9 +73,4 @@ export class Bundle {
   @Column({ nullable: true })
   updatedBy?: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

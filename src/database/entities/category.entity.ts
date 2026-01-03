@@ -1,24 +1,19 @@
 import {
   Column,
   Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   OneToMany,
   ManyToOne,
   JoinColumn,
   Index,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { Item } from './item.entity';
 import { Bundle } from './bundle.entity';
+import { BaseEntity } from './base.entity';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
 @Entity('categories')
-export class Category {
-  @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+export class Category extends BaseEntity {
 
   @Column({ type: 'json' })
   name: BilingualStringObject;
@@ -50,11 +45,6 @@ export class Category {
   @Column({ nullable: true })
   updatedBy?: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   @OneToMany(() => Item, (item) => item.category)
   items: Item[];

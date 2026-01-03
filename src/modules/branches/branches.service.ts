@@ -1,7 +1,7 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -45,8 +45,15 @@ export class BranchesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
-    const allowedSortFields = ['name', 'createdAt', 'updatedAt', 'city', 'area'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
+    const allowedSortFields = [
+      'name',
+      'createdAt',
+      'updatedAt',
+      'city',
+      'area',
+    ];
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
 
     const [branches, total] = await this.branchRepository.findAndCount({
       relations: ['zones'],
@@ -79,8 +86,15 @@ export class BranchesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
-    const allowedSortFields = ['name', 'createdAt', 'updatedAt', 'city', 'area'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
+    const allowedSortFields = [
+      'name',
+      'createdAt',
+      'updatedAt',
+      'city',
+      'area',
+    ];
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
 
     const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true },
@@ -114,8 +128,15 @@ export class BranchesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
-    const allowedSortFields = ['name', 'createdAt', 'updatedAt', 'city', 'area'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
+    const allowedSortFields = [
+      'name',
+      'createdAt',
+      'updatedAt',
+      'city',
+      'area',
+    ];
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
 
     const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true, isOpen: true },

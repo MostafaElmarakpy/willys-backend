@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, Between } from 'typeorm';
+import { Repository, Like, Between, IsNull } from 'typeorm';
 import { Bundle } from 'src/database/entities/bundle.entity';
 import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
 import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';
@@ -76,7 +76,7 @@ export class BundlesService {
     ];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
-    let whereConditions: string[] = [];
+    let whereConditions: string[] = ['b."deletedAt" IS NULL'];
     let parameters: any[] = [];
     let paramIndex = 1;
 
@@ -199,7 +199,7 @@ export class BundlesService {
 
   async findOne(id: string): Promise<Bundle> {
     const bundle = await this.bundleRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: IsNull() },
       relations: ['category'],
     });
 
@@ -250,13 +250,13 @@ export class BundlesService {
   }
 
   async remove(id: string): Promise<void> {
-    const bundle = await this.findOne(id);
-    await this.bundleRepository.remove(bundle);
+    await this.findOne(id);
+    await this.bundleRepository.softDelete(id);
   }
 
   async findByCategory(categoryId: string): Promise<Bundle[]> {
     return await this.bundleRepository.find({
-      where: { categoryId },
+      where: { categoryId, deletedAt: IsNull() },
       relations: ['category'],
     });
   }

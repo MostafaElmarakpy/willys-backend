@@ -1,23 +1,18 @@
 import {
   Column,
   Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
   Index,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 import { User } from './user.entity';
 import { IngredientCategory } from './ingredient-category.entity';
+import { BaseEntity } from './base.entity';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 import { QuantityType } from 'src/common/enums/QuantityType';
 
 @Entity('ingredients')
-export class Ingredient {
-  @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+export class Ingredient extends BaseEntity {
 
   @Column({ type: 'json' })
   name: BilingualStringObject;
@@ -72,9 +67,4 @@ export class Ingredient {
   @Column({ nullable: true })
   updatedBy?: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

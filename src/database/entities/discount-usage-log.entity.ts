@@ -1,20 +1,17 @@
 import {
   Column,
   Entity,
-  PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
   Index,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 import { Discount } from './discount.entity';
 import { User } from './user.entity';
 import { Item } from './item.entity';
+import { BaseEntity } from './base.entity';
 
 @Entity('discount_usage_logs')
-export class DiscountUsageLog {
-  @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+export class DiscountUsageLog extends BaseEntity {
 
   @ManyToOne(() => Discount, (discount) => discount.usageLogs, {
     nullable: false,

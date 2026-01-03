@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Ingredient } from 'src/database/entities/ingredient.entity';
 import { IngredientCategory } from 'src/database/entities/ingredient-category.entity';
 import { CreateIngredientDto } from './dto/ingredient/create-ingredient.dto';
@@ -40,6 +40,7 @@ export class IngredientsService {
     
     const queryBuilder = this.ingredientCategoryRepository
       .createQueryBuilder('category')
+      .where('category.deletedAt IS NULL')
       .leftJoinAndSelect('category.ingredients', 'ingredients');
 
     if (search) {
@@ -72,7 +73,7 @@ export class IngredientsService {
 
   async findOneCategory(id: string): Promise<IngredientCategory> {
     const category = await this.ingredientCategoryRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: IsNull() },
       relations: ['ingredients'],
     });
 
@@ -100,8 +101,8 @@ export class IngredientsService {
   }
 
   async removeCategory(id: string): Promise<void> {
-    const category = await this.findOneCategory(id);
-    await this.ingredientCategoryRepository.remove(category);
+    await this.findOneCategory(id);
+    await this.ingredientCategoryRepository.softDelete(id);
   }
 
   async createIngredient(
@@ -169,7 +170,7 @@ export class IngredientsService {
 
   async findOneIngredient(id: string): Promise<Ingredient> {
     const ingredient = await this.ingredientRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: IsNull() },
       relations: ['category'],
     });
 
@@ -195,13 +196,13 @@ export class IngredientsService {
   }
 
   async removeIngredient(id: string): Promise<void> {
-    const ingredient = await this.findOneIngredient(id);
-    await this.ingredientRepository.remove(ingredient);
+    await this.findOneIngredient(id);
+    await this.ingredientRepository.softDelete(id);
   }
 
   async findActiveCategories(): Promise<IngredientCategory[]> {
     return await this.ingredientCategoryRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, deletedAt: IsNull() },
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
   }

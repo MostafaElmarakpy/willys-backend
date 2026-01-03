@@ -5,6 +5,9 @@ import {
   JoinColumn,
   PrimaryColumn,
   Index,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Item } from './item.entity';
 import { Discount } from './discount.entity';
@@ -38,4 +41,13 @@ export class ItemDiscount {
 
   @Column()
   assignedBy: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date;
 }

@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
 import { Category } from 'src/database/entities/category.entity';
+import { IsNull, Repository } from 'typeorm';
+import { CategoryOrderBy } from './dto/category/category-filter.dto';
 import { CreateCategoryDto } from './dto/category/create-category.dto';
 import { UpdateCategoryDto } from './dto/category/update-category.dto';
-import { CategoryOrderBy } from './dto/category/category-filter.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -34,6 +34,7 @@ export class CategoriesService {
   ) {
     const queryBuilder = this.categoryRepository
       .createQueryBuilder('category')
+      .where('category.deletedAt IS NULL')
       .loadRelationCountAndMap('category.itemsCount', 'category.items');
 
     // Search filter
@@ -95,7 +96,7 @@ export class CategoriesService {
 
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
-      where: { id },
+      where: { id, deletedAt: IsNull() },
       relations: ['items'],
     });
 
@@ -121,13 +122,13 @@ export class CategoriesService {
   }
 
   async remove(id: string): Promise<void> {
-    const category = await this.findOne(id);
-    await this.categoryRepository.remove(category);
+    await this.findOne(id);
+    await this.categoryRepository.softDelete(id);
   }
 
   async findActiveCategories(): Promise<Category[]> {
     return await this.categoryRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, deletedAt: IsNull() },
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
     });
   }
