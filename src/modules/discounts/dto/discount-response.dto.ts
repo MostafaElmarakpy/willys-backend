@@ -62,3 +62,18 @@ export class CheckDiscountEligibilityDto {
   calculatedAmount?: number;
   discount?: DiscountResponseDto;
 }
+
+export class DiscountPaginationMetadataDto {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  activeCount: number;
+  inactiveCount: number;
+  percentageDiscountsCount: number;
+}
+
+export class DiscountPaginationResponseDto {
+  discounts: DiscountResponseDto[];
+  metadata: DiscountPaginationMetadataDto;
+}

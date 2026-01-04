@@ -59,6 +59,7 @@ export class OrderRoutingService {
 
       // Get the best branch (highest priority, shortest distance)
       const bestBranch = availableBranches[0].branch;
+      const bestZone = availableBranches[0].zone;
 
       // Get alternative branches (up to 3)
       const alternatives = availableBranches
@@ -71,7 +72,7 @@ export class OrderRoutingService {
         alternativeBranches: alternatives,
         message: `Order will be handled by ${bestBranch.name}`,
         estimatedDeliveryTime: bestBranch.estimatedDeliveryTime,
-        deliveryFee: bestBranch.deliveryFee,
+        deliveryFee: bestZone.deliveryFee,
       };
     } catch (error) {
       throw new BadRequestException(`Failed to route order: ${error.message}`);

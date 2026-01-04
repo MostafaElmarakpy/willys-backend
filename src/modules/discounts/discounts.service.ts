@@ -1,22 +1,20 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { Discount } from 'src/database/entities/discount.entity';
-import { UserDiscount } from 'src/database/entities/user-discount.entity';
-import { ItemDiscount } from 'src/database/entities/item-discount.entity';
-import { DiscountUsageLog } from 'src/database/entities/discount-usage-log.entity';
-import { User } from 'src/database/entities/user.entity';
-import { Item } from 'src/database/entities/item.entity';
-import { CreateDiscountDto } from './dto/create-discount.dto';
-import { UpdateDiscountDto } from './dto/update-discount.dto';
-import { DiscountFilterDto } from './dto/discount-filter.dto';
-import { DiscountType } from 'src/common/enums/DiscountType';
 import { DiscountStatus } from 'src/common/enums/DiscountStatus';
 import { DiscountTargetType } from 'src/common/enums/DiscountTargetType';
+import { DiscountType } from 'src/common/enums/DiscountType';
+import { DiscountUsageLog } from 'src/database/entities/discount-usage-log.entity';
+import { Discount } from 'src/database/entities/discount.entity';
+import { ItemDiscount } from 'src/database/entities/item-discount.entity';
+import { UserDiscount } from 'src/database/entities/user-discount.entity';
+import { IsNull, Repository } from 'typeorm';
+import { CreateDiscountDto } from './dto/create-discount.dto';
+import { DiscountFilterDto } from './dto/discount-filter.dto';
+import { UpdateDiscountDto } from './dto/update-discount.dto';
 
 @Injectable()
 export class DiscountsService {
@@ -29,10 +27,6 @@ export class DiscountsService {
     private readonly itemDiscountRepository: Repository<ItemDiscount>,
     @InjectRepository(DiscountUsageLog)
     private readonly usageLogRepository: Repository<DiscountUsageLog>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    @InjectRepository(Item)
-    private readonly itemRepository: Repository<Item>,
   ) {}
 
   async create(
@@ -40,6 +34,19 @@ export class DiscountsService {
     userId: string,
   ): Promise<Discount> {
     this.validateDiscountDto(createDiscountDto);
+
+    // Check if code is unique (if provided)
+    if (createDiscountDto.code) {
+      const existingDiscount = await this.discountRepository.findOne({
+        where: { code: createDiscountDto.code, deletedAt: IsNull() },
+      });
+
+      if (existingDiscount) {
+        throw new BadRequestException(
+          `Discount code "${createDiscountDto.code}" already exists`,
+        );
+      }
+    }
 
     const discount = this.discountRepository.create({
       ...createDiscountDto,
@@ -186,15 +193,50 @@ export class DiscountsService {
       ${whereClause}
     `;
 
+    const activeCountQuery = `
+      SELECT COUNT(DISTINCT d.id) as active_count
+      FROM discounts d
+      ${whereClause}
+      ${whereConditions.length > 0 ? 'AND' : 'WHERE'} d."isActive" = true
+    `;
+
+    const inactiveCountQuery = `
+      SELECT COUNT(DISTINCT d.id) as inactive_count
+      FROM discounts d
+      ${whereClause}
+      ${whereConditions.length > 0 ? 'AND' : 'WHERE'} d."isActive" = false
+    `;
+
+    const percentageCountQuery = `
+      SELECT COUNT(DISTINCT d.id) as percentage_count
+      FROM discounts d
+      ${whereClause}
+      ${whereConditions.length > 0 ? 'AND' : 'WHERE'} d."type" = 'percentage'
+    `;
+
     const discountsParameters = [...parameters, limit, (page - 1) * limit];
     const countParameters = [...parameters];
 
-    const [discounts, countResult] = await Promise.all([
+    const [
+      discounts,
+      countResult,
+      activeCountResult,
+      inactiveCountResult,
+      percentageCountResult,
+    ] = await Promise.all([
       this.discountRepository.query(discountsQuery, discountsParameters),
       this.discountRepository.query(countQuery, countParameters),
+      this.discountRepository.query(activeCountQuery, countParameters),
+      this.discountRepository.query(inactiveCountQuery, countParameters),
+      this.discountRepository.query(percentageCountQuery, countParameters),
     ]);
 
     const total = parseInt(countResult[0].total);
+    const activeCount = parseInt(activeCountResult[0].active_count);
+    const inactiveCount = parseInt(inactiveCountResult[0].inactive_count);
+    const percentageDiscountsCount = parseInt(
+      percentageCountResult[0].percentage_count,
+    );
 
     return {
       discounts,
@@ -202,6 +244,9 @@ export class DiscountsService {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+      activeCount,
+      inactiveCount,
+      percentageDiscountsCount,
     };
   }
 
@@ -249,9 +294,7 @@ export class DiscountsService {
     const originalDiscount = await this.findOne(id);
 
     const duplicatedDiscount = this.discountRepository.create({
-      code: originalDiscount.code
-        ? `${originalDiscount.code}_COPY`
-        : undefined,
+      code: originalDiscount.code ? `${originalDiscount.code}_COPY` : undefined,
       name: {
         ar: `${originalDiscount.name.ar} - نسخة`,
         en: `${originalDiscount.name.en} - Copy`,
@@ -511,7 +554,8 @@ export class DiscountsService {
           discount.getQuantity &&
           quantity >= discount.buyQuantity
         ) {
-          const freeItems = Math.floor(quantity / discount.buyQuantity) * discount.getQuantity;
+          const freeItems =
+            Math.floor(quantity / discount.buyQuantity) * discount.getQuantity;
           return freeItems * originalPrice;
         }
         return 0;
@@ -589,9 +633,7 @@ export class DiscountsService {
 
     if (dto.type === DiscountType.FREE_ITEM) {
       if (!dto.freeItemId) {
-        throw new BadRequestException(
-          'Free item discount requires freeItemId',
-        );
+        throw new BadRequestException('Free item discount requires freeItemId');
       }
     }
 

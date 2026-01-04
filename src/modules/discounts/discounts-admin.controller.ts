@@ -27,7 +27,10 @@ import {
   AssignDiscountToItemsDto,
 } from './dto/assign-discount.dto';
 import { DiscountsService } from './discounts.service';
-import { DiscountResponseDto } from './dto/discount-response.dto';
+import {
+  DiscountResponseDto,
+  DiscountPaginationResponseDto,
+} from './dto/discount-response.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admin/discounts')
@@ -38,9 +41,23 @@ export class DiscountsAdminController {
   @Version('1')
   @Roles(UserRole.admin)
   async findAll(@Query() filterDto: DiscountFilterDto) {
-    const discounts = await this.discountsService.findAll(filterDto);
+    const result = await this.discountsService.findAll(filterDto);
+
+    const response: DiscountPaginationResponseDto = {
+      discounts: result.discounts.map(d => new DiscountResponseDto(d)),
+      metadata: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+        activeCount: result.activeCount,
+        inactiveCount: result.inactiveCount,
+        percentageDiscountsCount: result.percentageDiscountsCount,
+      },
+    };
+
     return createSuccessResponse(
-      discounts,
+      response,
       'Discounts retrieved successfully',
     );
   }

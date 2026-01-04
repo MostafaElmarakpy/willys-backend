@@ -75,12 +75,6 @@ export class CreateBranchDto {
   closingHours?: string;
 
   @IsOptional()
-  @IsNumber({}, { message: 'Delivery fee must be a valid number' })
-  @Min(0, { message: 'Delivery fee cannot be negative' })
-  @Type(() => Number)
-  deliveryFee?: number;
-
-  @IsOptional()
   @IsNumber({}, { message: 'Estimated delivery time must be a valid number' })
   @Min(1, { message: 'Estimated delivery time must be at least 1 minute' })
   @Max(480, {

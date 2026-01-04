@@ -48,6 +48,9 @@ export class Zone extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   priority: number; // For overlapping zones, higher priority wins
 
+  @Column({ type: 'decimal', precision: 5, scale: 2 })
+  deliveryFee: number;
+
   @Column({ nullable: true })
   createdById?: string;
 

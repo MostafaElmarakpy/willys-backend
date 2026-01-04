@@ -24,6 +24,7 @@ export class BranchSeeder {
               'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
             isActive: true,
             priority: 1,
+            deliveryFee: 15.0,
           },
         ],
       },
@@ -36,6 +37,7 @@ export class BranchSeeder {
               'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
             isActive: true,
             priority: 1,
+            deliveryFee: 20.0,
           },
         ],
       },
@@ -48,6 +50,7 @@ export class BranchSeeder {
               'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
             isActive: true,
             priority: 1,
+            deliveryFee: 18.0,
           },
         ],
       },
@@ -69,7 +72,7 @@ export class BranchSeeder {
             // Use raw query to insert geometry properly
             await this.dataSource.query(
               `
-              INSERT INTO zones (id, name, "branchId", polygon, "isActive", priority, "createdById", "createdAt", "updatedAt")
+              INSERT INTO zones (id, name, "branchId", polygon, "isActive", priority, "deliveryFee", "createdById", "createdAt", "updatedAt")
               VALUES (
                 uuid_generate_v4(),
                 $1,
@@ -78,6 +81,7 @@ export class BranchSeeder {
                 $4,
                 $5,
                 $6,
+                $7,
                 NOW(),
                 NOW()
               )
@@ -88,6 +92,7 @@ export class BranchSeeder {
                 zone.polygon,
                 zone.isActive,
                 zone.priority,
+                zone.deliveryFee,
                 adminUser.id,
               ],
             );
@@ -149,7 +154,6 @@ export class BranchSeeder {
         isOpen: true,
         openingHours: '08:00',
         closingHours: '23:00',
-        deliveryFee: 15.0,
         estimatedDeliveryTime: 30,
         zones: [
           {
@@ -159,6 +163,7 @@ export class BranchSeeder {
               'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
             isActive: true,
             priority: 1,
+            deliveryFee: 15.0,
           },
         ],
       },
@@ -173,7 +178,6 @@ export class BranchSeeder {
         isOpen: true,
         openingHours: '09:00',
         closingHours: '22:00',
-        deliveryFee: 20.0,
         estimatedDeliveryTime: 25,
         zones: [
           {
@@ -182,6 +186,7 @@ export class BranchSeeder {
               'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
             isActive: true,
             priority: 1,
+            deliveryFee: 20.0,
           },
         ],
       },
@@ -196,7 +201,6 @@ export class BranchSeeder {
         isOpen: true,
         openingHours: '10:00',
         closingHours: '24:00',
-        deliveryFee: 18.0,
         estimatedDeliveryTime: 20,
         zones: [
           {
@@ -205,6 +209,7 @@ export class BranchSeeder {
               'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
             isActive: true,
             priority: 1,
+            deliveryFee: 18.0,
           },
         ],
       },
@@ -228,7 +233,7 @@ export class BranchSeeder {
       for (const zoneData of zones) {
         await this.dataSource.query(
           `
-          INSERT INTO zones (id, name, "branchId", polygon, "isActive", priority, "createdById", "createdAt", "updatedAt")
+          INSERT INTO zones (id, name, "branchId", polygon, "isActive", priority, "deliveryFee", "createdById", "createdAt", "updatedAt")
           VALUES (
             uuid_generate_v4(),
             $1,
@@ -237,6 +242,7 @@ export class BranchSeeder {
             $4,
             $5,
             $6,
+            $7,
             NOW(),
             NOW()
           )
@@ -247,6 +253,7 @@ export class BranchSeeder {
             zoneData.polygon,
             zoneData.isActive,
             zoneData.priority,
+            zoneData.deliveryFee,
             adminUser.id,
           ],
         );

@@ -38,8 +38,8 @@ export class ZonesService {
 
       // Insert zone directly using raw SQL to include polygon
       const result = await this.zoneRepository.query(`
-        INSERT INTO zones (name, "branchId", polygon, "centerLatitude", "centerLongitude", "radiusKm", "isActive", priority, "createdAt", "updatedAt")
-        VALUES ($1, $2, ST_GeomFromText($3, 4326), $4, $5, $6, $7, $8, NOW(), NOW())
+        INSERT INTO zones (name, "branchId", polygon, "centerLatitude", "centerLongitude", "radiusKm", "isActive", priority, "deliveryFee", "createdAt", "updatedAt")
+        VALUES ($1, $2, ST_GeomFromText($3, 4326), $4, $5, $6, $7, $8, $9, NOW(), NOW())
         RETURNING id
       `, [
         createZoneDto.name ? JSON.stringify(createZoneDto.name) : null,
@@ -50,6 +50,7 @@ export class ZonesService {
         createZoneDto.radiusKm || null,
         createZoneDto.isActive ?? true,
         createZoneDto.priority ?? 0,
+        createZoneDto.deliveryFee,
       ]);
 
       // Return the zone with relations

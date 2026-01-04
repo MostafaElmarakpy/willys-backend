@@ -69,4 +69,9 @@ export class CreateZoneDto {
   @Max(100, { message: 'Priority cannot exceed 100' })
   @Type(() => Number)
   priority?: number;
+
+  @IsNumber({}, { message: 'Delivery fee must be a valid number' })
+  @Min(0, { message: 'Delivery fee cannot be negative' })
+  @Type(() => Number)
+  deliveryFee: number;
 }

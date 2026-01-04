@@ -46,9 +46,6 @@ export class Branch extends BaseEntity {
   @Column({ type: 'varchar', length: 100, nullable: true })
   closingHours: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
-  deliveryFee: number;
-
   @Column({ type: 'int', nullable: true })
   estimatedDeliveryTime: number; // in minutes
 
