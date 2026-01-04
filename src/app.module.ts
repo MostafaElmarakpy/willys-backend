@@ -26,6 +26,7 @@ import { HealthModule } from './modules/health/health.module';
 import { DiscountsModule } from './modules/discounts/discounts.module';
 import { BranchMenuModule } from './modules/branch-menu/branch-menu.module';
 import { UploadMediaModule } from './services/upload-media/upload-media.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { UploadMediaModule } from './services/upload-media/upload-media.module';
     HealthModule,
     DiscountsModule,
     UploadMediaModule,
+    PaymentsModule,
   ],
   providers: [LocaleSubscriber, YcI18nService, MailService],
   exports: [LocaleSubscriber, YcI18nService],

@@ -66,6 +66,11 @@ export class ConfigService {
       roundCubePort: Number(process.env.ROUND_CUBE_PORT),
       roundCubeUser: process.env.ROUND_CUBE_USER!,
       roundCubePassword: process.env.ROUND_CUBE_PASSWORD!,
+      paymobApiKey: process.env.PAYMOB_API_KEY || '',
+      paymobSecretKey: process.env.PAYMOB_SECRET_KEY || '',
+      paymobPublicKey: process.env.PAYMOB_PUBLIC_KEY || '',
+      paymobCreditCardIntegrationId: process.env.PAYMOB_CREDIT_CARD_INTEGRATION_ID || '',
+      paymobIframeId: process.env.PAYMOB_IFRAME_ID || '',
       // totpSecret: process.env.TOTP_SECRET!,
     };
 
