@@ -105,9 +105,18 @@ export class UsersAdminService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
-    
-    const allowedSortFields = ['id', 'email', 'fullName', 'phoneNumber', 'phoneNumberCountryCode', 'createdAt', 'updatedAt'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
+    const allowedSortFields = [
+      'id',
+      'email',
+      'fullName',
+      'phoneNumber',
+      'phoneNumberCountryCode',
+      'createdAt',
+      'updatedAt',
+    ];
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
     const [users, total] = await this.usersRepository.findAndCount({
       where: {
@@ -148,9 +157,19 @@ export class UsersAdminService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
-    
-    const allowedSortFields = ['id', 'email', 'fullName', 'phoneNumber', 'phoneNumberCountryCode', 'role', 'createdAt', 'updatedAt'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
+    const allowedSortFields = [
+      'id',
+      'email',
+      'fullName',
+      'phoneNumber',
+      'phoneNumberCountryCode',
+      'role',
+      'createdAt',
+      'updatedAt',
+    ];
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
 
     const [users, total] = await this.usersRepository.findAndCount({
       where: {

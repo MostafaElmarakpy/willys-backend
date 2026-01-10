@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateBranchMenuOverrides20260103200000
-  implements MigrationInterface
-{
-  name = 'CreateBranchMenuOverrides20260103200000';
+export class CreateBranchMenuOverrides20260111121100 implements MigrationInterface {
+  name = 'CreateBranchMenuOverrides20260111121100';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create branch_category_overrides table
@@ -188,7 +186,9 @@ export class CreateBranchMenuOverrides20260103200000
     `);
 
     await queryRunner.query(`DROP INDEX "IDX_branch_bundle_overrides_bundle"`);
-    await queryRunner.query(`DROP INDEX "IDX_branch_bundle_overrides_branch_available"`);
+    await queryRunner.query(
+      `DROP INDEX "IDX_branch_bundle_overrides_branch_available"`,
+    );
     await queryRunner.query(`DROP TABLE "branch_bundle_overrides"`);
 
     // Drop branch_item_overrides table
@@ -209,7 +209,9 @@ export class CreateBranchMenuOverrides20260103200000
     `);
 
     await queryRunner.query(`DROP INDEX "IDX_branch_item_overrides_item"`);
-    await queryRunner.query(`DROP INDEX "IDX_branch_item_overrides_branch_available"`);
+    await queryRunner.query(
+      `DROP INDEX "IDX_branch_item_overrides_branch_available"`,
+    );
     await queryRunner.query(`DROP TABLE "branch_item_overrides"`);
 
     // Drop branch_category_overrides table
@@ -229,8 +231,12 @@ export class CreateBranchMenuOverrides20260103200000
       ALTER TABLE "branch_category_overrides" DROP CONSTRAINT "FK_branch_category_overrides_branch"
     `);
 
-    await queryRunner.query(`DROP INDEX "IDX_branch_category_overrides_category"`);
-    await queryRunner.query(`DROP INDEX "IDX_branch_category_overrides_branch_available"`);
+    await queryRunner.query(
+      `DROP INDEX "IDX_branch_category_overrides_category"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "IDX_branch_category_overrides_branch_available"`,
+    );
     await queryRunner.query(`DROP TABLE "branch_category_overrides"`);
   }
 }

@@ -13,10 +13,11 @@ import {
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import {
   createSuccessResponse,
   createCreatedResponse,
@@ -27,14 +28,14 @@ import { ItemFilterDto } from './dto/item/item-filter.dto';
 import { ItemsService } from './items.service';
 import { EntityFilesInterceptor } from 'src/services/upload-media/entity-files.interceptor';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/menu/items')
 export class ItemsAdminController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.READ)
   async findAll(@Query() filterDto: ItemFilterDto) {
     const items = await this.itemsService.findAll(filterDto);
     return createSuccessResponse(items, 'Items retrieved successfully');
@@ -42,7 +43,7 @@ export class ItemsAdminController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.CREATE)
   @UseInterceptors(
     EntityFilesInterceptor('menu-items', [{ name: 'image', maxCount: 1 }]),
   )
@@ -61,7 +62,7 @@ export class ItemsAdminController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.READ)
   async findOne(@Param('id') id: string) {
     const item = await this.itemsService.findOne(id);
     return createSuccessResponse(item, 'Item retrieved successfully');
@@ -69,7 +70,7 @@ export class ItemsAdminController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.UPDATE)
   @UseInterceptors(
     EntityFilesInterceptor('menu-items', [{ name: 'image', maxCount: 1 }]),
   )
@@ -90,7 +91,7 @@ export class ItemsAdminController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.DELETE)
   async remove(@Param('id') id: string) {
     await this.itemsService.remove(id);
     return createSuccessResponse(null, 'Item deleted successfully');
@@ -98,7 +99,7 @@ export class ItemsAdminController {
 
   @Get('category/:categoryId')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.READ)
   async findByCategory(@Param('categoryId') categoryId: string) {
     const items = await this.itemsService.findByCategory(categoryId);
     return createSuccessResponse(
@@ -109,7 +110,7 @@ export class ItemsAdminController {
 
   @Post(':id/duplicate')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.DUPLICATE)
   async duplicate(@Param('id') id: string, @Request() req: any) {
     const item = await this.itemsService.duplicate(id, req.user.id);
     return createCreatedResponse(item, 'Item duplicated successfully');
@@ -117,7 +118,7 @@ export class ItemsAdminController {
 
   @Patch(':id/archive')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ITEMS, PermissionAction.ARCHIVE)
   async archive(@Param('id') id: string, @Request() req: any) {
     const item = await this.itemsService.archiveItem(id, req.user.id);
     return createSuccessResponse(item, 'Item archived successfully');

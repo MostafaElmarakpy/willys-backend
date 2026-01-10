@@ -22,7 +22,7 @@ export function AtLeastOneValue(
             (value) => value !== undefined && value !== null,
           );
         },
-        defaultMessage(args: ValidationArguments) {
+        defaultMessage(_args: ValidationArguments) {
           return 'At least one installment price (monthly, yearly, half year, or quarter) must be provided';
         },
       },

@@ -1,6 +1,6 @@
 export enum QuantityType {
   PIECE = 'piece',
-  SLICE = 'slice', 
+  SLICE = 'slice',
   SCOOP = 'scoop',
   DASH = 'dash',
   PINCH = 'pinch',
@@ -13,5 +13,5 @@ export enum QuantityType {
   SHOT = 'shot',
   CUP = 'cup',
   SPOON = 'spoon',
-  PORTION = 'portion'
+  PORTION = 'portion',
 }

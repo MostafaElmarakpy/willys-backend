@@ -18,9 +18,7 @@ import { SavePaymentMethodDto } from './dto/save-payment-method.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('payment-methods')
 export class PaymentMethodsController {
-  constructor(
-    private readonly paymentMethodsService: PaymentMethodsService,
-  ) {}
+  constructor(private readonly paymentMethodsService: PaymentMethodsService) {}
 
   @Post()
   @Version('1')

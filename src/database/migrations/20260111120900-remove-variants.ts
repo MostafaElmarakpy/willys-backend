@@ -1,15 +1,15 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RemoveVariants20251228150000 implements MigrationInterface {
-  name = 'RemoveVariants20251228150000';
+export class RemoveVariants20260111120900 implements MigrationInterface {
+  name = 'RemoveVariants20260111120900';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Drop the item_variants junction table first (foreign key dependencies)
     await queryRunner.query(`DROP TABLE IF EXISTS "item_variants"`);
-    
+
     // Drop the variant_values table (depends on variants)
     await queryRunner.query(`DROP TABLE IF EXISTS "variant_values"`);
-    
+
     // Drop the variants table
     await queryRunner.query(`DROP TABLE IF EXISTS "variants"`);
   }
@@ -32,8 +32,12 @@ export class RemoveVariants20251228150000 implements MigrationInterface {
     `);
 
     // Add indexes
-    await queryRunner.query(`CREATE INDEX "IDX_variants_type" ON "variants" ("type")`);
-    await queryRunner.query(`CREATE INDEX "IDX_variants_isActive" ON "variants" ("isActive")`);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_variants_type" ON "variants" ("type")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_variants_isActive" ON "variants" ("isActive")`,
+    );
 
     // Recreate variant_values table
     await queryRunner.query(`
@@ -55,8 +59,12 @@ export class RemoveVariants20251228150000 implements MigrationInterface {
     `);
 
     // Add indexes for variant_values
-    await queryRunner.query(`CREATE INDEX "IDX_variant_values_quantityType" ON "variant_values" ("quantityType")`);
-    await queryRunner.query(`CREATE INDEX "IDX_variant_values_isActive" ON "variant_values" ("isActive")`);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_variant_values_quantityType" ON "variant_values" ("quantityType")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_variant_values_isActive" ON "variant_values" ("isActive")`,
+    );
 
     // Recreate item_variants junction table
     await queryRunner.query(`
@@ -104,7 +112,11 @@ export class RemoveVariants20251228150000 implements MigrationInterface {
     `);
 
     // Add indexes for junction table
-    await queryRunner.query(`CREATE INDEX "IDX_item_variants_itemId" ON "item_variants" ("itemId")`);
-    await queryRunner.query(`CREATE INDEX "IDX_item_variants_variantId" ON "item_variants" ("variantId")`);
+    await queryRunner.query(
+      `CREATE INDEX "IDX_item_variants_itemId" ON "item_variants" ("itemId")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "IDX_item_variants_variantId" ON "item_variants" ("variantId")`,
+    );
   }
 }

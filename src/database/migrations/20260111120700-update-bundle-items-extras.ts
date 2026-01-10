@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateBundleItemsExtras20241229000000
-  implements MigrationInterface
-{
-  name = 'UpdateBundleItemsExtras20241229000000';
+export class UpdateBundleItemsExtras20260111120700 implements MigrationInterface {
+  name = 'UpdateBundleItemsExtras20260111120700';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add items JSONB column to bundles table

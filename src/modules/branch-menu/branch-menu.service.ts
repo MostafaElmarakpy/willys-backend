@@ -218,9 +218,7 @@ export class BranchMenuService {
   /**
    * Get all available categories for a branch (customer-facing)
    */
-  async getAvailableCategoriesForBranch(
-    branchId: string,
-  ): Promise<Category[]> {
+  async getAvailableCategoriesForBranch(branchId: string): Promise<Category[]> {
     const query = this.categoryRepo
       .createQueryBuilder('c')
       .leftJoin(
@@ -440,7 +438,7 @@ export class BranchMenuService {
 
     // Use transaction to ensure all or nothing
     await this.categoryOverrideRepo.manager.transaction(
-      async (transactionalEntityManager) => {
+      async (_transactionalEntityManager) => {
         // Process category updates
         if (updates.categories) {
           for (const update of updates.categories) {
@@ -485,6 +483,10 @@ export class BranchMenuService {
       },
     );
 
-    return { categories: categoryOverrides, items: itemOverrides, bundles: bundleOverrides };
+    return {
+      categories: categoryOverrides,
+      items: itemOverrides,
+      bundles: bundleOverrides,
+    };
   }
 }

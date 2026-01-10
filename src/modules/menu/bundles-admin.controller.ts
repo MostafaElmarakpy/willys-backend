@@ -13,10 +13,11 @@ import {
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import {
   createSuccessResponse,
   createCreatedResponse,
@@ -27,14 +28,14 @@ import { BundleFilterDto } from './dto/bundle/bundle-filter.dto';
 import { BundlesService } from './bundles.service';
 import { EntityFilesInterceptor } from 'src/services/upload-media/entity-files.interceptor';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/menu/bundles')
 export class BundlesAdminController {
   constructor(private readonly bundlesService: BundlesService) {}
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.READ)
   async findAll(@Query() filterDto: BundleFilterDto) {
     const bundles = await this.bundlesService.findAll(filterDto);
     return createSuccessResponse(bundles, 'Bundles retrieved successfully');
@@ -42,7 +43,7 @@ export class BundlesAdminController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.CREATE)
   @UseInterceptors(
     EntityFilesInterceptor('menu-bundles', [{ name: 'image', maxCount: 1 }]),
   )
@@ -61,7 +62,7 @@ export class BundlesAdminController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.READ)
   async findOne(@Param('id') id: string) {
     const bundle = await this.bundlesService.findOne(id);
     return createSuccessResponse(bundle, 'Bundle retrieved successfully');
@@ -69,7 +70,7 @@ export class BundlesAdminController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.UPDATE)
   @UseInterceptors(
     EntityFilesInterceptor('menu-bundles', [{ name: 'image', maxCount: 1 }]),
   )
@@ -90,7 +91,7 @@ export class BundlesAdminController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.DELETE)
   async remove(@Param('id') id: string) {
     await this.bundlesService.remove(id);
     return createSuccessResponse(null, 'Bundle deleted successfully');
@@ -98,7 +99,7 @@ export class BundlesAdminController {
 
   @Get('category/:categoryId')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.READ)
   async findByCategory(@Param('categoryId') categoryId: string) {
     const bundles = await this.bundlesService.findByCategory(categoryId);
     return createSuccessResponse(
@@ -109,7 +110,7 @@ export class BundlesAdminController {
 
   @Post(':id/duplicate')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.DUPLICATE)
   async duplicate(@Param('id') id: string, @Request() req: any) {
     const bundle = await this.bundlesService.duplicate(id, req.user.id);
     return createCreatedResponse(bundle, 'Bundle duplicated successfully');
@@ -117,7 +118,7 @@ export class BundlesAdminController {
 
   @Patch(':id/archive')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BUNDLES, PermissionAction.ARCHIVE)
   async archive(@Param('id') id: string, @Request() req: any) {
     const bundle = await this.bundlesService.archiveBundle(id, req.user.id);
     return createSuccessResponse(bundle, 'Bundle archived successfully');

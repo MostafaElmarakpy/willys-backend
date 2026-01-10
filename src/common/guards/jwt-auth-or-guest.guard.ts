@@ -36,7 +36,7 @@ export class JwtAuthOrGuestGuard implements CanActivate {
 
       request['user'] = user;
       return true;
-    } catch (error) {
+    } catch (_error) {
       throw new UnauthorizedException('Invalid token');
     }
   }

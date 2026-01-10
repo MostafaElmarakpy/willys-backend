@@ -11,10 +11,11 @@ import {
   Version,
   Request,
 } from '@nestjs/common';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import {
   createSuccessResponse,
   createCreatedResponse,
@@ -32,19 +33,19 @@ import {
   DiscountPaginationResponseDto,
 } from './dto/discount-response.dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/discounts')
 export class DiscountsAdminController {
   constructor(private readonly discountsService: DiscountsService) {}
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.READ)
   async findAll(@Query() filterDto: DiscountFilterDto) {
     const result = await this.discountsService.findAll(filterDto);
 
     const response: DiscountPaginationResponseDto = {
-      discounts: result.discounts.map(d => new DiscountResponseDto(d)),
+      discounts: result.discounts.map((d) => new DiscountResponseDto(d)),
       metadata: {
         total: result.total,
         page: result.page,
@@ -56,15 +57,12 @@ export class DiscountsAdminController {
       },
     };
 
-    return createSuccessResponse(
-      response,
-      'Discounts retrieved successfully',
-    );
+    return createSuccessResponse(response, 'Discounts retrieved successfully');
   }
 
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.CREATE)
   async create(
     @Body() createDiscountDto: CreateDiscountDto,
     @Request() req: any,
@@ -78,7 +76,7 @@ export class DiscountsAdminController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.READ)
   async findOne(@Param('id') id: string) {
     const discount = await this.discountsService.findOne(id);
     const response = new DiscountResponseDto(discount);
@@ -87,7 +85,7 @@ export class DiscountsAdminController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.UPDATE)
   async update(
     @Param('id') id: string,
     @Body() updateDiscountDto: UpdateDiscountDto,
@@ -103,7 +101,7 @@ export class DiscountsAdminController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.DELETE)
   async remove(@Param('id') id: string) {
     await this.discountsService.remove(id);
     return createSuccessResponse(null, 'Discount deleted successfully');
@@ -111,7 +109,7 @@ export class DiscountsAdminController {
 
   @Post(':id/duplicate')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.DUPLICATE)
   async duplicate(@Param('id') id: string, @Request() req: any) {
     const discount = await this.discountsService.duplicate(id, req.user.id);
     return createCreatedResponse(discount, 'Discount duplicated successfully');
@@ -119,7 +117,7 @@ export class DiscountsAdminController {
 
   @Post(':id/assign-users')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.ASSIGN)
   async assignToUsers(
     @Param('id') id: string,
     @Body() assignDto: AssignDiscountToUsersDto,
@@ -138,7 +136,7 @@ export class DiscountsAdminController {
 
   @Post(':id/assign-items')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.ASSIGN)
   async assignToItems(
     @Param('id') id: string,
     @Body() assignDto: AssignDiscountToItemsDto,
@@ -157,7 +155,7 @@ export class DiscountsAdminController {
 
   @Delete(':id/users/:userId')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.ASSIGN)
   async removeUserAssignment(
     @Param('id') id: string,
     @Param('userId') userId: string,
@@ -168,7 +166,7 @@ export class DiscountsAdminController {
 
   @Delete(':id/items/:itemId')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.ASSIGN)
   async removeItemAssignment(
     @Param('id') id: string,
     @Param('itemId') itemId: string,
@@ -179,7 +177,7 @@ export class DiscountsAdminController {
 
   @Get(':id/users')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.READ)
   async getAssignedUsers(@Param('id') id: string) {
     const users = await this.discountsService.getAssignedUsers(id);
     return createSuccessResponse(
@@ -190,7 +188,7 @@ export class DiscountsAdminController {
 
   @Get(':id/items')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.READ)
   async getAssignedItems(@Param('id') id: string) {
     const items = await this.discountsService.getAssignedItems(id);
     return createSuccessResponse(
@@ -201,7 +199,7 @@ export class DiscountsAdminController {
 
   @Get(':id/usage-stats')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.READ)
   async getUsageStats(@Param('id') id: string) {
     const stats = await this.discountsService.getUsageStats(id);
     return createSuccessResponse(stats, 'Usage stats retrieved successfully');
@@ -209,7 +207,7 @@ export class DiscountsAdminController {
 
   @Patch(':id/activate')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.TOGGLE_STATUS)
   async activate(@Param('id') id: string, @Request() req: any) {
     const discount = await this.discountsService.activateDiscount(
       id,
@@ -220,7 +218,7 @@ export class DiscountsAdminController {
 
   @Patch(':id/deactivate')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.TOGGLE_STATUS)
   async deactivate(@Param('id') id: string, @Request() req: any) {
     const discount = await this.discountsService.deactivateDiscount(
       id,
@@ -231,7 +229,7 @@ export class DiscountsAdminController {
 
   @Patch(':id/expire')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.DISCOUNTS, PermissionAction.TOGGLE_STATUS)
   async expire(@Param('id') id: string, @Request() req: any) {
     const discount = await this.discountsService.expireDiscount(
       id,

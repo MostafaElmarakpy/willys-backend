@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class UpdateItemPricingAndFields20241228120000
-  implements MigrationInterface
-{
+export class UpdateItemPricingAndFields20260111120600 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add new columns for pricing, tags, extras, and ingredientsWithQuantity
     await queryRunner.addColumn(

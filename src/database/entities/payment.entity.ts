@@ -117,10 +117,7 @@ export class Payment extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   userAgent?: string;
 
-  @OneToMany(
-    () => PaymentTransactionLog,
-    (log) => log.payment,
-  )
+  @OneToMany(() => PaymentTransactionLog, (log) => log.payment)
   transactionLogs: PaymentTransactionLog[];
 
   @OneToMany(() => Refund, (refund) => refund.payment)

@@ -13,7 +13,6 @@ import { BilingualStringObject } from '../../common/dto/bilingual-string.dto';
 
 @Entity('branches')
 export class Branch extends BaseEntity {
-
   @Column({ type: 'jsonb' })
   name: BilingualStringObject;
 
@@ -65,5 +64,4 @@ export class Branch extends BaseEntity {
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'updatedById' })
   updatedBy?: User;
-
 }

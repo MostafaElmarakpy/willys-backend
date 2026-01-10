@@ -10,9 +10,10 @@ import {
   Request,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
 import { PaymentsService } from './payments.service';
 import { RefundsService } from './refunds.service';
@@ -21,8 +22,7 @@ import { ApproveRefundDto } from './dto/approve-refund.dto';
 import { RejectRefundDto } from './dto/reject-refund.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.admin)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/payments')
 export class PaymentsAdminController {
   constructor(
@@ -32,6 +32,7 @@ export class PaymentsAdminController {
 
   @Get()
   @Version('1')
+  @Permission(PermissionModule.PAYMENTS, PermissionAction.READ)
   async getAllPayments(@Query() filterDto: PaymentFilterDto) {
     const result = await this.paymentsService.findAll(filterDto);
     return createSuccessResponse(result, 'Payments retrieved successfully');
@@ -39,13 +40,18 @@ export class PaymentsAdminController {
 
   @Get('stats')
   @Version('1')
+  @Permission(PermissionModule.PAYMENTS, PermissionAction.VIEW_STATS)
   async getPaymentStatistics() {
     const stats = await this.paymentsService.getPaymentStatistics();
-    return createSuccessResponse(stats, 'Payment statistics retrieved successfully');
+    return createSuccessResponse(
+      stats,
+      'Payment statistics retrieved successfully',
+    );
   }
 
   @Get(':id')
   @Version('1')
+  @Permission(PermissionModule.PAYMENTS, PermissionAction.READ)
   async getPaymentDetails(@Param('id') id: string) {
     const payment = await this.paymentsService.findOne(id);
 
@@ -61,13 +67,18 @@ export class PaymentsAdminController {
 
   @Get('refunds/pending')
   @Version('1')
+  @Permission(PermissionModule.REFUNDS, PermissionAction.READ)
   async getPendingRefunds() {
     const refunds = await this.refundsService.findAll({ status: 'PENDING' });
-    return createSuccessResponse(refunds, 'Pending refunds retrieved successfully');
+    return createSuccessResponse(
+      refunds,
+      'Pending refunds retrieved successfully',
+    );
   }
 
   @Get('refunds/all')
   @Version('1')
+  @Permission(PermissionModule.REFUNDS, PermissionAction.READ)
   async getAllRefunds(@Query('status') status?: string) {
     const filters = status ? { status } : undefined;
     const refunds = await this.refundsService.findAll(filters);
@@ -76,6 +87,7 @@ export class PaymentsAdminController {
 
   @Post('refunds/:id/approve')
   @Version('1')
+  @Permission(PermissionModule.REFUNDS, PermissionAction.APPROVE)
   async approveRefund(
     @Param('id') id: string,
     @Body() approveRefundDto: ApproveRefundDto,
@@ -87,11 +99,15 @@ export class PaymentsAdminController {
       approveRefundDto,
     );
 
-    return createSuccessResponse(refund, 'Refund approved and processed successfully');
+    return createSuccessResponse(
+      refund,
+      'Refund approved and processed successfully',
+    );
   }
 
   @Post('refunds/:id/reject')
   @Version('1')
+  @Permission(PermissionModule.REFUNDS, PermissionAction.REJECT)
   async rejectRefund(
     @Param('id') id: string,
     @Body() rejectRefundDto: RejectRefundDto,

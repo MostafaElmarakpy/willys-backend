@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -45,7 +44,7 @@ export class AuthenticationService {
       : await this.userService.findByPhoneNumber(identifier);
 
     if (user && (await bcrypt.compare(pass, user.password))) {
-      const { password, ...result } = user;
+      const { password: _password, ...result } = user;
       return result;
     }
     return null;
@@ -180,7 +179,7 @@ export class AuthenticationService {
       const payload = this.jwtService.verify(refreshToken);
 
       return await this.generateAccessToken(payload);
-    } catch (e) {
+    } catch (_e) {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
@@ -212,7 +211,7 @@ export class AuthenticationService {
     return new ProfileDto(user);
   }
 
-  async logout(request: any) {
+  async logout(_request: any) {
     // Implement your logout logic here
     // For example, you can invalidate the user's session or token
   }
@@ -297,7 +296,7 @@ export class AuthenticationService {
     return 'Password changed successfully';
   }
 
-  async changeEmail(userId: string, changeEmailDto: ChangeEmailDto) {
+  async changeEmail(userId: string, _changeEmailDto: ChangeEmailDto) {
     const user = await this.userService.findOne(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -351,7 +350,7 @@ export class AuthenticationService {
 
       await this.userService.verifyUserEmail(user.email as string);
       return 'Email verified successfully';
-    } catch (error) {
+    } catch (_error) {
       throw new UnauthorizedException('Invalid or expired token');
     }
   }

@@ -10,16 +10,17 @@ import {
   UseGuards,
   Version,
 } from '@nestjs/common';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
 import { BranchMenuService } from './branch-menu.service';
 import { BulkUpdateAvailabilityDto } from './dto/bulk-update-availability.dto';
 import { SetAvailabilityDto } from './dto/set-availability.dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/branches/:branchId/menu')
 export class BranchMenuAdminController {
   constructor(private readonly branchMenuService: BranchMenuService) {}
@@ -29,7 +30,7 @@ export class BranchMenuAdminController {
    */
   @Get('overrides')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.READ)
   async getBranchOverrides(@Param('branchId') branchId: string) {
     const [categories, items, bundles] = await Promise.all([
       this.branchMenuService.getBranchCategoryOverrides(branchId),
@@ -52,7 +53,7 @@ export class BranchMenuAdminController {
    */
   @Put('categories/:categoryId/availability')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.UPDATE)
   async setCategoryAvailability(
     @Param('branchId') branchId: string,
     @Param('categoryId') categoryId: string,
@@ -78,7 +79,7 @@ export class BranchMenuAdminController {
    */
   @Put('items/:itemId/availability')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.UPDATE)
   async setItemAvailability(
     @Param('branchId') branchId: string,
     @Param('itemId') itemId: string,
@@ -104,7 +105,7 @@ export class BranchMenuAdminController {
    */
   @Put('bundles/:bundleId/availability')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.UPDATE)
   async setBundleAvailability(
     @Param('branchId') branchId: string,
     @Param('bundleId') bundleId: string,
@@ -130,7 +131,7 @@ export class BranchMenuAdminController {
    */
   @Patch('bulk-update')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.BULK_UPDATE)
   async bulkUpdateAvailability(
     @Param('branchId') branchId: string,
     @Body() dto: BulkUpdateAvailabilityDto,
@@ -153,7 +154,7 @@ export class BranchMenuAdminController {
    */
   @Delete('categories/:categoryId/availability')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.DELETE)
   async removeCategoryOverride(
     @Param('branchId') branchId: string,
     @Param('categoryId') categoryId: string,
@@ -171,7 +172,7 @@ export class BranchMenuAdminController {
    */
   @Delete('items/:itemId/availability')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.DELETE)
   async removeItemOverride(
     @Param('branchId') branchId: string,
     @Param('itemId') itemId: string,
@@ -186,7 +187,7 @@ export class BranchMenuAdminController {
    */
   @Delete('bundles/:bundleId/availability')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCH_MENU, PermissionAction.DELETE)
   async removeBundleOverride(
     @Param('branchId') branchId: string,
     @Param('bundleId') bundleId: string,

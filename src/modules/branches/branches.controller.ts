@@ -12,10 +12,11 @@ import {
   UseGuards,
   Version,
 } from '@nestjs/common';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole } from '../../common/enums/UserRole';
+import { Permission } from '../../common/decorators/permissions.decorator';
+import { PermissionModule } from '../../common/enums/PermissionModule';
+import { PermissionAction } from '../../common/enums/PermissionAction';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import {
   createSuccessResponse,
   createCreatedResponse,
@@ -27,7 +28,7 @@ import { UpdateBranchDto } from './dto/update-branch.dto';
 import { ZoneCheckDto } from './dto/zone-check.dto';
 import { ZonesService } from './zones.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/branches')
 export class BranchesController {
   constructor(
@@ -37,7 +38,7 @@ export class BranchesController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.CREATE)
   async create(@Body() createBranchDto: CreateBranchDto) {
     const branch = await this.branchesService.create(createBranchDto);
     return createCreatedResponse(branch, 'Branch created successfully');
@@ -45,7 +46,7 @@ export class BranchesController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.READ)
   async findAll(
     @Query('status') status?: 'all' | 'active' | 'open',
     @Query() pagination?: PaginationDto,
@@ -58,13 +59,28 @@ export class BranchesController {
 
     switch (status) {
       case 'active':
-        result = await this.branchesService.findActive(page, limit, sortBy, sortOrder);
+        result = await this.branchesService.findActive(
+          page,
+          limit,
+          sortBy,
+          sortOrder,
+        );
         break;
       case 'open':
-        result = await this.branchesService.findOpen(page, limit, sortBy, sortOrder);
+        result = await this.branchesService.findOpen(
+          page,
+          limit,
+          sortBy,
+          sortOrder,
+        );
         break;
       default:
-        result = await this.branchesService.findAll(page, limit, sortBy, sortOrder);
+        result = await this.branchesService.findAll(
+          page,
+          limit,
+          sortBy,
+          sortOrder,
+        );
     }
 
     return createSuccessResponse(result, 'Branches retrieved successfully');
@@ -72,7 +88,7 @@ export class BranchesController {
 
   @Get('nearby')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.READ)
   async findNearby(
     @Query('latitude') latitude: number,
     @Query('longitude') longitude: number,
@@ -92,7 +108,7 @@ export class BranchesController {
 
   @Post('check-delivery-zone')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async checkDeliveryZone(@Body() zoneCheckDto: ZoneCheckDto) {
     const result = await this.zonesService.checkPointInZone(zoneCheckDto);
 
@@ -108,7 +124,7 @@ export class BranchesController {
 
   @Post('find-serving-branch')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async findServingBranch(@Body() zoneCheckDto: ZoneCheckDto) {
     const branch =
       await this.zonesService.findBestBranchForLocation(zoneCheckDto);
@@ -121,7 +137,7 @@ export class BranchesController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.READ)
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const branch = await this.branchesService.findOne(id);
 
@@ -130,7 +146,7 @@ export class BranchesController {
 
   @Get(':id/stats')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.VIEW_STATS)
   async getBranchStats(@Param('id', ParseUUIDPipe) id: string) {
     const stats = await this.branchesService.getBranchStats(id);
 
@@ -142,7 +158,7 @@ export class BranchesController {
 
   @Get(':id/zones')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async getBranchZones(@Param('id', ParseUUIDPipe) id: string) {
     const zones = await this.zonesService.findByBranch(id);
 
@@ -151,7 +167,7 @@ export class BranchesController {
 
   @Put(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.UPDATE)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBranchDto: UpdateBranchDto,
@@ -163,7 +179,7 @@ export class BranchesController {
 
   @Patch(':id/toggle-status')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.TOGGLE_STATUS)
   async toggleStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('status') status: 'active' | 'open',
@@ -178,7 +194,7 @@ export class BranchesController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.BRANCHES, PermissionAction.DELETE)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.branchesService.remove(id);
 

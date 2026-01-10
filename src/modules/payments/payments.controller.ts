@@ -63,7 +63,10 @@ export class PaymentsController {
 
   @Get()
   @Version('1')
-  async getMyPayments(@Request() req: any, @Query() filterDto: PaymentFilterDto) {
+  async getMyPayments(
+    @Request() req: any,
+    @Query() filterDto: PaymentFilterDto,
+  ) {
     // Force userId to current user for security
     const result = await this.paymentsService.findAll({
       ...filterDto,
@@ -96,6 +99,9 @@ export class PaymentsController {
       req.user.id,
     );
 
-    return createSuccessResponse(refund, 'Refund request submitted successfully');
+    return createSuccessResponse(
+      refund,
+      'Refund request submitted successfully',
+    );
   }
 }

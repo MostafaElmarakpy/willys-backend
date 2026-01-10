@@ -7,9 +7,7 @@ import {
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from 'src/config/config.service';
 import { firstValueFrom } from 'rxjs';
-import {
-  PaymobAuthResponse,
-} from './interfaces/paymob-auth-response.interface';
+import { PaymobAuthResponse } from './interfaces/paymob-auth-response.interface';
 import {
   PaymobOrderResponse,
   OrderItem,
@@ -33,10 +31,7 @@ export class PaymobService {
 
   async authenticate(): Promise<string> {
     // Check if we have a cached token that hasn't expired
-    if (
-      this.authTokenCache &&
-      this.authTokenCache.expiresAt > Date.now()
-    ) {
+    if (this.authTokenCache && this.authTokenCache.expiresAt > Date.now()) {
       return this.authTokenCache.token;
     }
 
@@ -172,14 +167,11 @@ export class PaymobService {
       this.logger.log(`Processing refund for transaction ${transactionId}`);
 
       const response = await firstValueFrom(
-        this.httpService.post(
-          `${this.baseUrl}/acceptance/void_refund/refund`,
-          {
-            auth_token: authToken,
-            transaction_id: transactionId,
-            amount_cents: amountCents,
-          },
-        ),
+        this.httpService.post(`${this.baseUrl}/acceptance/void_refund/refund`, {
+          auth_token: authToken,
+          transaction_id: transactionId,
+          amount_cents: amountCents,
+        }),
       );
 
       this.logger.log(`Refund processed successfully: ${response.data.id}`);

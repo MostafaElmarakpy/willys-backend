@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddSoftDeleteColumns20260103192102 implements MigrationInterface {
-  name = 'AddSoftDeleteColumns20260103192102';
+export class AddSoftDeleteColumns20260111121000 implements MigrationInterface {
+  name = 'AddSoftDeleteColumns20260111121000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add deletedAt column to access_tokens table
@@ -77,7 +77,7 @@ export class AddSoftDeleteColumns20260103192102 implements MigrationInterface {
     await queryRunner.query(`
       ALTER TABLE "user_discounts" DROP CONSTRAINT "PK_user_discounts"
     `);
-    
+
     await queryRunner.query(`
       ALTER TABLE "user_discounts" ADD CONSTRAINT "PK_user_discounts" PRIMARY KEY ("id")
     `);
@@ -95,7 +95,7 @@ export class AddSoftDeleteColumns20260103192102 implements MigrationInterface {
     await queryRunner.query(`
       ALTER TABLE "item_discounts" DROP CONSTRAINT "PK_item_discounts"
     `);
-    
+
     await queryRunner.query(`
       ALTER TABLE "item_discounts" ADD CONSTRAINT "PK_item_discounts" PRIMARY KEY ("id")
     `);
@@ -166,22 +166,30 @@ export class AddSoftDeleteColumns20260103192102 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "IDX_item_discounts_deletedAt"`);
 
     // Drop deletedAt columns
-    await queryRunner.query(`ALTER TABLE "access_tokens" DROP COLUMN "deletedAt"`);
+    await queryRunner.query(
+      `ALTER TABLE "access_tokens" DROP COLUMN "deletedAt"`,
+    );
     await queryRunner.query(`ALTER TABLE "branches" DROP COLUMN "deletedAt"`);
     await queryRunner.query(`ALTER TABLE "zones" DROP COLUMN "deletedAt"`);
     await queryRunner.query(`ALTER TABLE "categories" DROP COLUMN "deletedAt"`);
-    await queryRunner.query(`ALTER TABLE "ingredient_categories" DROP COLUMN "deletedAt"`);
-    await queryRunner.query(`ALTER TABLE "ingredients" DROP COLUMN "deletedAt"`);
+    await queryRunner.query(
+      `ALTER TABLE "ingredient_categories" DROP COLUMN "deletedAt"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "ingredients" DROP COLUMN "deletedAt"`,
+    );
     await queryRunner.query(`ALTER TABLE "items" DROP COLUMN "deletedAt"`);
     await queryRunner.query(`ALTER TABLE "bundles" DROP COLUMN "deletedAt"`);
     await queryRunner.query(`ALTER TABLE "discounts" DROP COLUMN "deletedAt"`);
-    await queryRunner.query(`ALTER TABLE "discount_usage_logs" DROP COLUMN "deletedAt"`);
+    await queryRunner.query(
+      `ALTER TABLE "discount_usage_logs" DROP COLUMN "deletedAt"`,
+    );
 
     // Revert junction tables back to composite primary keys
     await queryRunner.query(`
       ALTER TABLE "user_discounts" DROP CONSTRAINT "PK_user_discounts"
     `);
-    
+
     await queryRunner.query(`
       ALTER TABLE "user_discounts" ADD CONSTRAINT "PK_user_discounts" PRIMARY KEY ("userId", "discountId")
     `);
@@ -197,7 +205,7 @@ export class AddSoftDeleteColumns20260103192102 implements MigrationInterface {
     await queryRunner.query(`
       ALTER TABLE "item_discounts" DROP CONSTRAINT "PK_item_discounts"
     `);
-    
+
     await queryRunner.query(`
       ALTER TABLE "item_discounts" ADD CONSTRAINT "PK_item_discounts" PRIMARY KEY ("itemId", "discountId")
     `);

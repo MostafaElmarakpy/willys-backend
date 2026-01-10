@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { User } from './user.entity';
 import { Category } from './category.entity';
 import { BaseEntity } from './base.entity';
@@ -13,7 +7,6 @@ import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
 @Entity('bundles')
 export class Bundle extends BaseEntity {
-
   @Column({ type: 'json' })
   name: BilingualStringObject;
 
@@ -72,5 +65,4 @@ export class Bundle extends BaseEntity {
 
   @Column({ nullable: true })
   updatedBy?: string;
-
 }

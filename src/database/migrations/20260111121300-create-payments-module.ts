@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreatePaymentsModule20260104200000
-  implements MigrationInterface
-{
-  name = 'CreatePaymentsModule20260104200000';
+export class CreatePaymentsModule20260111121300 implements MigrationInterface {
+  name = 'CreatePaymentsModule20260111121300';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create enum types
@@ -281,9 +279,15 @@ export class CreatePaymentsModule20260104200000
     await queryRunner.query(`DROP INDEX "IDX_refunds_status"`);
     await queryRunner.query(`DROP INDEX "IDX_refunds_refundId"`);
     await queryRunner.query(`DROP INDEX "IDX_refunds_paymentId"`);
-    await queryRunner.query(`DROP INDEX "IDX_payment_transaction_logs_occurredAt"`);
-    await queryRunner.query(`DROP INDEX "IDX_payment_transaction_logs_eventType"`);
-    await queryRunner.query(`DROP INDEX "IDX_payment_transaction_logs_paymentId"`);
+    await queryRunner.query(
+      `DROP INDEX "IDX_payment_transaction_logs_occurredAt"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "IDX_payment_transaction_logs_eventType"`,
+    );
+    await queryRunner.query(
+      `DROP INDEX "IDX_payment_transaction_logs_paymentId"`,
+    );
     await queryRunner.query(`DROP INDEX "IDX_payment_methods_userId"`);
     await queryRunner.query(`DROP INDEX "IDX_payments_paymentType"`);
     await queryRunner.query(`DROP INDEX "IDX_payments_status"`);

@@ -5,14 +5,14 @@ import {
 } from 'class-validator';
 
 export function IsValidPolygon(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isValidPolygon',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any, args: ValidationArguments) {
+        validate(value: any, _args: ValidationArguments) {
           if (!value || typeof value !== 'object') {
             return false;
           }
@@ -74,7 +74,7 @@ export function IsValidPolygon(validationOptions?: ValidationOptions) {
 
           return true;
         },
-        defaultMessage(args: ValidationArguments) {
+        defaultMessage(_args: ValidationArguments) {
           return 'Polygon must be a valid GeoJSON Polygon with proper coordinate structure. Each ring must have at least 4 points, coordinates must be [longitude, latitude] format within valid ranges (-180 to 180 for longitude, -90 to 90 for latitude), and rings must be closed.';
         },
       },

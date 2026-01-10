@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateBranchesAndZones20241210090000
-  implements MigrationInterface
-{
-  name = 'CreateBranchesAndZones20241210090000';
+export class CreateBranchesAndZones20260111120100 implements MigrationInterface {
+  name = 'CreateBranchesAndZones20260111120100';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create branches table

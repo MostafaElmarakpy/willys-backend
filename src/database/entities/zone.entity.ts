@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Branch } from './branch.entity';
 import { User } from './user.entity';
 import { BaseEntity } from './base.entity';
@@ -12,7 +6,6 @@ import { BilingualStringObject } from '../../common/dto/bilingual-string.dto';
 
 @Entity('zones')
 export class Zone extends BaseEntity {
-
   @Column({ type: 'jsonb', nullable: true })
   name?: BilingualStringObject;
 
@@ -64,5 +57,4 @@ export class Zone extends BaseEntity {
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'updatedById' })
   updatedBy?: User;
-
 }

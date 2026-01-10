@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { AccessToken } from 'src/database/entities/access-token.entity';
 import { ResetPasswordToken } from 'src/database/entities/reset-password-token.entity';
+import { Role } from 'src/database/entities/role.entity';
 import { UserGender } from 'src/common/enums/UserGender';
 import { UserProvider } from 'src/common/enums/UserProvider';
 import { UserRole } from 'src/common/enums/UserRole';
@@ -10,6 +11,8 @@ import {
   DeleteDateColumn,
   Entity,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
@@ -116,4 +119,12 @@ export class User {
 
   @OneToMany(() => AccessToken, (accessToken) => accessToken.user)
   accessTokens: AccessToken[];
+
+  @ManyToOne(() => Role, (role) => role.users, { eager: true, nullable: true })
+  @JoinColumn({ name: 'adminRoleId' })
+  adminRole?: Role;
+
+  @Column({ type: 'uuid', nullable: true })
+  @Index()
+  adminRoleId?: string;
 }

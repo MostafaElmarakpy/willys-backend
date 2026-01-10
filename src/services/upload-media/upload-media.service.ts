@@ -1,5 +1,4 @@
 import {
-  CopyObjectCommand,
   DeleteObjectCommand,
   PutBucketCorsCommand,
   S3Client,
@@ -94,7 +93,7 @@ export class UploadMediaService {
     file: Express.Multer.File[] | Express.Multer.File | undefined,
     entityType: string,
     entityId: string,
-    count: number = 1,
+    _count: number = 1,
     isFileRequired: boolean = true,
   ): Promise<UploadMedia | UploadMedia[] | undefined> {
     if (!file) {

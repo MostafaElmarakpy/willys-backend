@@ -11,28 +11,28 @@ import {
   Version,
   Request,
 } from '@nestjs/common';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import {
   createSuccessResponse,
   createCreatedResponse,
 } from 'src/common/utils/api-response-wrapper';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateCategoryDto } from './dto/category/create-category.dto';
 import { UpdateCategoryDto } from './dto/category/update-category.dto';
 import { CategoriesService } from './categories.service';
 import { CategoryFilterDto } from './dto/category/category-filter.dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/menu/categories')
 export class CategoriesAdminController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.CATEGORIES, PermissionAction.READ)
   async findAll(@Query() query: CategoryFilterDto) {
     const {
       page = 1,
@@ -58,7 +58,7 @@ export class CategoriesAdminController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.CATEGORIES, PermissionAction.CREATE)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
     @Request() req: any,
@@ -72,7 +72,7 @@ export class CategoriesAdminController {
 
   @Get('active')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.CATEGORIES, PermissionAction.READ)
   async findActiveCategories() {
     const categories = await this.categoriesService.findActiveCategories();
     return createSuccessResponse(
@@ -83,7 +83,7 @@ export class CategoriesAdminController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.CATEGORIES, PermissionAction.READ)
   async findOne(@Param('id') id: string) {
     const category = await this.categoriesService.findOne(id);
     return createSuccessResponse(category, 'Category retrieved successfully');
@@ -91,7 +91,7 @@ export class CategoriesAdminController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.CATEGORIES, PermissionAction.UPDATE)
   async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
@@ -107,7 +107,7 @@ export class CategoriesAdminController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.CATEGORIES, PermissionAction.DELETE)
   async remove(@Param('id') id: string) {
     await this.categoriesService.remove(id);
     return createSuccessResponse(null, 'Category deleted successfully');

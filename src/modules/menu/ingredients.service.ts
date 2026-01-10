@@ -36,8 +36,9 @@ export class IngredientsService {
     sortOrder: 'ASC' | 'DESC' = 'DESC',
   ) {
     const allowedSortFields = ['name', 'sortOrder', 'createdAt', 'updatedAt'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'sortOrder';
-    
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'sortOrder';
+
     const queryBuilder = this.ingredientCategoryRepository
       .createQueryBuilder('category')
       .where('category.deletedAt IS NULL')
@@ -109,7 +110,9 @@ export class IngredientsService {
     createIngredientDto: CreateIngredientDto,
     userId: string,
   ): Promise<Ingredient> {
-    const category = await this.findOneCategory(createIngredientDto.categoryId);
+    const _category = await this.findOneCategory(
+      createIngredientDto.categoryId,
+    );
 
     const ingredient = this.ingredientRepository.create({
       ...createIngredientDto,
@@ -128,8 +131,9 @@ export class IngredientsService {
     sortOrder: 'ASC' | 'DESC' = 'DESC',
   ) {
     const allowedSortFields = ['name', 'price', 'createdAt', 'updatedAt'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
-    
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+
     const queryBuilder = this.ingredientRepository
       .createQueryBuilder('ingredient')
       .leftJoinAndSelect('ingredient.category', 'category');

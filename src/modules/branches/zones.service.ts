@@ -37,21 +37,24 @@ export class ZonesService {
       const polygonWkt = this.geoJsonToWkt(createZoneDto.polygon);
 
       // Insert zone directly using raw SQL to include polygon
-      const result = await this.zoneRepository.query(`
+      const result = await this.zoneRepository.query(
+        `
         INSERT INTO zones (name, "branchId", polygon, "centerLatitude", "centerLongitude", "radiusKm", "isActive", priority, "deliveryFee", "createdAt", "updatedAt")
         VALUES ($1, $2, ST_GeomFromText($3, 4326), $4, $5, $6, $7, $8, $9, NOW(), NOW())
         RETURNING id
-      `, [
-        createZoneDto.name ? JSON.stringify(createZoneDto.name) : null,
-        createZoneDto.branchId,
-        polygonWkt,
-        createZoneDto.centerLatitude || null,
-        createZoneDto.centerLongitude || null,
-        createZoneDto.radiusKm || null,
-        createZoneDto.isActive ?? true,
-        createZoneDto.priority ?? 0,
-        createZoneDto.deliveryFee,
-      ]);
+      `,
+        [
+          createZoneDto.name ? JSON.stringify(createZoneDto.name) : null,
+          createZoneDto.branchId,
+          polygonWkt,
+          createZoneDto.centerLatitude || null,
+          createZoneDto.centerLongitude || null,
+          createZoneDto.radiusKm || null,
+          createZoneDto.isActive ?? true,
+          createZoneDto.priority ?? 0,
+          createZoneDto.deliveryFee,
+        ],
+      );
 
       // Return the zone with relations
       return await this.findOne(result[0].id);
@@ -74,7 +77,8 @@ export class ZonesService {
   }> {
     const skip = (page - 1) * limit;
     const allowedSortFields = ['name', 'priority', 'createdAt', 'updatedAt'];
-    const orderField = sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'priority';
+    const orderField =
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'priority';
 
     let orderConfig: any;
     if (orderField === 'name') {
@@ -321,34 +325,48 @@ export class ZonesService {
       throw new Error('Invalid polygon: must be a GeoJSON Polygon');
     }
 
-    if (!polygon.coordinates || !Array.isArray(polygon.coordinates) || polygon.coordinates.length === 0) {
+    if (
+      !polygon.coordinates ||
+      !Array.isArray(polygon.coordinates) ||
+      polygon.coordinates.length === 0
+    ) {
       throw new Error('Invalid polygon: coordinates array is required');
     }
 
     const coords = polygon.coordinates[0]; // First ring (exterior ring)
-    
+
     if (!coords || coords.length < 4) {
-      throw new Error('Invalid polygon: ring must have at least 4 coordinates (first and last must be the same)');
+      throw new Error(
+        'Invalid polygon: ring must have at least 4 coordinates (first and last must be the same)',
+      );
     }
 
     // Validate coordinate format [longitude, latitude]
     for (let i = 0; i < coords.length; i++) {
       const coord = coords[i];
       if (!Array.isArray(coord) || coord.length !== 2) {
-        throw new Error(`Invalid coordinate at index ${i}: must be [longitude, latitude]`);
+        throw new Error(
+          `Invalid coordinate at index ${i}: must be [longitude, latitude]`,
+        );
       }
-      
+
       const [lng, lat] = coord;
       if (typeof lng !== 'number' || typeof lat !== 'number') {
-        throw new Error(`Invalid coordinate at index ${i}: longitude and latitude must be numbers`);
+        throw new Error(
+          `Invalid coordinate at index ${i}: longitude and latitude must be numbers`,
+        );
       }
-      
+
       if (lng < -180 || lng > 180) {
-        throw new Error(`Invalid longitude ${lng} at index ${i}: must be between -180 and 180`);
+        throw new Error(
+          `Invalid longitude ${lng} at index ${i}: must be between -180 and 180`,
+        );
       }
-      
+
       if (lat < -90 || lat > 90) {
-        throw new Error(`Invalid latitude ${lat} at index ${i}: must be between -90 and 90`);
+        throw new Error(
+          `Invalid latitude ${lat} at index ${i}: must be between -90 and 90`,
+        );
       }
     }
 

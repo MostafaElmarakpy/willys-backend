@@ -21,9 +21,7 @@ export class DiscountsController {
   @Get('my-discounts')
   @Version('1')
   async getMyDiscounts(@Request() req: any) {
-    const discounts = await this.discountsService.getUserDiscounts(
-      req.user.id,
-    );
+    const discounts = await this.discountsService.getUserDiscounts(req.user.id);
     const response = discounts.map((d) => new DiscountResponseDto(d));
     return createSuccessResponse(
       response,

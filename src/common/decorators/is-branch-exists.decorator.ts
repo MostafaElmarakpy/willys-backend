@@ -28,18 +28,18 @@ export class BranchExistsRule implements ValidatorConstraintInterface {
         where: { id: branchId },
       });
       return !!branch;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
 
-  defaultMessage(args: ValidationArguments) {
+  defaultMessage(_args: ValidationArguments) {
     return 'Branch with ID $value does not exist';
   }
 }
 
 export function BranchExists(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'BranchExists',
       target: object.constructor,

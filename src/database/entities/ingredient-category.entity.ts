@@ -13,7 +13,6 @@ import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
 @Entity('ingredient_categories')
 export class IngredientCategory extends BaseEntity {
-
   @Column({ type: 'json' })
   name: BilingualStringObject;
 
@@ -40,7 +39,6 @@ export class IngredientCategory extends BaseEntity {
 
   @Column({ nullable: true })
   updatedBy?: string;
-
 
   @OneToMany(() => Ingredient, (ingredient) => ingredient.category)
   ingredients: Ingredient[];

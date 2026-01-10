@@ -16,7 +16,6 @@ import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
 
 @Entity('items')
 export class Item extends BaseEntity {
-
   @Column({ type: 'json' })
   name: BilingualStringObject;
 
@@ -27,19 +26,21 @@ export class Item extends BaseEntity {
   image?: string;
 
   @Column({ type: 'jsonb' })
-  pricing: number | {
-    price?: string;
-    variants: Array<{
-      name: string;
-      sortOrder?: number;
-      values: Array<{
-        value: string;
-        price: string;
-        sortOrder?: number;
-      }>;
-    }>;
-    type: 'number' | 'object';
-  };
+  pricing:
+    | number
+    | {
+        price?: string;
+        variants: Array<{
+          name: string;
+          sortOrder?: number;
+          values: Array<{
+            value: string;
+            price: string;
+            sortOrder?: number;
+          }>;
+        }>;
+        type: 'number' | 'object';
+      };
 
   @Column({ type: 'jsonb', nullable: true })
   tags?: string[];
@@ -69,7 +70,6 @@ export class Item extends BaseEntity {
   @Index()
   categoryId: string;
 
-
   @ManyToMany(() => Ingredient, { cascade: true })
   @JoinTable({
     name: 'item_ingredients',
@@ -97,5 +97,4 @@ export class Item extends BaseEntity {
 
   @Column({ nullable: true })
   updatedBy?: string;
-
 }

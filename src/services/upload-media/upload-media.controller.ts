@@ -19,7 +19,7 @@ export class UploadMediaController {
   @Post()
   @Version('1')
   @UseInterceptors(EntityFileInterceptor('media', 'uploadFile'))
-  async uploadFile(@Body() body: CreateUploadMediaDto) {
+  async uploadFile(@Body() _body: CreateUploadMediaDto) {
     return createSuccessResponse({}, 'File uploaded successfully');
   }
 }

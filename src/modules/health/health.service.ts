@@ -82,7 +82,7 @@ export class HealthService {
   }
 
   async getDetailedHealthInfo(): Promise<DetailedHealthInfo> {
-    const startTime = Date.now();
+    const _startTime = Date.now();
 
     const [databaseStatus, dockerStatus, systemInfo] = await Promise.allSettled(
       [

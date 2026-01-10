@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../entities/user.entity';
+import { Role } from '../entities/role.entity';
 import { UserRole } from 'src/common/enums/UserRole';
 import { UserStatus } from 'src/common/enums/UserStatus';
 import { UserProvider } from 'src/common/enums/UserProvider';
@@ -10,6 +11,19 @@ export class UserSeeder {
 
   async run(): Promise<void> {
     const userRepository = this.dataSource.getRepository(User);
+    const roleRepository = this.dataSource.getRepository(Role);
+
+    // Fetch the SUPER_ADMIN role
+    const superAdminRole = await roleRepository.findOne({
+      where: { name: 'SUPER_ADMIN' },
+    });
+
+    if (!superAdminRole) {
+      console.error(
+        '❌ Super Admin role not found. Please run role seeder first.',
+      );
+      return;
+    }
 
     // Check if users already exist
     const existingAdmin = await userRepository.findOne({
@@ -29,11 +43,14 @@ export class UserSeeder {
       adminUser.provider = UserProvider.System;
       adminUser.userLocale = 'en';
       adminUser.confirmAccount = true;
+      adminUser.adminRole = superAdminRole;
+      adminUser.adminRoleId = superAdminRole.id;
       adminUser.createdAt = new Date();
       adminUser.updatedAt = new Date();
 
       await userRepository.save(adminUser);
       console.log('✅ Admin user created: admin@admin.com / password');
+      console.log(`   └─ Assigned role: ${superAdminRole.displayName}`);
     } else {
       console.log('⚠️  Admin user already exists');
     }

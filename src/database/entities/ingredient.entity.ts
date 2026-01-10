@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { User } from './user.entity';
 import { IngredientCategory } from './ingredient-category.entity';
 import { BaseEntity } from './base.entity';
@@ -13,7 +7,6 @@ import { QuantityType } from 'src/common/enums/QuantityType';
 
 @Entity('ingredients')
 export class Ingredient extends BaseEntity {
-
   @Column({ type: 'json' })
   name: BilingualStringObject;
 
@@ -66,5 +59,4 @@ export class Ingredient extends BaseEntity {
 
   @Column({ nullable: true })
   updatedBy?: string;
-
 }

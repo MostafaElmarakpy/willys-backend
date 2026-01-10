@@ -38,7 +38,7 @@ export class HmacValidator {
         .digest('hex');
 
       return calculatedHmac === receivedHmac;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

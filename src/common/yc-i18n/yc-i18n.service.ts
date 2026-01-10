@@ -18,7 +18,7 @@ export class YcI18nService {
     return I18nContext.current()?.lang as SupportedLang;
   }
 
-  setLocale(locale: string) {
+  setLocale(_locale: string) {
     const i18nContext = I18nContext.current();
     if (i18nContext) {
       // i18nContext.lang = locale;

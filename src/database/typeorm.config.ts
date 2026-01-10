@@ -27,7 +27,7 @@ async function initializeDatabaseConfig() {
       migrationsDir: 'dist/database/migrations',
       subscribersDir: 'dist/subscribers',
     },
-    synchronize: configService.get('databaseSync') as boolean,
+    synchronize: false,
   };
 }
 
@@ -35,6 +35,7 @@ export async function getDatabaseConfig() {
   if (!databaseConfig) {
     await initializeDatabaseConfig();
   }
+
   return databaseConfig;
 }
 

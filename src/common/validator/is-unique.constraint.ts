@@ -27,13 +27,13 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
       }
       const count = await repository.count({ where: whereClause });
       return count === 0;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
 
   defaultMessage(args: ValidationArguments) {
-    const [entityClass, column] = args.constraints;
+    const [_entityClass, column] = args.constraints;
     return `${column} must be unique`;
   }
 }

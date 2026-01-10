@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddQuantityTypeToIngredientsAndExtras20241220120000 implements MigrationInterface {
-  name = 'AddQuantityTypeToIngredientsAndExtras20241220120000';
+export class AddQuantityTypeToIngredientsAndExtras20260111120500 implements MigrationInterface {
+  name = 'AddQuantityTypeToIngredientsAndExtras20260111120500';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create quantity_type enum
@@ -46,11 +46,17 @@ export class AddQuantityTypeToIngredientsAndExtras20241220120000 implements Migr
     await queryRunner.query(`DROP INDEX "IDX_ingredients_quantityType"`);
 
     // Remove columns from variant_values
-    await queryRunner.query(`ALTER TABLE "variant_values" DROP COLUMN "quantityType"`);
-    await queryRunner.query(`ALTER TABLE "variant_values" DROP COLUMN "quantity"`);
+    await queryRunner.query(
+      `ALTER TABLE "variant_values" DROP COLUMN "quantityType"`,
+    );
+    await queryRunner.query(
+      `ALTER TABLE "variant_values" DROP COLUMN "quantity"`,
+    );
 
     // Remove column from ingredients
-    await queryRunner.query(`ALTER TABLE "ingredients" DROP COLUMN "quantityType"`);
+    await queryRunner.query(
+      `ALTER TABLE "ingredients" DROP COLUMN "quantityType"`,
+    );
 
     // Drop enum type
     await queryRunner.query(`DROP TYPE "quantity_type_enum"`);

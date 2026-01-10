@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaymentMethod } from 'src/database/entities/payment-method.entity';
@@ -59,9 +54,7 @@ export class PaymentMethodsService {
       order: { isDefault: 'DESC', createdAt: 'DESC' },
     });
 
-    return paymentMethods.map(
-      (method) => new PaymentMethodResponseDto(method),
-    );
+    return paymentMethods.map((method) => new PaymentMethodResponseDto(method));
   }
 
   async findOne(id: string, userId: string): Promise<PaymentMethod> {

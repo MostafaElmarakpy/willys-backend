@@ -27,6 +27,7 @@ import { DiscountsModule } from './modules/discounts/discounts.module';
 import { BranchMenuModule } from './modules/branch-menu/branch-menu.module';
 import { UploadMediaModule } from './services/upload-media/upload-media.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     DiscountsModule,
     UploadMediaModule,
     PaymentsModule,
+    RolesModule,
   ],
   providers: [LocaleSubscriber, YcI18nService, MailService],
   exports: [LocaleSubscriber, YcI18nService],

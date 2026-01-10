@@ -115,7 +115,7 @@ export class OrderRoutingService {
     return branchesWithDistance
       .sort((a, b) => a.distance - b.distance)
       .slice(0, limit)
-      .map(({ distance, ...branch }) => branch as Branch);
+      .map(({ distance: _distance, ...branch }) => branch as Branch);
   }
 
   async getBranchWorkload(branchId: string): Promise<{

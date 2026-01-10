@@ -12,10 +12,11 @@ import {
   UseGuards,
   Version,
 } from '@nestjs/common';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole } from '../../common/enums/UserRole';
+import { Permission } from '../../common/decorators/permissions.decorator';
+import { PermissionModule } from '../../common/enums/PermissionModule';
+import { PermissionAction } from '../../common/enums/PermissionAction';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import {
   createSuccessResponse,
   createCreatedResponse,
@@ -26,14 +27,14 @@ import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { ZoneCheckDto } from './dto/zone-check.dto';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/zones')
 export class ZonesController {
   constructor(private readonly zonesService: ZonesService) {}
 
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.CREATE)
   async create(@Body() createZoneDto: CreateZoneDto) {
     const zone = await this.zonesService.create(createZoneDto);
     return createCreatedResponse(zone, 'Zone created successfully');
@@ -41,7 +42,7 @@ export class ZonesController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async findAll(@Query() pagination: PaginationDto) {
     const result = await this.zonesService.findAll(
       pagination.page,
@@ -54,7 +55,7 @@ export class ZonesController {
 
   @Post('check-point')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async checkPoint(@Body() zoneCheckDto: ZoneCheckDto) {
     const result = await this.zonesService.checkPointInZone(zoneCheckDto);
 
@@ -63,7 +64,7 @@ export class ZonesController {
 
   @Post('find-branch')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async findBranchForLocation(@Body() zoneCheckDto: ZoneCheckDto) {
     const branch =
       await this.zonesService.findBestBranchForLocation(zoneCheckDto);
@@ -76,7 +77,7 @@ export class ZonesController {
 
   @Get('branch/:branchId')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async findByBranch(@Param('branchId', ParseUUIDPipe) branchId: string) {
     const zones = await this.zonesService.findByBranch(branchId);
     return createSuccessResponse(zones, 'Branch zones retrieved successfully');
@@ -84,7 +85,7 @@ export class ZonesController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const zone = await this.zonesService.findOne(id);
     return createSuccessResponse(zone, 'Zone retrieved successfully');
@@ -92,7 +93,7 @@ export class ZonesController {
 
   @Get(':id/stats')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.VIEW_STATS)
   async getZoneStats(@Param('id', ParseUUIDPipe) id: string) {
     const stats = await this.zonesService.getZoneStats(id);
     return createSuccessResponse(
@@ -103,7 +104,7 @@ export class ZonesController {
 
   @Put(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.UPDATE)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateZoneDto: UpdateZoneDto,
@@ -114,7 +115,7 @@ export class ZonesController {
 
   @Patch(':id/toggle-active')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.TOGGLE_STATUS)
   async toggleActive(@Param('id', ParseUUIDPipe) id: string) {
     const zone = await this.zonesService.toggleActive(id);
     return createSuccessResponse(
@@ -125,7 +126,7 @@ export class ZonesController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.ZONES, PermissionAction.DELETE)
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.zonesService.remove(id);
     return createSuccessResponse(null, 'Zone deleted successfully');

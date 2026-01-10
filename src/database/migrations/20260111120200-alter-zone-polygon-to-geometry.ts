@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AlterZonePolygonToGeometry20241210100000
-  implements MigrationInterface
-{
-  name = 'AlterZonePolygonToGeometry20241210100000';
+export class AlterZonePolygonToGeometry20260111120200 implements MigrationInterface {
+  name = 'AlterZonePolygonToGeometry20260111120200';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Enable PostGIS extension if not already enabled

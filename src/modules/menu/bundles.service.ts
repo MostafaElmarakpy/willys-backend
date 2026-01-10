@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, Between, IsNull } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Bundle } from 'src/database/entities/bundle.entity';
 import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
 import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';

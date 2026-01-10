@@ -29,9 +29,8 @@ export class BranchMenuController {
     @Query('includeBundles', new DefaultValuePipe(true), ParseBoolPipe)
     includeBundles: boolean,
   ) {
-    const menu = await this.branchMenuService.getAvailableMenuForBranch(
-      branchId,
-    );
+    const menu =
+      await this.branchMenuService.getAvailableMenuForBranch(branchId);
 
     // Filter based on query params
     const filteredMenu: any = {};
@@ -89,10 +88,7 @@ export class BranchMenuController {
       );
     }
 
-    return createSuccessResponse(
-      category,
-      'Category retrieved successfully',
-    );
+    return createSuccessResponse(category, 'Category retrieved successfully');
   }
 
   /**

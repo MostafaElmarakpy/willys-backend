@@ -1,16 +1,26 @@
 import { User } from 'src/database/entities/user.entity';
-import { BaseEntity } from './base.entity';
 import {
   Entity,
   Column,
   ManyToOne,
   JoinColumn,
   Index,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity('access_tokens')
-export class AccessToken extends BaseEntity {
+export class AccessToken {
+  @PrimaryGeneratedColumn('uuid')
+  id: string = uuidv4();
 
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt?: Date;
   @Column()
   identifier: string;
 
@@ -41,7 +51,6 @@ export class AccessToken extends BaseEntity {
 
   @Column({ type: 'timestamp' })
   refreshExpiration: Date;
-
 
   @ManyToOne(() => User, (user) => user.accessTokens)
   @JoinColumn({ name: 'userId' })

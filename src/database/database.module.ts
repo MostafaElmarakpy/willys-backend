@@ -31,7 +31,7 @@ import { DataSourceOptions } from 'typeorm';
             migrationsDir: 'dist/database/migrations',
             subscribersDir: 'dist/subscribers',
           },
-          synchronize: process.env.NODE_ENV === 'development',
+          synchronize: false,
         } as DataSourceOptions;
 
         return {

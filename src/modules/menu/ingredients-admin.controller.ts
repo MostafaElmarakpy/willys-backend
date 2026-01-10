@@ -11,10 +11,11 @@ import {
   Version,
   Request,
 } from '@nestjs/common';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import {
   createSuccessResponse,
   createCreatedResponse,
@@ -35,14 +36,14 @@ interface CategoryQuery extends PaginationDto {
   search?: string;
 }
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/menu/ingredients')
 export class IngredientsAdminController {
   constructor(private readonly ingredientsService: IngredientsService) {}
 
   @Get('categories')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)
   async findAllCategories(@Query() query: CategoryQuery) {
     const { page = 1, limit = 10, search, sortBy, sortOrder = 'DESC' } = query;
     const categories = await this.ingredientsService.findAllCategories(
@@ -60,7 +61,7 @@ export class IngredientsAdminController {
 
   @Post('categories')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.CREATE)
   async createCategory(
     @Body() createIngredientCategoryDto: CreateIngredientCategoryDto,
     @Request() req: any,
@@ -77,7 +78,7 @@ export class IngredientsAdminController {
 
   @Get('categories/active')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)
   async findActiveCategories() {
     const categories = await this.ingredientsService.findActiveCategories();
     return createSuccessResponse(
@@ -88,7 +89,7 @@ export class IngredientsAdminController {
 
   @Get('categories/:id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)
   async findOneCategory(@Param('id') id: string) {
     const category = await this.ingredientsService.findOneCategory(id);
     return createSuccessResponse(
@@ -99,7 +100,7 @@ export class IngredientsAdminController {
 
   @Patch('categories/:id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.UPDATE)
   async updateCategory(
     @Param('id') id: string,
     @Body() updateIngredientCategoryDto: UpdateIngredientCategoryDto,
@@ -118,7 +119,7 @@ export class IngredientsAdminController {
 
   @Delete('categories/:id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.DELETE)
   async removeCategory(@Param('id') id: string) {
     await this.ingredientsService.removeCategory(id);
     return createSuccessResponse(
@@ -129,9 +130,16 @@ export class IngredientsAdminController {
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)
   async findAllIngredients(@Query() query: IngredientQuery) {
-    const { page = 1, limit = 10, search, categoryId, sortBy, sortOrder = 'DESC' } = query;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      categoryId,
+      sortBy,
+      sortOrder = 'DESC',
+    } = query;
     const ingredients = await this.ingredientsService.findAllIngredients(
       page,
       limit,
@@ -148,7 +156,7 @@ export class IngredientsAdminController {
 
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.CREATE)
   async createIngredient(
     @Body() createIngredientDto: CreateIngredientDto,
     @Request() req: any,
@@ -162,7 +170,7 @@ export class IngredientsAdminController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)
   async findOneIngredient(@Param('id') id: string) {
     const ingredient = await this.ingredientsService.findOneIngredient(id);
     return createSuccessResponse(
@@ -173,7 +181,7 @@ export class IngredientsAdminController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.UPDATE)
   async updateIngredient(
     @Param('id') id: string,
     @Body() updateIngredientDto: UpdateIngredientDto,
@@ -189,7 +197,7 @@ export class IngredientsAdminController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.DELETE)
   async removeIngredient(@Param('id') id: string) {
     await this.ingredientsService.removeIngredient(id);
     return createSuccessResponse(null, 'Ingredient deleted successfully');
@@ -197,7 +205,7 @@ export class IngredientsAdminController {
 
   @Get('categories/:categoryId/ingredients')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)
   async findIngredientsByCategory(@Param('categoryId') categoryId: string) {
     const ingredients =
       await this.ingredientsService.findIngredientsByCategory(categoryId);

@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Discount } from './discount.entity';
 import { User } from './user.entity';
 import { Item } from './item.entity';
@@ -12,7 +6,6 @@ import { BaseEntity } from './base.entity';
 
 @Entity('discount_usage_logs')
 export class DiscountUsageLog extends BaseEntity {
-
   @ManyToOne(() => Discount, (discount) => discount.usageLogs, {
     nullable: false,
   })

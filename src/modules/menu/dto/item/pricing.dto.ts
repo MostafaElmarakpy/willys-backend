@@ -107,4 +107,3 @@ export class BundledItem {
   @IsString()
   quantity: string;
 }
-

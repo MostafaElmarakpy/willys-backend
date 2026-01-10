@@ -54,7 +54,8 @@ export class RefundsService {
 
     // Calculate refund amount
     const refundAmount = dto.amount || payment.amount;
-    const remainingAmount = Number(payment.amount) - Number(payment.refundedAmount);
+    const remainingAmount =
+      Number(payment.amount) - Number(payment.refundedAmount);
 
     if (refundAmount > remainingAmount) {
       throw new BadRequestException(
@@ -86,7 +87,9 @@ export class RefundsService {
 
     const saved = await this.refundRepository.save(refund);
 
-    this.logger.log(`Refund requested: ${refundId} for payment ${payment.transactionId}`);
+    this.logger.log(
+      `Refund requested: ${refundId} for payment ${payment.transactionId}`,
+    );
 
     return new RefundResponseDto(saved);
   }
@@ -106,9 +109,7 @@ export class RefundsService {
     }
 
     if (refund.status !== RefundStatus.PENDING) {
-      throw new BadRequestException(
-        'Only pending refunds can be approved',
-      );
+      throw new BadRequestException('Only pending refunds can be approved');
     }
 
     refund.status = RefundStatus.APPROVED;
@@ -148,9 +149,7 @@ export class RefundsService {
     }
 
     if (refund.status !== RefundStatus.PENDING) {
-      throw new BadRequestException(
-        'Only pending refunds can be rejected',
-      );
+      throw new BadRequestException('Only pending refunds can be rejected');
     }
 
     refund.status = RefundStatus.REJECTED;
@@ -179,7 +178,9 @@ export class RefundsService {
     }
 
     if (payment.paymentType !== PaymentType.CARD) {
-      throw new BadRequestException('Only card payments can be automatically refunded');
+      throw new BadRequestException(
+        'Only card payments can be automatically refunded',
+      );
     }
 
     if (payment.status !== PaymentStatus.SUCCESS) {
@@ -187,7 +188,8 @@ export class RefundsService {
     }
 
     const refundAmount = amount || payment.amount;
-    const remainingAmount = Number(payment.amount) - Number(payment.refundedAmount);
+    const remainingAmount =
+      Number(payment.amount) - Number(payment.refundedAmount);
 
     if (refundAmount > remainingAmount) {
       throw new BadRequestException(
@@ -217,7 +219,9 @@ export class RefundsService {
 
     const saved = await this.refundRepository.save(refund);
 
-    this.logger.log(`Automatic refund created: ${refundId} for payment ${payment.transactionId}`);
+    this.logger.log(
+      `Automatic refund created: ${refundId} for payment ${payment.transactionId}`,
+    );
 
     // Process immediately
     await this.processRefundWithPaymob(saved);
@@ -306,7 +310,8 @@ export class RefundsService {
       });
 
       // Update payment refunded amount and status
-      const newRefundedAmount = Number(payment.refundedAmount) + Number(refund.amount);
+      const newRefundedAmount =
+        Number(payment.refundedAmount) + Number(refund.amount);
       const newStatus =
         newRefundedAmount >= Number(payment.amount)
           ? PaymentStatus.REFUNDED
@@ -315,7 +320,10 @@ export class RefundsService {
       await this.paymentRepository.update(payment.id, {
         refundedAmount: newRefundedAmount,
         status: newStatus,
-        refundedAt: newStatus === PaymentStatus.REFUNDED ? new Date() : payment.refundedAt,
+        refundedAt:
+          newStatus === PaymentStatus.REFUNDED
+            ? new Date()
+            : payment.refundedAt,
       });
 
       this.logger.log(`Refund processed successfully: ${refund.refundId}`);

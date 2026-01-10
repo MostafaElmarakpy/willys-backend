@@ -12,10 +12,11 @@ import {
   UseInterceptors,
   Version,
 } from '@nestjs/common';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/common/enums/UserRole';
+import { Permission } from 'src/common/decorators/permissions.decorator';
+import { PermissionModule } from 'src/common/enums/PermissionModule';
+import { PermissionAction } from 'src/common/enums/PermissionAction';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import {
   AddParamToBodyInterceptor,
   TransformToTypeTypes,
@@ -32,14 +33,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { UsersAdminService } from './users-admin.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/users')
 export class UsersAdminController {
   constructor(private readonly usersService: UsersAdminService) {}
 
   @Get()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.USERS, PermissionAction.READ)
   async findAll(@Query() pagination: PaginationDto) {
     const users = await this.usersService.findAll(
       pagination.page || 1,
@@ -52,7 +53,7 @@ export class UsersAdminController {
 
   @Get('/management')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.USERS, PermissionAction.READ)
   async findAllUsersRole(@Query() pagination: PaginationDto) {
     const users = await this.usersService.findAllUsersRole(
       pagination.page || 1,
@@ -69,7 +70,7 @@ export class UsersAdminController {
   @UseInterceptors(EntityFileInterceptor('user', 'avatar'))
   @Post()
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.USERS, PermissionAction.CREATE)
   async create(
     @UploadedFile() avatar: Express.Multer.File,
     @Body() createUserDto: CreateUserDto,
@@ -80,7 +81,7 @@ export class UsersAdminController {
 
   @Get(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.USERS, PermissionAction.READ)
   @Serialize(UserDto)
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findOne(id);
@@ -89,7 +90,7 @@ export class UsersAdminController {
 
   @Patch(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.USERS, PermissionAction.UPDATE)
   @UseInterceptors(
     new AddParamToBodyInterceptor({
       paramName: 'id',
@@ -113,7 +114,7 @@ export class UsersAdminController {
 
   @Delete(':id')
   @Version('1')
-  @Roles(UserRole.admin)
+  @Permission(PermissionModule.USERS, PermissionAction.DELETE)
   async remove(@Param('id') id: string) {
     await this.usersService.remove(id);
     return createSuccessResponse(null, 'User deleted successfully');

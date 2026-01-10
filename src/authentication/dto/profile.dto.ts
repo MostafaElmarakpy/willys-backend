@@ -2,6 +2,7 @@ import { UserGender } from 'src/common/enums/UserGender';
 import { UserProvider } from 'src/common/enums/UserProvider';
 import { UserRole } from 'src/common/enums/UserRole';
 import { UserStatus } from 'src/common/enums/UserStatus';
+import { Role } from 'src/database/entities/role.entity';
 
 export class ProfileDto {
   id: string;
@@ -26,6 +27,9 @@ export class ProfileDto {
   changePasswordTime: Date;
   countryCode: string;
   verificationCode: string;
+  adminRole?: Role;
+  adminRoleId?: string;
+  
   constructor(user: any) {
     this.id = user.id;
     this.fullName = user.fullName;
@@ -45,5 +49,7 @@ export class ProfileDto {
     this.lastLogout = user.lastLogout;
     this.createdAt = user.createdAt;
     this.updatedAt = user.updatedAt;
+    this.adminRole = user.adminRole;
+    this.adminRoleId = user.adminRoleId;
   }
 }

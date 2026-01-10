@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, Between, IsNull } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Item } from 'src/database/entities/item.entity';
 import { Ingredient } from 'src/database/entities/ingredient.entity';
 import { CreateItemDto } from './dto/item/create-item.dto';

@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateBundles20241212170000 implements MigrationInterface {
-  name = 'CreateBundles20241212170000';
+export class CreateBundles20260111120400 implements MigrationInterface {
+  name = 'CreateBundles20260111120400';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create bundle_status_enum type

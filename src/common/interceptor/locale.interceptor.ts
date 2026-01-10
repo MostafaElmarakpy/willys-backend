@@ -11,7 +11,7 @@ export class LocaleInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
 
-    const locale =
+    const _locale =
       request.headers['accept-language'] ??
       request.headers['Accept-Language'] ??
       request.headers['x-language'] ??

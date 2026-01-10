@@ -19,7 +19,6 @@ import { DiscountUsageLog } from './discount-usage-log.entity';
 
 @Entity('discounts')
 export class Discount extends BaseEntity {
-
   @Column({ nullable: true, unique: true })
   code?: string;
 
@@ -111,5 +110,4 @@ export class Discount extends BaseEntity {
 
   @Column({ nullable: true })
   updatedBy?: string;
-
 }

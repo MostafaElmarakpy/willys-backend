@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Payment } from 'src/database/entities/payment.entity';
 import { PaymentTransactionLog } from 'src/database/entities/payment-transaction-log.entity';
 import { PaymentType } from 'src/common/enums/PaymentType';
@@ -153,7 +153,9 @@ export class PaymentsService {
         payment.ipAddress,
       );
 
-      this.logger.log(`Card payment processing initiated: ${payment.transactionId}`);
+      this.logger.log(
+        `Card payment processing initiated: ${payment.transactionId}`,
+      );
 
       return {
         payment: new PaymentResponseDto(payment),
@@ -262,7 +264,9 @@ export class PaymentsService {
         { paymobTransactionId: webhookData.obj.id },
       );
 
-      this.logger.log(`Payment successful via webhook: ${payment.transactionId}`);
+      this.logger.log(
+        `Payment successful via webhook: ${payment.transactionId}`,
+      );
     } else if (webhookData.obj.success === false) {
       payment.status = PaymentStatus.FAILED;
       payment.errorMessage = webhookData.obj.data?.message || 'Payment failed';
@@ -292,7 +296,17 @@ export class PaymentsService {
   }
 
   async findAll(filterDto: PaymentFilterDto): Promise<any> {
-    const { page = 1, limit = 20, status, paymentType, userId, startDate, endDate, minAmount, maxAmount } = filterDto;
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      paymentType,
+      userId,
+      startDate,
+      endDate,
+      minAmount,
+      maxAmount,
+    } = filterDto;
 
     const queryBuilder = this.paymentRepository
       .createQueryBuilder('payment')
@@ -313,10 +327,13 @@ export class PaymentsService {
     }
 
     if (startDate && endDate) {
-      queryBuilder.andWhere('payment.createdAt BETWEEN :startDate AND :endDate', {
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-      });
+      queryBuilder.andWhere(
+        'payment.createdAt BETWEEN :startDate AND :endDate',
+        {
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+        },
+      );
     } else if (startDate) {
       queryBuilder.andWhere('payment.createdAt >= :startDate', {
         startDate: new Date(startDate),
@@ -428,7 +445,9 @@ export class PaymentsService {
       cardPayments,
     ] = await Promise.all([
       this.paymentRepository.count(),
-      this.paymentRepository.count({ where: { status: PaymentStatus.SUCCESS } }),
+      this.paymentRepository.count({
+        where: { status: PaymentStatus.SUCCESS },
+      }),
       this.paymentRepository.count({ where: { status: PaymentStatus.FAILED } }),
       this.paymentRepository
         .createQueryBuilder('payment')
@@ -441,8 +460,12 @@ export class PaymentsService {
         .select('SUM(payment.refundedAmount)', 'total')
         .getRawOne()
         .then((result) => Number(result?.total || 0)),
-      this.paymentRepository.count({ where: { paymentType: PaymentType.CASH } }),
-      this.paymentRepository.count({ where: { paymentType: PaymentType.CARD } }),
+      this.paymentRepository.count({
+        where: { paymentType: PaymentType.CASH },
+      }),
+      this.paymentRepository.count({
+        where: { paymentType: PaymentType.CARD },
+      }),
     ]);
 
     return {

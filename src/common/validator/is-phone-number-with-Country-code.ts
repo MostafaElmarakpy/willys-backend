@@ -9,7 +9,7 @@ export function IsPhoneNumberWithCountryCode(
   property: string,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'IsPhoneNumberWithCountryCode',
       target: object.constructor,
@@ -31,7 +31,7 @@ export function IsPhoneNumberWithCountryCode(
               countryCode as CountryCode,
             );
             return phoneNumber?.isValid() || false; // Validate the phone number
-          } catch (error) {
+          } catch (_error) {
             return false; // Return false if parsing or validation fails
           }
         },

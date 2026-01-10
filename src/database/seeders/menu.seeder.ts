@@ -232,8 +232,6 @@ export class MenuSeeder {
       console.log(`  ✅ Ingredient created: ${ingredientData.name.en}`);
     }
 
-
-
     console.log('🍽️  Creating menu items...');
 
     // Create Items with new pricing structure
@@ -443,8 +441,12 @@ export class MenuSeeder {
     ];
 
     for (const itemData of itemsData) {
-      const { categoryIndex, variantIndexes, ingredientIndexes, ...data } =
-        itemData;
+      const {
+        categoryIndex,
+        variantIndexes: _variantIndexes,
+        ingredientIndexes,
+        ...data
+      } = itemData;
 
       // Create item with new schema fields
       const item = itemRepository.create({
@@ -455,18 +457,18 @@ export class MenuSeeder {
         createdAt: new Date(),
         updatedAt: new Date(),
         // Add new fields that are now required
-        ingredientsWithQuantity: ingredientIndexes && ingredientIndexes.length > 0 
-          ? ingredientIndexes.map((index: number) => ({
-              id: savedIngredients[index].id,
-              quantity: '1', // Default quantity
-            }))
-          : undefined,
+        ingredientsWithQuantity:
+          ingredientIndexes && ingredientIndexes.length > 0
+            ? ingredientIndexes.map((index: number) => ({
+                id: savedIngredients[index].id,
+                quantity: '1', // Default quantity
+              }))
+            : undefined,
         extras: undefined, // No extras for seeded items initially
         tags: undefined, // No tags for seeded items initially
       });
 
       const savedItem = await itemRepository.save(item);
-
 
       // Add ingredients to item (many-to-many relationship)
       if (ingredientIndexes && ingredientIndexes.length > 0) {
