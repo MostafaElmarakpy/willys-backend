@@ -28,8 +28,4 @@ export class CreateCategoryDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean = true;
-
-  @IsOptional()
-  @IsNumber()
-  sortOrder?: number = 0;
 }

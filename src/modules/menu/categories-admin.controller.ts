@@ -24,6 +24,7 @@ import { CreateCategoryDto } from './dto/category/create-category.dto';
 import { UpdateCategoryDto } from './dto/category/update-category.dto';
 import { CategoriesService } from './categories.service';
 import { CategoryFilterDto } from './dto/category/category-filter.dto';
+import { ReorderCategoriesDto } from './dto/category/reorder-categories.dto';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('admin/menu/categories')
@@ -68,6 +69,14 @@ export class CategoriesAdminController {
       req.user.id,
     );
     return createCreatedResponse(category, 'Category created successfully');
+  }
+
+  @Patch('reorder')
+  @Version('1')
+  @Permission(PermissionModule.CATEGORIES, PermissionAction.UPDATE)
+  async reorder(@Body() reorderDto: ReorderCategoriesDto) {
+    const result = await this.categoriesService.reorderCategories(reorderDto);
+    return createSuccessResponse(result, 'Categories reordered successfully');
   }
 
   @Get('active')

@@ -1,24 +1,36 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from 'src/database/entities/category.entity';
-import { IsNull, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { CategoryOrderBy } from './dto/category/category-filter.dto';
 import { CreateCategoryDto } from './dto/category/create-category.dto';
 import { UpdateCategoryDto } from './dto/category/update-category.dto';
+import { ReorderCategoriesDto } from './dto/category/reorder-categories.dto';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
     createCategoryDto: CreateCategoryDto,
     userId: string,
   ): Promise<Category> {
+    // Get the highest sortOrder value and add 1
+    const maxSortOrder = await this.categoryRepository
+      .createQueryBuilder('category')
+      .select('MAX(category.sortOrder)', 'max')
+      .where('category.deletedAt IS NULL')
+      .getRawOne();
+
+    const nextSortOrder = (maxSortOrder?.max ?? -1) + 1;
+
     const category = this.categoryRepository.create({
       ...createCategoryDto,
+      sortOrder: nextSortOrder,
       createdBy: userId,
     });
     return await this.categoryRepository.save(category);
@@ -130,6 +142,45 @@ export class CategoriesService {
     return await this.categoryRepository.find({
       where: { isActive: true, deletedAt: IsNull() },
       order: { sortOrder: 'ASC', createdAt: 'DESC' },
+    });
+  }
+
+  async reorderCategories(
+    reorderDto: ReorderCategoriesDto,
+  ): Promise<{ success: boolean; updatedCount: number }> {
+    const { categories } = reorderDto;
+
+    // Use a transaction to ensure all updates happen atomically
+    return await this.dataSource.transaction(async (manager) => {
+      const categoryRepo = manager.getRepository(Category);
+
+      // Validate that all category IDs exist and are not deleted
+      const categoryIds = categories.map((c) => c.id);
+      const existingCategories = await categoryRepo.find({
+        where: categoryIds.map((id) => ({ id, deletedAt: IsNull() })),
+        select: ['id'],
+      });
+
+      if (existingCategories.length !== categories.length) {
+        const existingIds = new Set(existingCategories.map((c) => c.id));
+        const missingIds = categoryIds.filter((id) => !existingIds.has(id));
+        throw new NotFoundException(
+          `Categories not found: ${missingIds.join(', ')}`,
+        );
+      }
+
+      // Update each category's sortOrder
+      for (const categoryUpdate of categories) {
+        await categoryRepo.update(
+          { id: categoryUpdate.id },
+          { sortOrder: categoryUpdate.sortOrder },
+        );
+      }
+
+      return {
+        success: true,
+        updatedCount: categories.length,
+      };
     });
   }
 }
