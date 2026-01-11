@@ -409,6 +409,93 @@ export class BranchMenuService {
   }
 
   /**
+   * Check if a specific item is available at a branch
+   */
+  async isItemAvailable(branchId: string, itemId: string): Promise<boolean> {
+    const item = await this.itemRepo.findOne({
+      where: { id: itemId, deletedAt: IsNull() },
+      relations: ['category'],
+    });
+
+    if (!item) {
+      return false;
+    }
+
+    // Check if item is active in core menu
+    if (item.status !== ItemStatus.ACTIVE) {
+      return false;
+    }
+
+    // Check if parent category is active
+    if (!item.category?.isActive) {
+      return false;
+    }
+
+    // Check category override
+    const categoryOverride = await this.categoryOverrideRepo.findOne({
+      where: { branchId, categoryId: item.categoryId, deletedAt: IsNull() },
+    });
+    if (categoryOverride && !categoryOverride.isAvailable) {
+      return false;
+    }
+
+    // Check item override
+    const itemOverride = await this.itemOverrideRepo.findOne({
+      where: { branchId, itemId, deletedAt: IsNull() },
+    });
+    if (itemOverride && !itemOverride.isAvailable) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Check if a specific bundle is available at a branch
+   */
+  async isBundleAvailable(
+    branchId: string,
+    bundleId: string,
+  ): Promise<boolean> {
+    const bundle = await this.bundleRepo.findOne({
+      where: { id: bundleId, deletedAt: IsNull() },
+      relations: ['category'],
+    });
+
+    if (!bundle) {
+      return false;
+    }
+
+    // Check if bundle is active in core menu
+    if (bundle.status !== BundleStatus.ACTIVE) {
+      return false;
+    }
+
+    // Check if parent category is active
+    if (!bundle.category?.isActive) {
+      return false;
+    }
+
+    // Check category override
+    const categoryOverride = await this.categoryOverrideRepo.findOne({
+      where: { branchId, categoryId: bundle.categoryId, deletedAt: IsNull() },
+    });
+    if (categoryOverride && !categoryOverride.isAvailable) {
+      return false;
+    }
+
+    // Check bundle override
+    const bundleOverride = await this.bundleOverrideRepo.findOne({
+      where: { branchId, bundleId, deletedAt: IsNull() },
+    });
+    if (bundleOverride && !bundleOverride.isAvailable) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
    * Bulk update availability (uses transaction)
    */
   async bulkUpdateAvailability(

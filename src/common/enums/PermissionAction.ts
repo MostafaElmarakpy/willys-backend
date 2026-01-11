@@ -11,4 +11,7 @@ export enum PermissionAction {
   REJECT = 'REJECT',
   VIEW_STATS = 'VIEW_STATS',
   BULK_UPDATE = 'BULK_UPDATE',
+  UPDATE_STATUS = 'UPDATE_STATUS',
+  CANCEL = 'CANCEL',
+  EXPORT = 'EXPORT',
 }

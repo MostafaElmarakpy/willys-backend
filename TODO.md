@@ -1,4 +1,3 @@
-[x] ordering and cart and checkout
 [x] whatsapp integration with client signin and forget password and ordering and feedback
 [x] firebase notification integration service from backend to dashboard 
 [x] Default extras for any item 

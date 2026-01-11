@@ -28,6 +28,9 @@ import { BranchMenuModule } from './modules/branch-menu/branch-menu.module';
 import { UploadMediaModule } from './services/upload-media/upload-media.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { AddressesModule } from './modules/addresses/addresses.module';
+import { CartModule } from './modules/cart/cart.module';
+import { OrdersModule } from './modules/orders/orders.module';
 
 @Module({
   imports: [
@@ -77,6 +80,9 @@ import { RolesModule } from './modules/roles/roles.module';
     UploadMediaModule,
     PaymentsModule,
     RolesModule,
+    AddressesModule,
+    CartModule,
+    OrdersModule,
   ],
   providers: [LocaleSubscriber, YcI18nService, MailService],
   exports: [LocaleSubscriber, YcI18nService],

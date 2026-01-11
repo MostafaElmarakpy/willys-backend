@@ -263,6 +263,13 @@ export class DiscountsService {
     return discount;
   }
 
+  async findByCode(code: string): Promise<Discount | null> {
+    return this.discountRepository.findOne({
+      where: { code, deletedAt: IsNull() },
+      relations: ['freeItem'],
+    });
+  }
+
   async update(
     id: string,
     updateDiscountDto: UpdateDiscountDto,

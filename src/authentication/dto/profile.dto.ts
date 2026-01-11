@@ -29,7 +29,7 @@ export class ProfileDto {
   verificationCode: string;
   adminRole?: Role;
   adminRoleId?: string;
-  
+
   constructor(user: any) {
     this.id = user.id;
     this.fullName = user.fullName;
