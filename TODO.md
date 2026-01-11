@@ -1,4 +1,3 @@
-[x] Roles and permissions for admin to access modules and actions like update create delete etc...
 [x] ordering and cart and checkout
 [x] whatsapp integration with client signin and forget password and ordering and feedback
 [x] firebase notification integration service from backend to dashboard 

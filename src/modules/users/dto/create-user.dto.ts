@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -31,23 +32,28 @@ export class CreateUserDto {
   @IsNotEmpty()
   password: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @IsPhoneNumberWithCountryCode('phoneNumberCountryCode', {
     message: 'Invalid phone number for the provided country code',
   })
   @IsUnique(User, 'phoneNumber')
   phoneNumber?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MinLength(2)
   @MaxLength(3)
-  phoneNumberCountryCode: CountryCode;
+  phoneNumberCountryCode?: CountryCode;
 
   @IsNotEmpty()
   @IsEnum(UserRole)
   role: UserRole;
+
+  @IsOptional()
+  @IsString()
+  @IsUUID()
+  adminRoleId?: string;
 
   @IsOptional()
   @IsDate()

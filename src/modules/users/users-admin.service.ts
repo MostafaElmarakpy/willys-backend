@@ -52,6 +52,7 @@ export class UsersAdminService {
     user.fullName = createUserDto.fullName;
     user.phoneNumber = createUserDto?.phoneNumber;
     user.phoneNumberCountryCode = createUserDto.phoneNumberCountryCode;
+    user.adminRoleId = createUserDto.adminRoleId;
 
     const uploadedAvatar = await this.uploadMediaService.saveOneFile(
       avatar,
