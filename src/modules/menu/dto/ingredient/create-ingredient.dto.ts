@@ -41,4 +41,8 @@ export class CreateIngredientDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean = true;
+
+  @IsOptional()
+  @IsBoolean()
+  isDefaultExtra?: boolean = false;
 }

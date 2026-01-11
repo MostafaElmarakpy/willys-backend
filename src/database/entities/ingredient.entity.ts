@@ -37,6 +37,10 @@ export class Ingredient extends BaseEntity {
   @Index()
   isActive: boolean;
 
+  @Column({ default: false })
+  @Index()
+  isDefaultExtra: boolean;
+
   @ManyToOne(() => IngredientCategory, (category) => category.ingredients, {
     nullable: false,
   })

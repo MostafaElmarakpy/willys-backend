@@ -168,6 +168,17 @@ export class IngredientsAdminController {
     return createCreatedResponse(ingredient, 'Ingredient created successfully');
   }
 
+  @Get('default-extras')
+  @Version('1')
+  @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)
+  async findDefaultExtras() {
+    const extras = await this.ingredientsService.findDefaultExtras();
+    return createSuccessResponse(
+      extras,
+      'Default extras retrieved successfully',
+    );
+  }
+
   @Get(':id')
   @Version('1')
   @Permission(PermissionModule.INGREDIENTS, PermissionAction.READ)

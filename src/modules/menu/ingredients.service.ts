@@ -217,4 +217,12 @@ export class IngredientsService {
       order: { createdAt: 'DESC' },
     });
   }
+
+  async findDefaultExtras(): Promise<Ingredient[]> {
+    return await this.ingredientRepository.find({
+      where: { isDefaultExtra: true, isActive: true, deletedAt: IsNull() },
+      relations: ['category'],
+      order: { name: { en: 'ASC' } },
+    });
+  }
 }
