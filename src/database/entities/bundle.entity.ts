@@ -52,6 +52,9 @@ export class Bundle extends BaseEntity {
     quantity: string;
   }>;
 
+  @Column({ type: 'jsonb', nullable: true })
+  tags?: string[];
+
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'createdBy' })
   createdByUser: User;

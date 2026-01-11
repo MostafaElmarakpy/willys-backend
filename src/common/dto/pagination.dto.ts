@@ -12,7 +12,7 @@ export class PaginationDto {
   @Type(() => Number)
   @IsInt({ message: 'Limit must be an integer' })
   @Min(1, { message: 'Limit must be at least 1' })
-  @Max(100, { message: 'Limit cannot exceed 100' })
+  @Max(1000, { message: 'Limit cannot exceed 1000' })
   limit?: number = 10;
 
   @IsOptional()

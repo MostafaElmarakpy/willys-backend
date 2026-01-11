@@ -21,14 +21,14 @@ export class BundlesService {
     userId: string,
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Bundle> {
-    const { items, extras, ...bundleData } = createBundleDto;
+    const { items, extras, tags, ...bundleData } = createBundleDto;
 
     const bundle = this.bundleRepository.create({
       ...bundleData,
       createdBy: userId,
     });
 
-    if (files['image']) {
+    if (files && files['image']) {
       bundle.image = (
         await this.uploadMediaService.saveOneFile(
           files?.image,
@@ -47,6 +47,10 @@ export class BundlesService {
 
     if (extras && extras.length > 0) {
       bundle.extras = extras;
+    }
+
+    if (tags) {
+      bundle.tags = tags;
     }
 
     return await this.bundleRepository.save(bundle);
@@ -159,6 +163,7 @@ export class BundlesService {
         b."numberOfItems",
         b.price,
         b.status,
+        b.tags,
         b."createdBy",
         b."updatedBy",
         b."createdAt",
@@ -217,7 +222,7 @@ export class BundlesService {
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Bundle> {
     const bundle = await this.findOne(id);
-    const { items, extras, ...bundleData } = updateBundleDto;
+    const { items, extras, tags, ...bundleData } = updateBundleDto;
 
     Object.assign(bundle, bundleData);
     bundle.updatedBy = userId;
@@ -236,7 +241,11 @@ export class BundlesService {
       bundle.extras = extras;
     }
 
-    if (files['image']) {
+    if (tags !== undefined) {
+      bundle.tags = tags;
+    }
+
+    if (files && files['image']) {
       bundle.image = (
         await this.uploadMediaService.saveOneFile(
           files?.image,
@@ -277,6 +286,7 @@ export class BundlesService {
       status: BundleStatus.DRAFT,
       items: originalBundle.items,
       extras: originalBundle.extras,
+      tags: originalBundle.tags,
       createdBy: userId,
     });
 

@@ -44,6 +44,11 @@ export class CreateBundleDto {
 
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => BundledItem)
   items?: BundledItem[];
