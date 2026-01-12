@@ -4,6 +4,8 @@ import { ConfigModule } from 'src/config/config.module';
 import { Category } from 'src/database/entities/category.entity';
 import { Item } from 'src/database/entities/item.entity';
 import { Bundle } from 'src/database/entities/bundle.entity';
+import { BundleComponent } from 'src/database/entities/bundle-component.entity';
+import { BundleComponentItem } from 'src/database/entities/bundle-component-item.entity';
 import { Ingredient } from 'src/database/entities/ingredient.entity';
 import { IngredientCategory } from 'src/database/entities/ingredient-category.entity';
 import { CategoriesService } from './categories.service';
@@ -22,6 +24,8 @@ import { UploadMediaModule } from 'src/services/upload-media/upload-media.module
       Category,
       Item,
       Bundle,
+      BundleComponent,
+      BundleComponentItem,
       Ingredient,
       IngredientCategory,
     ]),

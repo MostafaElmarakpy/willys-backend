@@ -1,6 +1,14 @@
-import { Column, Entity, ManyToOne, JoinColumn, Index } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  Index,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Category } from './category.entity';
+import { BundleComponent } from './bundle-component.entity';
 import { BaseEntity } from './base.entity';
 import { BundleStatus } from 'src/common/enums/BundleStatus';
 import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
@@ -26,9 +34,6 @@ export class Bundle extends BaseEntity {
   @Index()
   categoryId: string;
 
-  @Column({ type: 'int' })
-  numberOfItems: number;
-
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
@@ -40,11 +45,10 @@ export class Bundle extends BaseEntity {
   @Index()
   status: BundleStatus;
 
-  @Column({ type: 'jsonb', nullable: true })
-  items?: Array<{
-    id: string;
-    quantity: string;
-  }>;
+  @OneToMany(() => BundleComponent, (component) => component.bundle, {
+    cascade: true,
+  })
+  components: BundleComponent[];
 
   @Column({ type: 'jsonb', nullable: true })
   extras?: Array<{

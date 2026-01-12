@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { Bundle } from 'src/database/entities/bundle.entity';
+import { BundleComponent } from 'src/database/entities/bundle-component.entity';
+import { BundleComponentItem } from 'src/database/entities/bundle-component-item.entity';
 import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
 import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';
 import { BundleFilterDto } from './dto/bundle/bundle-filter.dto';
@@ -13,6 +15,10 @@ export class BundlesService {
   constructor(
     @InjectRepository(Bundle)
     private readonly bundleRepository: Repository<Bundle>,
+    @InjectRepository(BundleComponent)
+    private readonly bundleComponentRepository: Repository<BundleComponent>,
+    @InjectRepository(BundleComponentItem)
+    private readonly bundleComponentItemRepository: Repository<BundleComponentItem>,
     private readonly uploadMediaService: UploadMediaService,
   ) {}
 
@@ -21,11 +27,14 @@ export class BundlesService {
     userId: string,
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Bundle> {
-    const { items, extras, tags, ...bundleData } = createBundleDto;
+    const { components, extras, tags, ...bundleData } = createBundleDto;
 
+    // Create bundle entity
     const bundle = this.bundleRepository.create({
       ...bundleData,
       createdBy: userId,
+      extras: extras || undefined,
+      tags: tags || undefined,
     });
 
     if (files && files['image']) {
@@ -38,22 +47,59 @@ export class BundlesService {
       )?.url;
     }
 
-    if (items && items.length > 0) {
-      bundle.items = items;
-      bundle.numberOfItems = items.length;
-    } else {
-      bundle.numberOfItems = 0;
-    }
+    // Use transaction to ensure proper order of saves
+    return await this.bundleRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        // Step 1: Save the bundle first
+        const savedBundle = await transactionalEntityManager.save(
+          Bundle,
+          bundle,
+        );
 
-    if (extras && extras.length > 0) {
-      bundle.extras = extras;
-    }
+        // Step 2: Save components if they exist
+        if (components && components.length > 0) {
+          for (let index = 0; index < components.length; index++) {
+            const componentDto = components[index];
 
-    if (tags) {
-      bundle.tags = tags;
-    }
+            // Create and save component
+            const component = this.bundleComponentRepository.create({
+              bundleId: savedBundle.id,
+              categoryId: componentDto.categoryId,
+              defaultItemId: componentDto.defaultItemId,
+              quantity: componentDto.quantity,
+              sortOrder: componentDto.sortOrder ?? index,
+            });
 
-    return await this.bundleRepository.save(bundle);
+            const savedComponent = await transactionalEntityManager.save(
+              BundleComponent,
+              component,
+            );
+
+            // Step 3: Save component items if they exist
+            if (componentDto.items && componentDto.items.length > 0) {
+              const componentItems = componentDto.items.map(
+                (itemDto, itemIndex) => {
+                  return this.bundleComponentItemRepository.create({
+                    componentId: savedComponent.id,
+                    itemId: itemDto.itemId,
+                    extraCost: itemDto.extraCost,
+                    sortOrder: itemDto.sortOrder ?? itemIndex,
+                  });
+                },
+              );
+
+              await transactionalEntityManager.save(
+                BundleComponentItem,
+                componentItems,
+              );
+            }
+          }
+        }
+
+        // Return the saved bundle
+        return savedBundle;
+      },
+    );
   }
 
   async findAll(filterDto: BundleFilterDto) {
@@ -160,7 +206,7 @@ export class BundlesService {
         b.description,
         b.image,
         b."categoryId",
-        b."numberOfItems",
+        COALESCE(SUM(bc.quantity), 0) as "numberOfItems",
         b.price,
         b.status,
         b.tags,
@@ -171,7 +217,9 @@ export class BundlesService {
         c.name as "categoryName"
       FROM bundles b
       LEFT JOIN categories c ON c.id = b."categoryId"
+      LEFT JOIN bundle_components bc ON bc."bundleId" = b.id AND bc."deletedAt" IS NULL
       ${whereClause}
+      GROUP BY b.id, c.name
       ${orderByClause}
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
@@ -205,7 +253,14 @@ export class BundlesService {
   async findOne(id: string): Promise<Bundle> {
     const bundle = await this.bundleRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['category'],
+      relations: [
+        'category',
+        'components',
+        'components.category',
+        'components.defaultItem',
+        'components.items',
+        'components.items.item',
+      ],
     });
 
     if (!bundle) {
@@ -222,20 +277,10 @@ export class BundlesService {
     files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Bundle> {
     const bundle = await this.findOne(id);
-    const { items, extras, tags, ...bundleData } = updateBundleDto;
+    const { components, extras, tags, ...bundleData } = updateBundleDto;
 
     Object.assign(bundle, bundleData);
     bundle.updatedBy = userId;
-
-    if (items !== undefined) {
-      if (items.length > 0) {
-        bundle.items = items;
-        bundle.numberOfItems = items.length;
-      } else {
-        bundle.items = [];
-        bundle.numberOfItems = 0;
-      }
-    }
 
     if (extras !== undefined) {
       bundle.extras = extras;
@@ -255,7 +300,70 @@ export class BundlesService {
       )?.url;
     }
 
-    return await this.bundleRepository.save(bundle);
+    // Use transaction to ensure proper order of saves
+    return await this.bundleRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        // Step 1: Save the bundle first (without components)
+        const savedBundle = await transactionalEntityManager.save(
+          Bundle,
+          bundle,
+        );
+
+        // Step 2: Handle components if they were provided
+        if (components !== undefined) {
+          // Remove existing components (cascade will delete component items)
+          if (bundle.components && bundle.components.length > 0) {
+            await transactionalEntityManager.remove(
+              BundleComponent,
+              bundle.components,
+            );
+          }
+
+          // Create and save new components
+          if (components.length > 0) {
+            for (let index = 0; index < components.length; index++) {
+              const componentDto = components[index];
+
+              // Create and save component
+              const component = this.bundleComponentRepository.create({
+                bundleId: savedBundle.id,
+                categoryId: componentDto.categoryId,
+                defaultItemId: componentDto.defaultItemId,
+                quantity: componentDto.quantity,
+                sortOrder: componentDto.sortOrder ?? index,
+              });
+
+              const savedComponent = await transactionalEntityManager.save(
+                BundleComponent,
+                component,
+              );
+
+              // Step 3: Save component items if they exist
+              if (componentDto.items && componentDto.items.length > 0) {
+                const componentItems = componentDto.items.map(
+                  (itemDto, itemIndex) => {
+                    return this.bundleComponentItemRepository.create({
+                      componentId: savedComponent.id,
+                      itemId: itemDto.itemId,
+                      extraCost: itemDto.extraCost,
+                      sortOrder: itemDto.sortOrder ?? itemIndex,
+                    });
+                  },
+                );
+
+                await transactionalEntityManager.save(
+                  BundleComponentItem,
+                  componentItems,
+                );
+              }
+            }
+          }
+        }
+
+        // Return the updated bundle
+        return savedBundle;
+      },
+    );
   }
 
   async remove(id: string): Promise<void> {
@@ -281,14 +389,39 @@ export class BundlesService {
       description: originalBundle.description,
       image: originalBundle.image,
       categoryId: originalBundle.categoryId,
-      numberOfItems: originalBundle.numberOfItems,
       price: originalBundle.price,
       status: BundleStatus.DRAFT,
-      items: originalBundle.items,
       extras: originalBundle.extras,
       tags: originalBundle.tags,
       createdBy: userId,
     });
+
+    // Deep copy components
+    if (originalBundle.components && originalBundle.components.length > 0) {
+      duplicatedBundle.components = originalBundle.components.map(
+        (component) => {
+          const newComponent = this.bundleComponentRepository.create({
+            categoryId: component.categoryId,
+            defaultItemId: component.defaultItemId,
+            quantity: component.quantity,
+            sortOrder: component.sortOrder,
+          });
+
+          // Deep copy component items
+          if (component.items && component.items.length > 0) {
+            newComponent.items = component.items.map((item) => {
+              return this.bundleComponentItemRepository.create({
+                itemId: item.itemId,
+                extraCost: item.extraCost,
+                sortOrder: item.sortOrder,
+              });
+            });
+          }
+
+          return newComponent;
+        },
+      );
+    }
 
     return await this.bundleRepository.save(duplicatedBundle);
   }
