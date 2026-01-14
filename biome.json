@@ -1,0 +1,97 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/coverage",
+      "!**/*.log",
+      "!**/logs",
+      "!**/npm-debug.log*",
+      "!**/yarn-debug.log*",
+      "!**/yarn-error.log*",
+      "!**/pnpm-debug.log*",
+      "!**/.vscode/",
+      "!**/.idea",
+      "!**/.DS_Store",
+      "!**/.env",
+      "!**/.env.local",
+      "!**/.env.*.local",
+      "!**/tsconfig*.json",
+      "!**/*.tsbuildinfo"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 80,
+    "attributePosition": "auto"
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "noImplicitAnyLet": "warn"
+      },
+      "correctness": {
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn"
+      },
+      "complexity": {
+        "noStaticOnlyClass": "off"
+      },
+      "style": {
+        "useImportType": "error",
+        "useConst": "error",
+        "noNonNullAssertion": "off"
+      }
+    }
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
+    "formatter": {
+      "quoteStyle": "double",
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "arrowParentheses": "always",
+      "trailingCommas": "all"
+    },
+    "globals": []
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.ts", "**/*.tsx"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "warn",
+            "noUnusedImports": "warn"
+          }
+        }
+      }
+    }
+  ]
+}
