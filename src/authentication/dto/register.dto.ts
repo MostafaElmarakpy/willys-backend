@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform, Type } from "class-transformer";
 import {
   IsDate,
   IsEmail,
@@ -9,33 +9,33 @@ import {
   MaxLength,
   MinLength,
   ValidateIf,
-} from 'class-validator';
-import { CountryCode } from 'libphonenumber-js/max';
-import { UserGender } from 'src/common/enums/UserGender';
-import { UserProvider } from 'src/common/enums/UserProvider';
-import { IsPhoneNumberWithCountryCode } from 'src/common/validator/is-phone-number-with-Country-code';
+} from "class-validator";
+import { CountryCode } from "libphonenumber-js/max";
+import { UserGender } from "src/common/enums/UserGender";
+import { UserProvider } from "src/common/enums/UserProvider";
+import { IsPhoneNumberWithCountryCode } from "src/common/validator/is-phone-number-with-Country-code";
 
 export class RegisterDto {
   @IsString()
   @IsNotEmpty()
-  @IsEnum(['email', 'phone'])
-  registerMethod: 'email' | 'phone';
+  @IsEnum(["email", "phone"])
+  registerMethod: "email" | "phone";
 
-  @ValidateIf((o) => o.registerMethod === 'email')
+  @ValidateIf((o) => o.registerMethod === "email")
   @IsEmail()
   @IsNotEmpty()
   email?: string;
 
-  @ValidateIf((o) => o.registerMethod === 'phone')
+  @ValidateIf((o) => o.registerMethod === "phone")
   @IsString()
   @IsNotEmpty()
-  @Transform(({ value }: { value: string }) => value.replace(' ', ''))
-  @IsPhoneNumberWithCountryCode('phoneNumberCountryCode', {
-    message: 'Invalid phone number for the provided country code',
+  @Transform(({ value }: { value: string }) => value.replace(" ", ""))
+  @IsPhoneNumberWithCountryCode("phoneNumberCountryCode", {
+    message: "Invalid phone number for the provided country code",
   })
   phoneNumber?: string;
 
-  @ValidateIf((o) => o.registerMethod === 'phone')
+  @ValidateIf((o) => o.registerMethod === "phone")
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
@@ -44,7 +44,7 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  @MinLength(6, { message: "Password must be at least 6 characters long" })
   password: string;
 
   @IsString()
@@ -65,7 +65,7 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
-  userLocale: string = 'ar';
+  userLocale: string = "ar";
 
   @IsString()
   @IsNotEmpty()

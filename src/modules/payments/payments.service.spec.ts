@@ -1,34 +1,34 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { PaymentsService } from './payments.service';
-import { PaymobService } from './paymob.service';
-import { Payment } from 'src/database/entities/payment.entity';
-import { PaymentTransactionLog } from 'src/database/entities/payment-transaction-log.entity';
-import { PaymentType } from 'src/common/enums/PaymentType';
-import { PaymentStatus } from 'src/common/enums/PaymentStatus';
-import { PaymentEventType } from 'src/common/enums/PaymentEventType';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { PaymentEventType } from "src/common/enums/PaymentEventType";
+import { PaymentStatus } from "src/common/enums/PaymentStatus";
+import { PaymentType } from "src/common/enums/PaymentType";
+import { Payment } from "src/database/entities/payment.entity";
+import { PaymentTransactionLog } from "src/database/entities/payment-transaction-log.entity";
+import { Repository } from "typeorm";
+import { PaymentsService } from "./payments.service";
+import { PaymobService } from "./paymob.service";
 
-describe('PaymentsService', () => {
+describe("PaymentsService", () => {
   let service: PaymentsService;
   let paymentRepository: jest.Mocked<Repository<Payment>>;
   let transactionLogRepository: jest.Mocked<Repository<PaymentTransactionLog>>;
   let paymobService: jest.Mocked<PaymobService>;
 
-  const mockUserId = 'user-123';
-  const mockPaymentId = 'payment-123';
-  const mockTransactionId = 'TXN-123456';
+  const mockUserId = "user-123";
+  const mockPaymentId = "payment-123";
+  const mockTransactionId = "TXN-123456";
 
   const mockPayment: Partial<Payment> = {
     id: mockPaymentId,
     transactionId: mockTransactionId,
     amount: 100,
-    currency: 'EGP',
+    currency: "EGP",
     paymentType: PaymentType.CARD,
     status: PaymentStatus.PENDING,
     userId: mockUserId,
-    merchantOrderId: 'ORDER-123',
+    merchantOrderId: "ORDER-123",
     isRefundable: true,
     refundedAmount: 0,
     createdAt: new Date(),
@@ -36,7 +36,7 @@ describe('PaymentsService', () => {
   };
 
   const mockTransactionLog: Partial<PaymentTransactionLog> = {
-    id: 'log-123',
+    id: "log-123",
     paymentId: mockPaymentId,
     eventType: PaymentEventType.CREATED,
     previousStatus: PaymentStatus.PENDING,
@@ -91,12 +91,12 @@ describe('PaymentsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('createPayment', () => {
-    it('should create a new payment successfully', async () => {
+  describe("createPayment", () => {
+    it("should create a new payment successfully", async () => {
       const createPaymentDto = {
         amount: 100,
         paymentType: PaymentType.CARD,
-        description: 'Test payment',
+        description: "Test payment",
       };
 
       paymentRepository.findOne.mockResolvedValue(null);
@@ -112,8 +112,8 @@ describe('PaymentsService', () => {
       const result = await service.createPayment(
         createPaymentDto,
         mockUserId,
-        '127.0.0.1',
-        'Mozilla/5.0',
+        "127.0.0.1",
+        "Mozilla/5.0",
       );
 
       expect(result).toBeDefined();
@@ -122,11 +122,11 @@ describe('PaymentsService', () => {
       expect(transactionLogRepository.create).toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException for duplicate merchantOrderId', async () => {
+    it("should throw BadRequestException for duplicate merchantOrderId", async () => {
       const createPaymentDto = {
         amount: 100,
         paymentType: PaymentType.CARD,
-        merchantOrderId: 'ORDER-123',
+        merchantOrderId: "ORDER-123",
       };
 
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
@@ -136,7 +136,7 @@ describe('PaymentsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should set isRefundable to true for card payments', async () => {
+    it("should set isRefundable to true for card payments", async () => {
       const createPaymentDto = {
         amount: 100,
         paymentType: PaymentType.CARD,
@@ -161,7 +161,7 @@ describe('PaymentsService', () => {
       );
     });
 
-    it('should set isRefundable to false for cash payments', async () => {
+    it("should set isRefundable to false for cash payments", async () => {
       const createPaymentDto = {
         amount: 100,
         paymentType: PaymentType.CASH,
@@ -188,8 +188,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('processCardPayment', () => {
-    it('should process card payment successfully', async () => {
+  describe("processCardPayment", () => {
+    it("should process card payment successfully", async () => {
       const pendingPayment = { ...mockPayment, status: PaymentStatus.PENDING };
       paymentRepository.findOne.mockResolvedValue(pendingPayment as Payment);
       paymentRepository.save.mockResolvedValue({
@@ -197,13 +197,13 @@ describe('PaymentsService', () => {
         status: PaymentStatus.PROCESSING,
       } as Payment);
 
-      paymobService.authenticate.mockResolvedValue('auth-token');
+      paymobService.authenticate.mockResolvedValue("auth-token");
       paymobService.createOrder.mockResolvedValue({ id: 12345 } as any);
       paymobService.createPaymentKey.mockResolvedValue({
-        token: 'payment-key-token',
+        token: "payment-key-token",
       } as any);
       paymobService.buildIframeUrl.mockReturnValue(
-        'https://accept.paymob.com/iframe/123',
+        "https://accept.paymob.com/iframe/123",
       );
 
       transactionLogRepository.create.mockReturnValue(
@@ -219,13 +219,13 @@ describe('PaymentsService', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.iframeUrl).toBe('https://accept.paymob.com/iframe/123');
+      expect(result.iframeUrl).toBe("https://accept.paymob.com/iframe/123");
       expect(paymobService.authenticate).toHaveBeenCalled();
       expect(paymobService.createOrder).toHaveBeenCalled();
       expect(paymobService.createPaymentKey).toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException if payment not found', async () => {
+    it("should throw NotFoundException if payment not found", async () => {
       paymentRepository.findOne.mockResolvedValue(null);
 
       await expect(
@@ -233,7 +233,7 @@ describe('PaymentsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if payment type is not CARD', async () => {
+    it("should throw BadRequestException if payment type is not CARD", async () => {
       const cashPayment = {
         ...mockPayment,
         paymentType: PaymentType.CASH,
@@ -246,7 +246,7 @@ describe('PaymentsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if payment is not pending', async () => {
+    it("should throw BadRequestException if payment is not pending", async () => {
       const processedPayment = {
         ...mockPayment,
         status: PaymentStatus.SUCCESS,
@@ -258,13 +258,13 @@ describe('PaymentsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should update payment to FAILED status on error', async () => {
+    it("should update payment to FAILED status on error", async () => {
       const pendingPayment = { ...mockPayment, status: PaymentStatus.PENDING };
       paymentRepository.findOne.mockResolvedValue(pendingPayment as Payment);
       paymentRepository.save.mockResolvedValue(pendingPayment as Payment);
 
       paymobService.authenticate.mockRejectedValue(
-        new Error('Authentication failed'),
+        new Error("Authentication failed"),
       );
 
       transactionLogRepository.create.mockReturnValue(
@@ -276,7 +276,7 @@ describe('PaymentsService', () => {
 
       await expect(
         service.processCardPayment(mockPaymentId, mockUserId),
-      ).rejects.toThrow('Authentication failed');
+      ).rejects.toThrow("Authentication failed");
 
       expect(paymentRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -286,8 +286,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('processCashPayment', () => {
-    it('should process cash payment successfully', async () => {
+  describe("processCashPayment", () => {
+    it("should process cash payment successfully", async () => {
       const cashPayment = {
         ...mockPayment,
         paymentType: PaymentType.CASH,
@@ -297,7 +297,7 @@ describe('PaymentsService', () => {
       paymentRepository.save.mockResolvedValue({
         ...cashPayment,
         status: PaymentStatus.SUCCESS,
-        cashReferenceNumber: 'CASH-123',
+        cashReferenceNumber: "CASH-123",
       } as Payment);
 
       transactionLogRepository.create.mockReturnValue(
@@ -321,7 +321,7 @@ describe('PaymentsService', () => {
       );
     });
 
-    it('should throw NotFoundException if payment not found', async () => {
+    it("should throw NotFoundException if payment not found", async () => {
       paymentRepository.findOne.mockResolvedValue(null);
 
       await expect(
@@ -329,7 +329,7 @@ describe('PaymentsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if payment type is not CASH', async () => {
+    it("should throw BadRequestException if payment type is not CASH", async () => {
       const cardPayment = {
         ...mockPayment,
         paymentType: PaymentType.CARD,
@@ -342,7 +342,7 @@ describe('PaymentsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if payment is not pending', async () => {
+    it("should throw BadRequestException if payment is not pending", async () => {
       const processedPayment = {
         ...mockPayment,
         paymentType: PaymentType.CASH,
@@ -356,16 +356,16 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('handleWebhookUpdate', () => {
-    it('should handle successful payment webhook', async () => {
+  describe("handleWebhookUpdate", () => {
+    it("should handle successful payment webhook", async () => {
       const webhookPayload = {
-        type: 'TRANSACTION',
+        type: "TRANSACTION",
         obj: {
           id: 123456,
           success: true,
           pending: false,
-          order: { merchant_order_id: 'ORDER-123' },
-          source_data: { pan: '1234567890123456', sub_type: 'Visa' },
+          order: { merchant_order_id: "ORDER-123" },
+          source_data: { pan: "1234567890123456", sub_type: "Visa" },
           data: {},
         },
       } as any;
@@ -388,23 +388,23 @@ describe('PaymentsService', () => {
       expect(paymentRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           status: PaymentStatus.SUCCESS,
-          paymobTransactionId: '123456',
-          cardLastFourDigits: '3456',
-          cardBrand: 'Visa',
+          paymobTransactionId: "123456",
+          cardLastFourDigits: "3456",
+          cardBrand: "Visa",
         }),
       );
     });
 
-    it('should handle failed payment webhook', async () => {
+    it("should handle failed payment webhook", async () => {
       const webhookPayload = {
-        type: 'TRANSACTION',
+        type: "TRANSACTION",
         obj: {
           id: 123456,
           success: false,
           pending: false,
-          order: { merchant_order_id: 'ORDER-123' },
+          order: { merchant_order_id: "ORDER-123" },
           source_data: {},
-          data: { message: 'Payment declined' },
+          data: { message: "Payment declined" },
         },
       } as any;
 
@@ -426,19 +426,19 @@ describe('PaymentsService', () => {
       expect(paymentRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           status: PaymentStatus.FAILED,
-          errorMessage: 'Payment declined',
+          errorMessage: "Payment declined",
         }),
       );
     });
 
-    it('should not update if payment not found', async () => {
+    it("should not update if payment not found", async () => {
       const webhookPayload = {
-        type: 'TRANSACTION',
+        type: "TRANSACTION",
         obj: {
           id: 123456,
           success: true,
           pending: false,
-          order: { merchant_order_id: 'UNKNOWN-ORDER' },
+          order: { merchant_order_id: "UNKNOWN-ORDER" },
           source_data: {},
           data: {},
         },
@@ -452,8 +452,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('should return paginated payments', async () => {
+  describe("findAll", () => {
+    it("should return paginated payments", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -475,7 +475,7 @@ describe('PaymentsService', () => {
       expect(result.meta.limit).toBe(10);
     });
 
-    it('should filter by status', async () => {
+    it("should filter by status", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -496,12 +496,12 @@ describe('PaymentsService', () => {
       });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'payment.status = :status',
+        "payment.status = :status",
         { status: PaymentStatus.SUCCESS },
       );
     });
 
-    it('should filter by payment type', async () => {
+    it("should filter by payment type", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -522,12 +522,12 @@ describe('PaymentsService', () => {
       });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'payment.paymentType = :paymentType',
+        "payment.paymentType = :paymentType",
         { paymentType: PaymentType.CARD },
       );
     });
 
-    it('should filter by date range', async () => {
+    it("should filter by date range", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -544,17 +544,17 @@ describe('PaymentsService', () => {
       await service.findAll({
         page: 1,
         limit: 10,
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
       });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'payment.createdAt BETWEEN :startDate AND :endDate',
+        "payment.createdAt BETWEEN :startDate AND :endDate",
         expect.any(Object),
       );
     });
 
-    it('should filter by amount range', async () => {
+    it("should filter by amount range", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -576,18 +576,18 @@ describe('PaymentsService', () => {
       });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'payment.amount >= :minAmount',
+        "payment.amount >= :minAmount",
         { minAmount: 50 },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'payment.amount <= :maxAmount',
+        "payment.amount <= :maxAmount",
         { maxAmount: 200 },
       );
     });
   });
 
-  describe('findOne', () => {
-    it('should return a payment by id', async () => {
+  describe("findOne", () => {
+    it("should return a payment by id", async () => {
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
 
       const result = await service.findOne(mockPaymentId);
@@ -596,7 +596,7 @@ describe('PaymentsService', () => {
       expect(result.id).toBe(mockPaymentId);
     });
 
-    it('should return a payment by id and userId', async () => {
+    it("should return a payment by id and userId", async () => {
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
 
       const result = await service.findOne(mockPaymentId, mockUserId);
@@ -604,11 +604,11 @@ describe('PaymentsService', () => {
       expect(result).toBeDefined();
       expect(paymentRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockPaymentId, userId: mockUserId },
-        relations: ['user', 'transactionLogs', 'refunds'],
+        relations: ["user", "transactionLogs", "refunds"],
       });
     });
 
-    it('should throw NotFoundException if payment not found', async () => {
+    it("should throw NotFoundException if payment not found", async () => {
       paymentRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(mockPaymentId)).rejects.toThrow(
@@ -617,8 +617,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('findByTransactionId', () => {
-    it('should return a payment by transaction id', async () => {
+  describe("findByTransactionId", () => {
+    it("should return a payment by transaction id", async () => {
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
 
       const result = await service.findByTransactionId(mockTransactionId);
@@ -627,7 +627,7 @@ describe('PaymentsService', () => {
       expect(result.transactionId).toBe(mockTransactionId);
     });
 
-    it('should throw NotFoundException if payment not found', async () => {
+    it("should throw NotFoundException if payment not found", async () => {
       paymentRepository.findOne.mockResolvedValue(null);
 
       await expect(
@@ -636,8 +636,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('updatePaymentStatus', () => {
-    it('should update payment status successfully', async () => {
+  describe("updatePaymentStatus", () => {
+    it("should update payment status successfully", async () => {
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
       paymentRepository.save.mockResolvedValue({
         ...mockPayment,
@@ -659,7 +659,7 @@ describe('PaymentsService', () => {
       expect(result.status).toBe(PaymentStatus.SUCCESS);
     });
 
-    it('should update payment with metadata', async () => {
+    it("should update payment with metadata", async () => {
       const metadata = { paidAt: new Date() };
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
       paymentRepository.save.mockResolvedValue({
@@ -684,7 +684,7 @@ describe('PaymentsService', () => {
       expect(paymentRepository.save).toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException if payment not found', async () => {
+    it("should throw NotFoundException if payment not found", async () => {
       paymentRepository.findOne.mockResolvedValue(null);
 
       await expect(
@@ -693,8 +693,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('getPaymentStatistics', () => {
-    it('should return payment statistics', async () => {
+  describe("getPaymentStatistics", () => {
+    it("should return payment statistics", async () => {
       paymentRepository.count
         .mockResolvedValueOnce(100) // totalPayments
         .mockResolvedValueOnce(80) // successfulPayments
@@ -728,7 +728,7 @@ describe('PaymentsService', () => {
       expect(result.cardPayments).toBe(40);
     });
 
-    it('should return 0 for amounts when null', async () => {
+    it("should return 0 for amounts when null", async () => {
       paymentRepository.count.mockResolvedValue(0);
 
       const mockQueryBuilder = {

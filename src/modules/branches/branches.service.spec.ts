@@ -1,28 +1,28 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { BranchesService } from './branches.service';
-import { Branch } from '../../database/entities/branch.entity';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Branch } from "../../database/entities/branch.entity";
+import { BranchesService } from "./branches.service";
 
-describe('BranchesService', () => {
+describe("BranchesService", () => {
   let service: BranchesService;
   let branchRepository: jest.Mocked<Repository<Branch>>;
 
-  const mockBranchId = 'branch-123';
+  const mockBranchId = "branch-123";
 
   const mockBranch: Partial<Branch> = {
     id: mockBranchId,
-    name: { en: 'Main Branch', ar: 'الفرع الرئيسي' },
-    address: '123 Main Street',
+    name: { en: "Main Branch", ar: "الفرع الرئيسي" },
+    address: "123 Main Street",
     latitude: 30.0444,
     longitude: 31.2357,
-    phone: '+201234567890',
-    email: 'branch@example.com',
+    phone: "+201234567890",
+    email: "branch@example.com",
     isActive: true,
     isOpen: true,
-    openingHours: '09:00',
-    closingHours: '22:00',
+    openingHours: "09:00",
+    closingHours: "22:00",
     estimatedDeliveryTime: 30,
     zones: [],
     createdAt: new Date(),
@@ -56,11 +56,11 @@ describe('BranchesService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
-    it('should create a branch successfully', async () => {
+  describe("create", () => {
+    it("should create a branch successfully", async () => {
       const createBranchDto = {
-        name: { en: 'New Branch', ar: 'فرع جديد' },
-        address: '456 New Street',
+        name: { en: "New Branch", ar: "فرع جديد" },
+        address: "456 New Street",
         latitude: 30.0444,
         longitude: 31.2357,
       };
@@ -79,10 +79,10 @@ describe('BranchesService', () => {
       expect(branchRepository.save).toHaveBeenCalled();
     });
 
-    it('should create a branch with custom isActive and isOpen values', async () => {
+    it("should create a branch with custom isActive and isOpen values", async () => {
       const createBranchDto = {
-        name: { en: 'New Branch', ar: 'فرع جديد' },
-        address: '456 New Street',
+        name: { en: "New Branch", ar: "فرع جديد" },
+        address: "456 New Street",
         latitude: 30.0444,
         longitude: 31.2357,
         isActive: false,
@@ -106,16 +106,16 @@ describe('BranchesService', () => {
       expect(result.isOpen).toBe(false);
     });
 
-    it('should throw BadRequestException on save error', async () => {
+    it("should throw BadRequestException on save error", async () => {
       const createBranchDto = {
-        name: { en: 'New Branch', ar: 'فرع جديد' },
-        address: '456 New Street',
+        name: { en: "New Branch", ar: "فرع جديد" },
+        address: "456 New Street",
         latitude: 30.0444,
         longitude: 31.2357,
       };
 
       branchRepository.create.mockReturnValue(mockBranch as Branch);
-      branchRepository.save.mockRejectedValue(new Error('Database error'));
+      branchRepository.save.mockRejectedValue(new Error("Database error"));
 
       await expect(service.create(createBranchDto)).rejects.toThrow(
         BadRequestException,
@@ -123,8 +123,8 @@ describe('BranchesService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('should return paginated branches', async () => {
+  describe("findAll", () => {
+    it("should return paginated branches", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         1,
@@ -139,7 +139,7 @@ describe('BranchesService', () => {
       expect(result.totalPages).toBe(1);
     });
 
-    it('should apply pagination correctly', async () => {
+    it("should apply pagination correctly", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         25,
@@ -148,47 +148,47 @@ describe('BranchesService', () => {
       const result = await service.findAll(2, 10);
 
       expect(branchRepository.findAndCount).toHaveBeenCalledWith({
-        relations: ['zones'],
-        order: { name: 'DESC' },
+        relations: ["zones"],
+        order: { name: "DESC" },
         skip: 10,
         take: 10,
       });
       expect(result.totalPages).toBe(3);
     });
 
-    it('should sort by allowed field', async () => {
+    it("should sort by allowed field", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         1,
       ]);
 
-      await service.findAll(1, 10, 'createdAt', 'ASC');
+      await service.findAll(1, 10, "createdAt", "ASC");
 
       expect(branchRepository.findAndCount).toHaveBeenCalledWith(
         expect.objectContaining({
-          order: { createdAt: 'ASC' },
+          order: { createdAt: "ASC" },
         }),
       );
     });
 
-    it('should default to name sort for invalid sort field', async () => {
+    it("should default to name sort for invalid sort field", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         1,
       ]);
 
-      await service.findAll(1, 10, 'invalidField', 'DESC');
+      await service.findAll(1, 10, "invalidField", "DESC");
 
       expect(branchRepository.findAndCount).toHaveBeenCalledWith(
         expect.objectContaining({
-          order: { name: 'DESC' },
+          order: { name: "DESC" },
         }),
       );
     });
   });
 
-  describe('findActive', () => {
-    it('should return only active branches', async () => {
+  describe("findActive", () => {
+    it("should return only active branches", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         1,
@@ -204,25 +204,25 @@ describe('BranchesService', () => {
       expect(result.branches).toHaveLength(1);
     });
 
-    it('should apply sorting to active branches', async () => {
+    it("should apply sorting to active branches", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         1,
       ]);
 
-      await service.findActive(1, 10, 'city', 'ASC');
+      await service.findActive(1, 10, "city", "ASC");
 
       expect(branchRepository.findAndCount).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { isActive: true },
-          order: { city: 'ASC' },
+          order: { city: "ASC" },
         }),
       );
     });
   });
 
-  describe('findOpen', () => {
-    it('should return only active and open branches', async () => {
+  describe("findOpen", () => {
+    it("should return only active and open branches", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         1,
@@ -238,7 +238,7 @@ describe('BranchesService', () => {
       expect(result.branches).toHaveLength(1);
     });
 
-    it('should apply pagination to open branches', async () => {
+    it("should apply pagination to open branches", async () => {
       branchRepository.findAndCount.mockResolvedValue([
         [mockBranch as Branch],
         15,
@@ -256,8 +256,8 @@ describe('BranchesService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return a branch by id', async () => {
+  describe("findOne", () => {
+    it("should return a branch by id", async () => {
       branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
 
       const result = await service.findOne(mockBranchId);
@@ -266,11 +266,11 @@ describe('BranchesService', () => {
       expect(result.id).toBe(mockBranchId);
       expect(branchRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockBranchId },
-        relations: ['zones'],
+        relations: ["zones"],
       });
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(mockBranchId)).rejects.toThrow(
@@ -279,11 +279,11 @@ describe('BranchesService', () => {
     });
   });
 
-  describe('update', () => {
-    it('should update a branch successfully', async () => {
+  describe("update", () => {
+    it("should update a branch successfully", async () => {
       const updateBranchDto = {
-        name: { en: 'Updated Branch', ar: 'فرع محدث' },
-        phone: '+201111111111',
+        name: { en: "Updated Branch", ar: "فرع محدث" },
+        phone: "+201111111111",
       };
 
       branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
@@ -294,30 +294,30 @@ describe('BranchesService', () => {
 
       const result = await service.update(mockBranchId, updateBranchDto);
 
-      expect(result.name.en).toBe('Updated Branch');
+      expect(result.name.en).toBe("Updated Branch");
       expect(branchRepository.save).toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.update(mockBranchId, { name: { en: 'Test', ar: 'اختبار' } }),
+        service.update(mockBranchId, { name: { en: "Test", ar: "اختبار" } }),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException on save error', async () => {
+    it("should throw BadRequestException on save error", async () => {
       branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
-      branchRepository.save.mockRejectedValue(new Error('Database error'));
+      branchRepository.save.mockRejectedValue(new Error("Database error"));
 
       await expect(
-        service.update(mockBranchId, { name: { en: 'Test', ar: 'اختبار' } }),
+        service.update(mockBranchId, { name: { en: "Test", ar: "اختبار" } }),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('remove', () => {
-    it('should remove a branch successfully', async () => {
+  describe("remove", () => {
+    it("should remove a branch successfully", async () => {
       branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
       branchRepository.remove.mockResolvedValue(mockBranch as Branch);
 
@@ -326,7 +326,7 @@ describe('BranchesService', () => {
       expect(branchRepository.remove).toHaveBeenCalledWith(mockBranch);
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(mockBranchId)).rejects.toThrow(
@@ -335,8 +335,8 @@ describe('BranchesService', () => {
     });
   });
 
-  describe('toggleStatus', () => {
-    it('should toggle isActive status', async () => {
+  describe("toggleStatus", () => {
+    it("should toggle isActive status", async () => {
       const activeBranch = { ...mockBranch, isActive: true };
       branchRepository.findOne.mockResolvedValue(activeBranch as Branch);
       branchRepository.save.mockResolvedValue({
@@ -344,7 +344,7 @@ describe('BranchesService', () => {
         isActive: false,
       } as Branch);
 
-      const result = await service.toggleStatus(mockBranchId, 'active');
+      const result = await service.toggleStatus(mockBranchId, "active");
 
       expect(branchRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -354,7 +354,7 @@ describe('BranchesService', () => {
       expect(result.isActive).toBe(false);
     });
 
-    it('should toggle isOpen status', async () => {
+    it("should toggle isOpen status", async () => {
       const openBranch = { ...mockBranch, isOpen: true };
       branchRepository.findOne.mockResolvedValue(openBranch as Branch);
       branchRepository.save.mockResolvedValue({
@@ -362,7 +362,7 @@ describe('BranchesService', () => {
         isOpen: false,
       } as Branch);
 
-      const result = await service.toggleStatus(mockBranchId, 'open');
+      const result = await service.toggleStatus(mockBranchId, "open");
 
       expect(branchRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -372,20 +372,20 @@ describe('BranchesService', () => {
       expect(result.isOpen).toBe(false);
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.toggleStatus(mockBranchId, 'active'),
+        service.toggleStatus(mockBranchId, "active"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('findNearby', () => {
-    it('should find nearby branches', async () => {
+  describe("findNearby", () => {
+    it("should find nearby branches", async () => {
       const nearbyBranches = [
         { ...mockBranch, distance: 2.5 },
-        { ...mockBranch, id: 'branch-456', distance: 5.0 },
+        { ...mockBranch, id: "branch-456", distance: 5.0 },
       ];
 
       branchRepository.query.mockResolvedValue(nearbyBranches);
@@ -399,7 +399,7 @@ describe('BranchesService', () => {
       );
     });
 
-    it('should use default radius of 10km', async () => {
+    it("should use default radius of 10km", async () => {
       branchRepository.query.mockResolvedValue([]);
 
       await service.findNearby(30.0444, 31.2357);
@@ -410,7 +410,7 @@ describe('BranchesService', () => {
       );
     });
 
-    it('should return empty array if no nearby branches', async () => {
+    it("should return empty array if no nearby branches", async () => {
       branchRepository.query.mockResolvedValue([]);
 
       const result = await service.findNearby(0, 0, 5);
@@ -419,14 +419,14 @@ describe('BranchesService', () => {
     });
   });
 
-  describe('getBranchStats', () => {
-    it('should return branch statistics', async () => {
+  describe("getBranchStats", () => {
+    it("should return branch statistics", async () => {
       const branchWithZones = {
         ...mockBranch,
         zones: [
-          { id: 'zone-1', isActive: true },
-          { id: 'zone-2', isActive: true },
-          { id: 'zone-3', isActive: false },
+          { id: "zone-1", isActive: true },
+          { id: "zone-2", isActive: true },
+          { id: "zone-3", isActive: false },
         ],
       };
 
@@ -439,7 +439,7 @@ describe('BranchesService', () => {
       expect(result.stats.activeZones).toBe(2);
     });
 
-    it('should return zero zones if branch has no zones', async () => {
+    it("should return zero zones if branch has no zones", async () => {
       const branchWithoutZones = { ...mockBranch, zones: undefined };
       branchRepository.findOne.mockResolvedValue(branchWithoutZones as any);
 
@@ -449,7 +449,7 @@ describe('BranchesService', () => {
       expect(result.stats.activeZones).toBe(0);
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepository.findOne.mockResolvedValue(null);
 
       await expect(service.getBranchStats(mockBranchId)).rejects.toThrow(

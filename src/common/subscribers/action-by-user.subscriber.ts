@@ -1,12 +1,12 @@
-import { ClsServiceManager } from 'nestjs-cls';
-import { User } from 'src/database/entities/user.entity';
+import { ClsServiceManager } from "nestjs-cls";
+import { User } from "src/database/entities/user.entity";
 import {
-  EntitySubscriberInterface,
+  type EntitySubscriberInterface,
   EventSubscriber,
-  InsertEvent,
-  UpdateEvent,
-} from 'typeorm';
-import { CURRENT_USER } from '../constants/context';
+  type InsertEvent,
+  type UpdateEvent,
+} from "typeorm";
+import { CURRENT_USER } from "../constants/context";
 
 @EventSubscriber()
 export class ActionByUserSubscriber implements EntitySubscriberInterface {
@@ -30,9 +30,9 @@ export class ActionByUserSubscriber implements EntitySubscriberInterface {
     // Check if the entity has the relation property
     if (metadata.relations.some((rel) => rel.propertyName === relation)) {
       // Set the foreign key ID directly
-      const foreignKeyProperty = relation + 'Id';
+      const foreignKeyProperty = `${relation}Id`;
 
-      if (entity && typeof entity === 'object') {
+      if (entity && typeof entity === "object") {
         entity[foreignKeyProperty] = currentUser.id;
         entity[relation] = currentUser;
       }
@@ -42,14 +42,14 @@ export class ActionByUserSubscriber implements EntitySubscriberInterface {
   beforeInsert(event: InsertEvent<any>) {
     const currentUser = this.getCurrentUser();
     if (!currentUser || !event.entity) return;
-    this.updateRelation(event, 'createdBy', currentUser);
+    this.updateRelation(event, "createdBy", currentUser);
   }
 
   beforeUpdate(event: UpdateEvent<any>) {
     const currentUser = this.getCurrentUser();
     if (!currentUser || !event.entity) return;
     if (event.entity.createdAt) {
-      this.updateRelation(event, 'updatedBy', currentUser);
+      this.updateRelation(event, "updatedBy", currentUser);
     }
   }
 }

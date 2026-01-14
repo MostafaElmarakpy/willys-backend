@@ -1,37 +1,33 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { Branch } from 'src/database/entities/branch.entity';
-import { Category } from 'src/database/entities/category.entity';
-import { Item } from 'src/database/entities/item.entity';
-import { Bundle } from 'src/database/entities/bundle.entity';
-import { BranchCategoryOverride } from 'src/database/entities/branch-category-override.entity';
-import { BranchItemOverride } from 'src/database/entities/branch-item-override.entity';
-import { BranchBundleOverride } from 'src/database/entities/branch-bundle-override.entity';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
-import { BundleStatus } from 'src/common/enums/BundleStatus';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { BundleStatus } from "src/common/enums/BundleStatus";
+import { ItemStatus } from "src/common/enums/ItemStatus";
+import { Branch } from "src/database/entities/branch.entity";
+import { BranchBundleOverride } from "src/database/entities/branch-bundle-override.entity";
+import { BranchCategoryOverride } from "src/database/entities/branch-category-override.entity";
+import { BranchItemOverride } from "src/database/entities/branch-item-override.entity";
+import { Bundle } from "src/database/entities/bundle.entity";
+import { Category } from "src/database/entities/category.entity";
+import { Item } from "src/database/entities/item.entity";
+import { IsNull, type Repository } from "typeorm";
 
 @Injectable()
 export class BranchMenuService {
   constructor(
-    @InjectRepository(Branch)
-    private branchRepo: Repository<Branch>,
-    @InjectRepository(Category)
-    private categoryRepo: Repository<Category>,
-    @InjectRepository(Item)
-    private itemRepo: Repository<Item>,
-    @InjectRepository(Bundle)
-    private bundleRepo: Repository<Bundle>,
+    @InjectRepository(Branch) readonly branchRepo: Repository<Branch>,
+    @InjectRepository(Category) readonly categoryRepo: Repository<Category>,
+    @InjectRepository(Item) readonly itemRepo: Repository<Item>,
+    @InjectRepository(Bundle) readonly bundleRepo: Repository<Bundle>,
     @InjectRepository(BranchCategoryOverride)
-    private categoryOverrideRepo: Repository<BranchCategoryOverride>,
+    readonly categoryOverrideRepo: Repository<BranchCategoryOverride>,
     @InjectRepository(BranchItemOverride)
-    private itemOverrideRepo: Repository<BranchItemOverride>,
+    readonly itemOverrideRepo: Repository<BranchItemOverride>,
     @InjectRepository(BranchBundleOverride)
-    private bundleOverrideRepo: Repository<BranchBundleOverride>,
+    readonly bundleOverrideRepo: Repository<BranchBundleOverride>,
   ) {}
 
   /**
@@ -49,7 +45,7 @@ export class BranchMenuService {
       where: { id: branchId, deletedAt: IsNull() },
     });
     if (!branch) {
-      throw new NotFoundException('Branch not found');
+      throw new NotFoundException("Branch not found");
     }
 
     // Validate category exists
@@ -57,13 +53,13 @@ export class BranchMenuService {
       where: { id: categoryId, deletedAt: IsNull() },
     });
     if (!category) {
-      throw new NotFoundException('Category not found');
+      throw new NotFoundException("Category not found");
     }
 
     // Validate: Cannot enable if core is inactive
     if (isAvailable === true && !category.isActive) {
       throw new BadRequestException(
-        'Cannot enable category at branch level: category is not active in core menu',
+        "Cannot enable category at branch level: category is not active in core menu",
       );
     }
 
@@ -104,28 +100,28 @@ export class BranchMenuService {
       where: { id: branchId, deletedAt: IsNull() },
     });
     if (!branch) {
-      throw new NotFoundException('Branch not found');
+      throw new NotFoundException("Branch not found");
     }
 
     // Validate item exists and load category
     const item = await this.itemRepo.findOne({
       where: { id: itemId, deletedAt: IsNull() },
-      relations: ['category'],
+      relations: ["category"],
     });
     if (!item) {
-      throw new NotFoundException('Item not found');
+      throw new NotFoundException("Item not found");
     }
 
     // CRITICAL VALIDATION: Cannot enable if core is inactive
     if (isAvailable === true) {
       if (item.status !== ItemStatus.ACTIVE) {
         throw new BadRequestException(
-          'Cannot enable item at branch level: item is not active in core menu',
+          "Cannot enable item at branch level: item is not active in core menu",
         );
       }
       if (!item.category.isActive) {
         throw new BadRequestException(
-          'Cannot enable item at branch level: parent category is not active',
+          "Cannot enable item at branch level: parent category is not active",
         );
       }
     }
@@ -167,28 +163,28 @@ export class BranchMenuService {
       where: { id: branchId, deletedAt: IsNull() },
     });
     if (!branch) {
-      throw new NotFoundException('Branch not found');
+      throw new NotFoundException("Branch not found");
     }
 
     // Validate bundle exists and load category
     const bundle = await this.bundleRepo.findOne({
       where: { id: bundleId, deletedAt: IsNull() },
-      relations: ['category'],
+      relations: ["category"],
     });
     if (!bundle) {
-      throw new NotFoundException('Bundle not found');
+      throw new NotFoundException("Bundle not found");
     }
 
     // CRITICAL VALIDATION: Cannot enable if core is inactive
     if (isAvailable === true) {
       if (bundle.status !== BundleStatus.ACTIVE) {
         throw new BadRequestException(
-          'Cannot enable bundle at branch level: bundle is not active in core menu',
+          "Cannot enable bundle at branch level: bundle is not active in core menu",
         );
       }
       if (!bundle.category.isActive) {
         throw new BadRequestException(
-          'Cannot enable bundle at branch level: parent category is not active',
+          "Cannot enable bundle at branch level: parent category is not active",
         );
       }
     }
@@ -220,19 +216,19 @@ export class BranchMenuService {
    */
   async getAvailableCategoriesForBranch(branchId: string): Promise<Category[]> {
     const query = this.categoryRepo
-      .createQueryBuilder('c')
+      .createQueryBuilder("c")
       .leftJoin(
-        'branch_category_overrides',
-        'bco',
-        'bco.categoryId = c.id AND bco.branchId = :branchId AND bco.deletedAt IS NULL',
+        "branch_category_overrides",
+        "bco",
+        "bco.categoryId = c.id AND bco.branchId = :branchId AND bco.deletedAt IS NULL",
         { branchId },
       )
-      .where('c.deletedAt IS NULL')
-      .andWhere('c.isActive = :isActive', { isActive: true })
-      .andWhere('(bco.id IS NULL OR bco.isAvailable = :available)', {
+      .where("c.deletedAt IS NULL")
+      .andWhere("c.isActive = :isActive", { isActive: true })
+      .andWhere("(bco.id IS NULL OR bco.isAvailable = :available)", {
         available: true,
       })
-      .orderBy('c.sortOrder', 'ASC');
+      .orderBy("c.sortOrder", "ASC");
 
     return await query.getMany();
   }
@@ -242,30 +238,30 @@ export class BranchMenuService {
    */
   async getAvailableItemsForBranch(branchId: string): Promise<Item[]> {
     const query = this.itemRepo
-      .createQueryBuilder('i')
-      .innerJoin('i.category', 'c')
+      .createQueryBuilder("i")
+      .innerJoin("i.category", "c")
       .leftJoin(
-        'branch_category_overrides',
-        'bco',
-        'bco.categoryId = c.id AND bco.branchId = :branchId AND bco.deletedAt IS NULL',
+        "branch_category_overrides",
+        "bco",
+        "bco.categoryId = c.id AND bco.branchId = :branchId AND bco.deletedAt IS NULL",
         { branchId },
       )
       .leftJoin(
-        'branch_item_overrides',
-        'bio',
-        'bio.itemId = i.id AND bio.branchId = :branchId AND bio.deletedAt IS NULL',
+        "branch_item_overrides",
+        "bio",
+        "bio.itemId = i.id AND bio.branchId = :branchId AND bio.deletedAt IS NULL",
         { branchId },
       )
-      .where('i.deletedAt IS NULL')
-      .andWhere('i.status = :status', { status: ItemStatus.ACTIVE })
-      .andWhere('c.isActive = :isActive', { isActive: true })
-      .andWhere('(bco.id IS NULL OR bco.isAvailable = :available)', {
+      .where("i.deletedAt IS NULL")
+      .andWhere("i.status = :status", { status: ItemStatus.ACTIVE })
+      .andWhere("c.isActive = :isActive", { isActive: true })
+      .andWhere("(bco.id IS NULL OR bco.isAvailable = :available)", {
         available: true,
       })
-      .andWhere('(bio.id IS NULL OR bio.isAvailable = :available)', {
+      .andWhere("(bio.id IS NULL OR bio.isAvailable = :available)", {
         available: true,
       })
-      .orderBy('i.sortOrder', 'ASC');
+      .orderBy("i.sortOrder", "ASC");
 
     return await query.getMany();
   }
@@ -275,27 +271,27 @@ export class BranchMenuService {
    */
   async getAvailableBundlesForBranch(branchId: string): Promise<Bundle[]> {
     const query = this.bundleRepo
-      .createQueryBuilder('b')
-      .innerJoin('b.category', 'c')
+      .createQueryBuilder("b")
+      .innerJoin("b.category", "c")
       .leftJoin(
-        'branch_category_overrides',
-        'bco',
-        'bco.categoryId = c.id AND bco.branchId = :branchId AND bco.deletedAt IS NULL',
+        "branch_category_overrides",
+        "bco",
+        "bco.categoryId = c.id AND bco.branchId = :branchId AND bco.deletedAt IS NULL",
         { branchId },
       )
       .leftJoin(
-        'branch_bundle_overrides',
-        'bbo',
-        'bbo.bundleId = b.id AND bbo.branchId = :branchId AND bbo.deletedAt IS NULL',
+        "branch_bundle_overrides",
+        "bbo",
+        "bbo.bundleId = b.id AND bbo.branchId = :branchId AND bbo.deletedAt IS NULL",
         { branchId },
       )
-      .where('b.deletedAt IS NULL')
-      .andWhere('b.status = :status', { status: BundleStatus.ACTIVE })
-      .andWhere('c.isActive = :isActive', { isActive: true })
-      .andWhere('(bco.id IS NULL OR bco.isAvailable = :available)', {
+      .where("b.deletedAt IS NULL")
+      .andWhere("b.status = :status", { status: BundleStatus.ACTIVE })
+      .andWhere("c.isActive = :isActive", { isActive: true })
+      .andWhere("(bco.id IS NULL OR bco.isAvailable = :available)", {
         available: true,
       })
-      .andWhere('(bbo.id IS NULL OR bbo.isAvailable = :available)', {
+      .andWhere("(bbo.id IS NULL OR bbo.isAvailable = :available)", {
         available: true,
       });
 
@@ -315,7 +311,7 @@ export class BranchMenuService {
       where: { id: branchId, deletedAt: IsNull() },
     });
     if (!branch) {
-      throw new NotFoundException('Branch not found');
+      throw new NotFoundException("Branch not found");
     }
 
     const [categories, items, bundles] = await Promise.all([
@@ -335,7 +331,7 @@ export class BranchMenuService {
   ): Promise<BranchCategoryOverride[]> {
     return await this.categoryOverrideRepo.find({
       where: { branchId, deletedAt: IsNull() },
-      relations: ['category', 'createdBy', 'updatedBy'],
+      relations: ["category", "createdBy", "updatedBy"],
     });
   }
 
@@ -347,7 +343,7 @@ export class BranchMenuService {
   ): Promise<BranchItemOverride[]> {
     return await this.itemOverrideRepo.find({
       where: { branchId, deletedAt: IsNull() },
-      relations: ['item', 'item.category', 'createdBy', 'updatedBy'],
+      relations: ["item", "item.category", "createdBy", "updatedBy"],
     });
   }
 
@@ -359,7 +355,7 @@ export class BranchMenuService {
   ): Promise<BranchBundleOverride[]> {
     return await this.bundleOverrideRepo.find({
       where: { branchId, deletedAt: IsNull() },
-      relations: ['bundle', 'bundle.category', 'createdBy', 'updatedBy'],
+      relations: ["bundle", "bundle.category", "createdBy", "updatedBy"],
     });
   }
 
@@ -414,7 +410,7 @@ export class BranchMenuService {
   async isItemAvailable(branchId: string, itemId: string): Promise<boolean> {
     const item = await this.itemRepo.findOne({
       where: { id: itemId, deletedAt: IsNull() },
-      relations: ['category'],
+      relations: ["category"],
     });
 
     if (!item) {
@@ -459,7 +455,7 @@ export class BranchMenuService {
   ): Promise<boolean> {
     const bundle = await this.bundleRepo.findOne({
       where: { id: bundleId, deletedAt: IsNull() },
-      relations: ['category'],
+      relations: ["category"],
     });
 
     if (!bundle) {

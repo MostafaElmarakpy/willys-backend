@@ -1,19 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { BranchMenuService } from './branch-menu.service';
-import { Branch } from 'src/database/entities/branch.entity';
-import { Category } from 'src/database/entities/category.entity';
-import { Item } from 'src/database/entities/item.entity';
-import { Bundle } from 'src/database/entities/bundle.entity';
-import { BranchCategoryOverride } from 'src/database/entities/branch-category-override.entity';
-import { BranchItemOverride } from 'src/database/entities/branch-item-override.entity';
-import { BranchBundleOverride } from 'src/database/entities/branch-bundle-override.entity';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
-import { BundleStatus } from 'src/common/enums/BundleStatus';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { BundleStatus } from "src/common/enums/BundleStatus";
+import { ItemStatus } from "src/common/enums/ItemStatus";
+import { Branch } from "src/database/entities/branch.entity";
+import { BranchBundleOverride } from "src/database/entities/branch-bundle-override.entity";
+import { BranchCategoryOverride } from "src/database/entities/branch-category-override.entity";
+import { BranchItemOverride } from "src/database/entities/branch-item-override.entity";
+import { Bundle } from "src/database/entities/bundle.entity";
+import { Category } from "src/database/entities/category.entity";
+import { Item } from "src/database/entities/item.entity";
+import { Repository } from "typeorm";
+import { BranchMenuService } from "./branch-menu.service";
 
-describe('BranchMenuService', () => {
+describe("BranchMenuService", () => {
   let service: BranchMenuService;
   let branchRepo: jest.Mocked<Repository<Branch>>;
   let categoryRepo: jest.Mocked<Repository<Category>>;
@@ -23,28 +23,28 @@ describe('BranchMenuService', () => {
   let itemOverrideRepo: jest.Mocked<Repository<BranchItemOverride>>;
   let bundleOverrideRepo: jest.Mocked<Repository<BranchBundleOverride>>;
 
-  const mockBranchId = 'branch-123';
-  const mockCategoryId = 'category-123';
-  const mockItemId = 'item-123';
-  const mockBundleId = 'bundle-123';
-  const mockUserId = 'user-123';
+  const mockBranchId = "branch-123";
+  const mockCategoryId = "category-123";
+  const mockItemId = "item-123";
+  const mockBundleId = "bundle-123";
+  const mockUserId = "user-123";
 
   const mockBranch: Partial<Branch> = {
     id: mockBranchId,
-    name: { en: 'Main Branch', ar: 'الفرع الرئيسي' },
+    name: { en: "Main Branch", ar: "الفرع الرئيسي" },
     isActive: true,
     isOpen: true,
   };
 
   const mockCategory: Partial<Category> = {
     id: mockCategoryId,
-    name: { en: 'Burgers', ar: 'برجر' },
+    name: { en: "Burgers", ar: "برجر" },
     isActive: true,
   };
 
   const mockItem: Partial<Item> = {
     id: mockItemId,
-    name: { en: 'Cheese Burger', ar: 'تشيز برجر' },
+    name: { en: "Cheese Burger", ar: "تشيز برجر" },
     status: ItemStatus.ACTIVE,
     categoryId: mockCategoryId,
     category: mockCategory as Category,
@@ -52,14 +52,14 @@ describe('BranchMenuService', () => {
 
   const mockBundle: Partial<Bundle> = {
     id: mockBundleId,
-    name: { en: 'Family Meal', ar: 'وجبة عائلية' },
+    name: { en: "Family Meal", ar: "وجبة عائلية" },
     status: BundleStatus.ACTIVE,
     categoryId: mockCategoryId,
     category: mockCategory as Category,
   };
 
   const mockCategoryOverride: Partial<BranchCategoryOverride> = {
-    id: 'override-1',
+    id: "override-1",
     branchId: mockBranchId,
     categoryId: mockCategoryId,
     isAvailable: true,
@@ -67,7 +67,7 @@ describe('BranchMenuService', () => {
   };
 
   const mockItemOverride: Partial<BranchItemOverride> = {
-    id: 'override-2',
+    id: "override-2",
     branchId: mockBranchId,
     itemId: mockItemId,
     isAvailable: true,
@@ -75,7 +75,7 @@ describe('BranchMenuService', () => {
   };
 
   const mockBundleOverride: Partial<BranchBundleOverride> = {
-    id: 'override-3',
+    id: "override-3",
     branchId: mockBranchId,
     bundleId: mockBundleId,
     isAvailable: true,
@@ -174,8 +174,8 @@ describe('BranchMenuService', () => {
     jest.clearAllMocks();
   });
 
-  describe('setBranchCategoryAvailability', () => {
-    it('should create a new category override', async () => {
+  describe("setBranchCategoryAvailability", () => {
+    it("should create a new category override", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       categoryRepo.findOne.mockResolvedValue(mockCategory as Category);
       categoryOverrideRepo.findOne.mockResolvedValue(null);
@@ -191,7 +191,7 @@ describe('BranchMenuService', () => {
         mockCategoryId,
         true,
         mockUserId,
-        'Test reason',
+        "Test reason",
       );
 
       expect(result).toBeDefined();
@@ -199,12 +199,12 @@ describe('BranchMenuService', () => {
         branchId: mockBranchId,
         categoryId: mockCategoryId,
         isAvailable: true,
-        reason: 'Test reason',
+        reason: "Test reason",
         createdById: mockUserId,
       });
     });
 
-    it('should update existing category override', async () => {
+    it("should update existing category override", async () => {
       const existingOverride = { ...mockCategoryOverride, isAvailable: true };
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       categoryRepo.findOne.mockResolvedValue(mockCategory as Category);
@@ -231,7 +231,7 @@ describe('BranchMenuService', () => {
       );
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepo.findOne.mockResolvedValue(null);
 
       await expect(
@@ -244,7 +244,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException if category not found', async () => {
+    it("should throw NotFoundException if category not found", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       categoryRepo.findOne.mockResolvedValue(null);
 
@@ -258,7 +258,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if enabling inactive category', async () => {
+    it("should throw BadRequestException if enabling inactive category", async () => {
       const inactiveCategory = { ...mockCategory, isActive: false };
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       categoryRepo.findOne.mockResolvedValue(inactiveCategory as Category);
@@ -273,7 +273,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should allow disabling inactive category', async () => {
+    it("should allow disabling inactive category", async () => {
       const inactiveCategory = { ...mockCategory, isActive: false };
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       categoryRepo.findOne.mockResolvedValue(inactiveCategory as Category);
@@ -298,8 +298,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('setBranchItemAvailability', () => {
-    it('should create a new item override', async () => {
+  describe("setBranchItemAvailability", () => {
+    it("should create a new item override", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       itemRepo.findOne.mockResolvedValue(mockItem as Item);
       itemOverrideRepo.findOne.mockResolvedValue(null);
@@ -327,7 +327,7 @@ describe('BranchMenuService', () => {
       });
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepo.findOne.mockResolvedValue(null);
 
       await expect(
@@ -340,7 +340,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException if item not found', async () => {
+    it("should throw NotFoundException if item not found", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       itemRepo.findOne.mockResolvedValue(null);
 
@@ -354,7 +354,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if enabling inactive item', async () => {
+    it("should throw BadRequestException if enabling inactive item", async () => {
       const inactiveItem = { ...mockItem, status: ItemStatus.DRAFT };
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       itemRepo.findOne.mockResolvedValue(inactiveItem as Item);
@@ -369,7 +369,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if parent category is inactive', async () => {
+    it("should throw BadRequestException if parent category is inactive", async () => {
       const itemWithInactiveCategory = {
         ...mockItem,
         category: { ...mockCategory, isActive: false },
@@ -388,8 +388,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('setBranchBundleAvailability', () => {
-    it('should create a new bundle override', async () => {
+  describe("setBranchBundleAvailability", () => {
+    it("should create a new bundle override", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       bundleRepo.findOne.mockResolvedValue(mockBundle as Bundle);
       bundleOverrideRepo.findOne.mockResolvedValue(null);
@@ -410,7 +410,7 @@ describe('BranchMenuService', () => {
       expect(result).toBeDefined();
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepo.findOne.mockResolvedValue(null);
 
       await expect(
@@ -423,7 +423,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException if bundle not found', async () => {
+    it("should throw NotFoundException if bundle not found", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       bundleRepo.findOne.mockResolvedValue(null);
 
@@ -437,7 +437,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if enabling inactive bundle', async () => {
+    it("should throw BadRequestException if enabling inactive bundle", async () => {
       const inactiveBundle = { ...mockBundle, status: BundleStatus.DRAFT };
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       bundleRepo.findOne.mockResolvedValue(inactiveBundle as Bundle);
@@ -452,7 +452,7 @@ describe('BranchMenuService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if parent category is inactive', async () => {
+    it("should throw BadRequestException if parent category is inactive", async () => {
       const bundleWithInactiveCategory = {
         ...mockBundle,
         category: { ...mockCategory, isActive: false },
@@ -473,8 +473,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('getAvailableMenuForBranch', () => {
-    it('should return available menu for branch', async () => {
+  describe("getAvailableMenuForBranch", () => {
+    it("should return available menu for branch", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
 
       const mockQueryBuilder = {
@@ -502,7 +502,7 @@ describe('BranchMenuService', () => {
       expect(result.bundles).toBeDefined();
     });
 
-    it('should throw NotFoundException if branch not found', async () => {
+    it("should throw NotFoundException if branch not found", async () => {
       branchRepo.findOne.mockResolvedValue(null);
 
       await expect(
@@ -511,8 +511,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('getBranchCategoryOverrides', () => {
-    it('should return category overrides for branch', async () => {
+  describe("getBranchCategoryOverrides", () => {
+    it("should return category overrides for branch", async () => {
       categoryOverrideRepo.find.mockResolvedValue([
         mockCategoryOverride as BranchCategoryOverride,
       ]);
@@ -522,13 +522,13 @@ describe('BranchMenuService', () => {
       expect(result).toHaveLength(1);
       expect(categoryOverrideRepo.find).toHaveBeenCalledWith({
         where: { branchId: mockBranchId, deletedAt: expect.anything() },
-        relations: ['category', 'createdBy', 'updatedBy'],
+        relations: ["category", "createdBy", "updatedBy"],
       });
     });
   });
 
-  describe('getBranchItemOverrides', () => {
-    it('should return item overrides for branch', async () => {
+  describe("getBranchItemOverrides", () => {
+    it("should return item overrides for branch", async () => {
       itemOverrideRepo.find.mockResolvedValue([
         mockItemOverride as BranchItemOverride,
       ]);
@@ -539,8 +539,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('getBranchBundleOverrides', () => {
-    it('should return bundle overrides for branch', async () => {
+  describe("getBranchBundleOverrides", () => {
+    it("should return bundle overrides for branch", async () => {
       bundleOverrideRepo.find.mockResolvedValue([
         mockBundleOverride as BranchBundleOverride,
       ]);
@@ -551,8 +551,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('removeCategoryOverride', () => {
-    it('should soft remove existing override', async () => {
+  describe("removeCategoryOverride", () => {
+    it("should soft remove existing override", async () => {
       categoryOverrideRepo.findOne.mockResolvedValue(
         mockCategoryOverride as BranchCategoryOverride,
       );
@@ -567,7 +567,7 @@ describe('BranchMenuService', () => {
       );
     });
 
-    it('should do nothing if override not found', async () => {
+    it("should do nothing if override not found", async () => {
       categoryOverrideRepo.findOne.mockResolvedValue(null);
 
       await service.removeCategoryOverride(mockBranchId, mockCategoryId);
@@ -576,8 +576,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('removeItemOverride', () => {
-    it('should soft remove existing override', async () => {
+  describe("removeItemOverride", () => {
+    it("should soft remove existing override", async () => {
       itemOverrideRepo.findOne.mockResolvedValue(
         mockItemOverride as BranchItemOverride,
       );
@@ -593,8 +593,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('removeBundleOverride', () => {
-    it('should soft remove existing override', async () => {
+  describe("removeBundleOverride", () => {
+    it("should soft remove existing override", async () => {
       bundleOverrideRepo.findOne.mockResolvedValue(
         mockBundleOverride as BranchBundleOverride,
       );
@@ -610,8 +610,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('isItemAvailable', () => {
-    it('should return true for active item with no overrides', async () => {
+  describe("isItemAvailable", () => {
+    it("should return true for active item with no overrides", async () => {
       itemRepo.findOne.mockResolvedValue(mockItem as Item);
       categoryOverrideRepo.findOne.mockResolvedValue(null);
       itemOverrideRepo.findOne.mockResolvedValue(null);
@@ -621,7 +621,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false if item not found', async () => {
+    it("should return false if item not found", async () => {
       itemRepo.findOne.mockResolvedValue(null);
 
       const result = await service.isItemAvailable(mockBranchId, mockItemId);
@@ -629,7 +629,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if item is not active', async () => {
+    it("should return false if item is not active", async () => {
       const inactiveItem = { ...mockItem, status: ItemStatus.DRAFT };
       itemRepo.findOne.mockResolvedValue(inactiveItem as Item);
 
@@ -638,7 +638,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if parent category is inactive', async () => {
+    it("should return false if parent category is inactive", async () => {
       const itemWithInactiveCategory = {
         ...mockItem,
         category: { ...mockCategory, isActive: false },
@@ -650,7 +650,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if category override disables category', async () => {
+    it("should return false if category override disables category", async () => {
       itemRepo.findOne.mockResolvedValue(mockItem as Item);
       categoryOverrideRepo.findOne.mockResolvedValue({
         ...mockCategoryOverride,
@@ -662,7 +662,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if item override disables item', async () => {
+    it("should return false if item override disables item", async () => {
       itemRepo.findOne.mockResolvedValue(mockItem as Item);
       categoryOverrideRepo.findOne.mockResolvedValue(null);
       itemOverrideRepo.findOne.mockResolvedValue({
@@ -676,8 +676,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('isBundleAvailable', () => {
-    it('should return true for active bundle with no overrides', async () => {
+  describe("isBundleAvailable", () => {
+    it("should return true for active bundle with no overrides", async () => {
       bundleRepo.findOne.mockResolvedValue(mockBundle as Bundle);
       categoryOverrideRepo.findOne.mockResolvedValue(null);
       bundleOverrideRepo.findOne.mockResolvedValue(null);
@@ -690,7 +690,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false if bundle not found', async () => {
+    it("should return false if bundle not found", async () => {
       bundleRepo.findOne.mockResolvedValue(null);
 
       const result = await service.isBundleAvailable(
@@ -701,7 +701,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if bundle is not active', async () => {
+    it("should return false if bundle is not active", async () => {
       const inactiveBundle = { ...mockBundle, status: BundleStatus.DRAFT };
       bundleRepo.findOne.mockResolvedValue(inactiveBundle as Bundle);
 
@@ -713,7 +713,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if category override disables category', async () => {
+    it("should return false if category override disables category", async () => {
       bundleRepo.findOne.mockResolvedValue(mockBundle as Bundle);
       categoryOverrideRepo.findOne.mockResolvedValue({
         ...mockCategoryOverride,
@@ -728,7 +728,7 @@ describe('BranchMenuService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if bundle override disables bundle', async () => {
+    it("should return false if bundle override disables bundle", async () => {
       bundleRepo.findOne.mockResolvedValue(mockBundle as Bundle);
       categoryOverrideRepo.findOne.mockResolvedValue(null);
       bundleOverrideRepo.findOne.mockResolvedValue({
@@ -745,8 +745,8 @@ describe('BranchMenuService', () => {
     });
   });
 
-  describe('bulkUpdateAvailability', () => {
-    it('should process bulk updates successfully', async () => {
+  describe("bulkUpdateAvailability", () => {
+    it("should process bulk updates successfully", async () => {
       branchRepo.findOne.mockResolvedValue(mockBranch as Branch);
       categoryRepo.findOne.mockResolvedValue(mockCategory as Category);
       itemRepo.findOne.mockResolvedValue(mockItem as Item);
@@ -793,7 +793,7 @@ describe('BranchMenuService', () => {
       expect(result.bundles).toHaveLength(1);
     });
 
-    it('should handle empty updates', async () => {
+    it("should handle empty updates", async () => {
       const result = await service.bulkUpdateAvailability(
         mockBranchId,
         {},

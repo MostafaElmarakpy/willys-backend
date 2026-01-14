@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
-import { PermissionsMap } from 'src/common/types/permission.types';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from "class-validator";
+import { PermissionsMap } from "src/common/types/permission.types";
 
 export class CreateRoleDto {
   @IsString()

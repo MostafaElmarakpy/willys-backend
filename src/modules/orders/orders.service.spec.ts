@@ -1,33 +1,33 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository, DataSource, SelectQueryBuilder } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { OrdersService } from './orders.service';
-import { Order } from '../../database/entities/order.entity';
-import { OrderItem } from '../../database/entities/order-item.entity';
-import { OrderStatusLog } from '../../database/entities/order-status-log.entity';
-import { UserAddress } from '../../database/entities/user-address.entity';
-import { Cart } from '../../database/entities/cart.entity';
-import { OrderStatus } from '../../common/enums/OrderStatus';
-import { OrderType } from '../../common/enums/OrderType';
-import { OrderFilterDto } from './dto/order-filter.dto';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { DataSource, type Repository, type SelectQueryBuilder } from "typeorm";
+import { OrderStatus } from "../../common/enums/OrderStatus";
+import { OrderType } from "../../common/enums/OrderType";
+import { Cart } from "../../database/entities/cart.entity";
+import { Order } from "../../database/entities/order.entity";
+import { OrderItem } from "../../database/entities/order-item.entity";
+import { OrderStatusLog } from "../../database/entities/order-status-log.entity";
+import { UserAddress } from "../../database/entities/user-address.entity";
+import { OrderFilterDto } from "./dto/order-filter.dto";
+import { OrdersService } from "./orders.service";
 
-describe('OrdersService', () => {
+describe("OrdersService", () => {
   let service: OrdersService;
   let orderRepository: jest.Mocked<Repository<Order>>;
   let statusLogRepository: jest.Mocked<Repository<OrderStatusLog>>;
   let addressRepository: jest.Mocked<Repository<UserAddress>>;
 
   // Mock data
-  const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
-  const mockOrderId = '550e8400-e29b-41d4-a716-446655440001';
-  const mockBranchId = '550e8400-e29b-41d4-a716-446655440002';
-  const mockAddressId = '550e8400-e29b-41d4-a716-446655440003';
-  const mockPaymentId = '550e8400-e29b-41d4-a716-446655440004';
+  const mockUserId = "550e8400-e29b-41d4-a716-446655440000";
+  const mockOrderId = "550e8400-e29b-41d4-a716-446655440001";
+  const mockBranchId = "550e8400-e29b-41d4-a716-446655440002";
+  const mockAddressId = "550e8400-e29b-41d4-a716-446655440003";
+  const mockPaymentId = "550e8400-e29b-41d4-a716-446655440004";
 
   const mockOrder: Partial<Order> = {
     id: mockOrderId,
-    orderNumber: 'WLY-20260111-0001',
+    orderNumber: "WLY-20260111-0001",
     userId: mockUserId,
     branchId: mockBranchId,
     orderType: OrderType.PICKUP,
@@ -37,7 +37,7 @@ describe('OrdersService', () => {
     deliveryFee: 0,
     tax: 14,
     total: 114,
-    currency: 'EGP',
+    currency: "EGP",
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: undefined,
@@ -47,18 +47,18 @@ describe('OrdersService', () => {
 
   const mockAddress: Partial<UserAddress> = {
     id: mockAddressId,
-    addressLine1: '123 Main St',
-    addressLine2: 'Apt 4',
-    city: 'Cairo',
-    area: 'Maadi',
+    addressLine1: "123 Main St",
+    addressLine2: "Apt 4",
+    city: "Cairo",
+    area: "Maadi",
     latitude: 30.0444,
     longitude: 31.2357,
-    deliveryInstructions: 'Ring doorbell',
-    contactPhone: '+201234567890',
+    deliveryInstructions: "Ring doorbell",
+    contactPhone: "+201234567890",
   };
 
   const mockCart: Partial<Cart> = {
-    id: '550e8400-e29b-41d4-a716-446655440005',
+    id: "550e8400-e29b-41d4-a716-446655440005",
     userId: mockUserId,
     branchId: mockBranchId,
     orderType: OrderType.PICKUP,
@@ -153,8 +153,8 @@ describe('OrdersService', () => {
     jest.clearAllMocks();
   });
 
-  describe('generateOrderNumber', () => {
-    it('should generate order number with correct format', async () => {
+  describe("generateOrderNumber", () => {
+    it("should generate order number with correct format", async () => {
       orderRepository.count.mockResolvedValue(0);
 
       const result = await service.generateOrderNumber();
@@ -162,7 +162,7 @@ describe('OrdersService', () => {
       expect(result).toMatch(/^WLY-\d{8}-0001$/);
     });
 
-    it('should increment sequence number based on existing orders', async () => {
+    it("should increment sequence number based on existing orders", async () => {
       orderRepository.count.mockResolvedValue(5);
 
       const result = await service.generateOrderNumber();
@@ -170,9 +170,9 @@ describe('OrdersService', () => {
       expect(result).toMatch(/^WLY-\d{8}-0006$/);
     });
 
-    it('should use current date in order number', async () => {
+    it("should use current date in order number", async () => {
       orderRepository.count.mockResolvedValue(0);
-      const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 
       const result = await service.generateOrderNumber();
 
@@ -180,7 +180,7 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('createFromCart', () => {
+  describe("createFromCart", () => {
     beforeEach(() => {
       orderRepository.count.mockResolvedValue(0);
       mockQueryRunner.manager.create.mockImplementation((_, data) => data);
@@ -190,7 +190,7 @@ describe('OrdersService', () => {
       orderRepository.findOne.mockResolvedValue(mockOrder as Order);
     });
 
-    it('should create an order from cart successfully', async () => {
+    it("should create an order from cart successfully", async () => {
       const cart = { ...mockCart, items: [] } as Cart;
 
       const result = await service.createFromCart(mockUserId, cart);
@@ -202,20 +202,20 @@ describe('OrdersService', () => {
       expect(result).toBeDefined();
     });
 
-    it('should rollback transaction on error', async () => {
+    it("should rollback transaction on error", async () => {
       mockQueryRunner.manager.save.mockRejectedValueOnce(
-        new Error('Database error'),
+        new Error("Database error"),
       );
       const cart = { ...mockCart, items: [] } as Cart;
 
       await expect(service.createFromCart(mockUserId, cart)).rejects.toThrow(
-        'Database error',
+        "Database error",
       );
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.release).toHaveBeenCalled();
     });
 
-    it('should create delivery address snapshot for delivery orders', async () => {
+    it("should create delivery address snapshot for delivery orders", async () => {
       const cart = {
         ...mockCart,
         orderType: OrderType.DELIVERY,
@@ -232,7 +232,7 @@ describe('OrdersService', () => {
       });
     });
 
-    it('should not fetch address for pickup orders', async () => {
+    it("should not fetch address for pickup orders", async () => {
       const cart = {
         ...mockCart,
         orderType: OrderType.PICKUP,
@@ -244,18 +244,18 @@ describe('OrdersService', () => {
       expect(addressRepository.findOne).not.toHaveBeenCalled();
     });
 
-    it('should create order items from cart items', async () => {
+    it("should create order items from cart items", async () => {
       const cartItem = {
-        id: 'item-1',
-        itemType: 'ITEM',
-        itemId: 'menu-item-1',
+        id: "item-1",
+        itemType: "ITEM",
+        itemId: "menu-item-1",
         quantity: 2,
         unitPrice: 50,
         totalPrice: 100,
         item: {
-          name: { en: 'Burger', ar: 'برجر' },
-          description: { en: 'Delicious', ar: 'لذيذ' },
-          image: 'burger.jpg',
+          name: { en: "Burger", ar: "برجر" },
+          description: { en: "Delicious", ar: "لذيذ" },
+          image: "burger.jpg",
         },
         deletedAt: undefined,
       };
@@ -270,18 +270,18 @@ describe('OrdersService', () => {
       expect(mockQueryRunner.manager.create).toHaveBeenCalledWith(
         OrderItem,
         expect.objectContaining({
-          itemType: 'ITEM',
-          originalItemId: 'menu-item-1',
+          itemType: "ITEM",
+          originalItemId: "menu-item-1",
           quantity: 2,
         }),
       );
     });
 
-    it('should skip deleted cart items', async () => {
+    it("should skip deleted cart items", async () => {
       const cartItem = {
-        id: 'item-1',
-        itemType: 'ITEM',
-        itemId: 'menu-item-1',
+        id: "item-1",
+        itemType: "ITEM",
+        itemId: "menu-item-1",
         quantity: 2,
         deletedAt: new Date(),
       };
@@ -300,7 +300,7 @@ describe('OrdersService', () => {
       expect(orderItemCreates).toHaveLength(0);
     });
 
-    it('should create initial status log with PENDING status', async () => {
+    it("should create initial status log with PENDING status", async () => {
       const cart = { ...mockCart, items: [] } as Cart;
 
       await service.createFromCart(mockUserId, cart);
@@ -310,35 +310,35 @@ describe('OrdersService', () => {
         expect.objectContaining({
           previousStatus: OrderStatus.PENDING,
           newStatus: OrderStatus.PENDING,
-          notes: 'Order created',
+          notes: "Order created",
         }),
       );
     });
 
-    it('should include payment ID if provided', async () => {
+    it("should include payment ID if provided", async () => {
       const cart = { ...mockCart, items: [] } as Cart;
 
       await service.createFromCart(
         mockUserId,
         cart,
         mockPaymentId,
-        '127.0.0.1',
-        'Mozilla/5.0',
+        "127.0.0.1",
+        "Mozilla/5.0",
       );
 
       expect(mockQueryRunner.manager.create).toHaveBeenCalledWith(
         Order,
         expect.objectContaining({
           paymentId: mockPaymentId,
-          ipAddress: '127.0.0.1',
-          userAgent: 'Mozilla/5.0',
+          ipAddress: "127.0.0.1",
+          userAgent: "Mozilla/5.0",
         }),
       );
     });
   });
 
-  describe('findOne', () => {
-    it('should return an order when found', async () => {
+  describe("findOne", () => {
+    it("should return an order when found", async () => {
       orderRepository.findOne.mockResolvedValue(mockOrder as Order);
 
       const result = await service.findOne(mockOrderId);
@@ -346,47 +346,47 @@ describe('OrdersService', () => {
       expect(result).toEqual(mockOrder);
       expect(orderRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockOrderId, deletedAt: expect.anything() },
-        relations: ['items', 'statusLogs', 'branch', 'user'],
-        order: { statusLogs: { occurredAt: 'ASC' } },
+        relations: ["items", "statusLogs", "branch", "user"],
+        order: { statusLogs: { occurredAt: "ASC" } },
       });
     });
 
-    it('should throw NotFoundException when order not found', async () => {
+    it("should throw NotFoundException when order not found", async () => {
       orderRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent-id')).rejects.toThrow(
+      await expect(service.findOne("non-existent-id")).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
-  describe('findByOrderNumber', () => {
-    it('should return an order when found by order number', async () => {
+  describe("findByOrderNumber", () => {
+    it("should return an order when found by order number", async () => {
       orderRepository.findOne.mockResolvedValue(mockOrder as Order);
 
-      const result = await service.findByOrderNumber('WLY-20260111-0001');
+      const result = await service.findByOrderNumber("WLY-20260111-0001");
 
       expect(result).toEqual(mockOrder);
       expect(orderRepository.findOne).toHaveBeenCalledWith({
         where: {
-          orderNumber: 'WLY-20260111-0001',
+          orderNumber: "WLY-20260111-0001",
           deletedAt: expect.anything(),
         },
-        relations: ['items', 'statusLogs', 'branch'],
+        relations: ["items", "statusLogs", "branch"],
       });
     });
 
-    it('should throw NotFoundException when order not found', async () => {
+    it("should throw NotFoundException when order not found", async () => {
       orderRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.findByOrderNumber('WLY-99999999-9999'),
+        service.findByOrderNumber("WLY-99999999-9999"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('findByUser', () => {
-    it('should return orders for a user with pagination', async () => {
+  describe("findByUser", () => {
+    it("should return orders for a user with pagination", async () => {
       const mockOrders = [mockOrder as Order];
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([mockOrders, 1]);
@@ -401,7 +401,7 @@ describe('OrdersService', () => {
       expect(result.total).toBe(1);
     });
 
-    it('should apply status filter when provided', async () => {
+    it("should apply status filter when provided", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
       orderRepository.createQueryBuilder.mockReturnValue(
@@ -416,12 +416,12 @@ describe('OrdersService', () => {
       await service.findByUser(mockUserId, filterDto);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'order.status = :status',
+        "order.status = :status",
         { status: OrderStatus.PENDING },
       );
     });
 
-    it('should apply orderType filter when provided', async () => {
+    it("should apply orderType filter when provided", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
       orderRepository.createQueryBuilder.mockReturnValue(
@@ -436,12 +436,12 @@ describe('OrdersService', () => {
       await service.findByUser(mockUserId, filterDto);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'order.orderType = :orderType',
+        "order.orderType = :orderType",
         { orderType: OrderType.DELIVERY },
       );
     });
 
-    it('should apply date range filters when provided', async () => {
+    it("should apply date range filters when provided", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
       orderRepository.createQueryBuilder.mockReturnValue(
@@ -449,24 +449,24 @@ describe('OrdersService', () => {
       );
 
       const filterDto: OrderFilterDto = {
-        startDate: '2026-01-01',
-        endDate: '2026-01-31',
+        startDate: "2026-01-01",
+        endDate: "2026-01-31",
         page: 1,
         limit: 10,
       };
       await service.findByUser(mockUserId, filterDto);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'order.createdAt >= :startDate',
+        "order.createdAt >= :startDate",
         { startDate: expect.any(Date) },
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'order.createdAt <= :endDate',
+        "order.createdAt <= :endDate",
         { endDate: expect.any(Date) },
       );
     });
 
-    it('should apply sorting when provided', async () => {
+    it("should apply sorting when provided", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
       orderRepository.createQueryBuilder.mockReturnValue(
@@ -474,22 +474,22 @@ describe('OrdersService', () => {
       );
 
       const filterDto: OrderFilterDto = {
-        sortBy: 'total',
-        sortOrder: 'ASC',
+        sortBy: "total",
+        sortOrder: "ASC",
         page: 1,
         limit: 10,
       };
       await service.findByUser(mockUserId, filterDto);
 
       expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
-        'order.total',
-        'ASC',
+        "order.total",
+        "ASC",
       );
     });
   });
 
-  describe('findAll', () => {
-    it('should return all orders with pagination', async () => {
+  describe("findAll", () => {
+    it("should return all orders with pagination", async () => {
       const mockOrders = [mockOrder as Order];
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([mockOrders, 1]);
@@ -504,7 +504,7 @@ describe('OrdersService', () => {
       expect(result.total).toBe(1);
     });
 
-    it('should apply branchId filter when provided', async () => {
+    it("should apply branchId filter when provided", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
       orderRepository.createQueryBuilder.mockReturnValue(
@@ -519,12 +519,12 @@ describe('OrdersService', () => {
       await service.findAll(filterDto);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'order.branchId = :branchId',
+        "order.branchId = :branchId",
         { branchId: mockBranchId },
       );
     });
 
-    it('should apply search filter when provided', async () => {
+    it("should apply search filter when provided", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
       orderRepository.createQueryBuilder.mockReturnValue(
@@ -532,19 +532,19 @@ describe('OrdersService', () => {
       );
 
       const filterDto: OrderFilterDto = {
-        search: 'WLY-2026',
+        search: "WLY-2026",
         page: 1,
         limit: 10,
       };
       await service.findAll(filterDto);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        '(order.orderNumber ILIKE :search OR user.email ILIKE :search)',
-        { search: '%WLY-2026%' },
+        "(order.orderNumber ILIKE :search OR user.email ILIKE :search)",
+        { search: "%WLY-2026%" },
       );
     });
 
-    it('should join user relation for admin view', async () => {
+    it("should join user relation for admin view", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
       orderRepository.createQueryBuilder.mockReturnValue(
@@ -555,13 +555,13 @@ describe('OrdersService', () => {
       await service.findAll(filterDto);
 
       expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
-        'order.user',
-        'user',
+        "order.user",
+        "user",
       );
     });
   });
 
-  describe('updateStatus', () => {
+  describe("updateStatus", () => {
     beforeEach(() => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
@@ -578,7 +578,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should update status when transition is valid', async () => {
+    it("should update status when transition is valid", async () => {
       await service.updateStatus(
         mockOrderId,
         OrderStatus.CONFIRMED,
@@ -594,13 +594,13 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should throw BadRequestException for invalid status transition', async () => {
+    it("should throw BadRequestException for invalid status transition", async () => {
       await expect(
         service.updateStatus(mockOrderId, OrderStatus.COMPLETED, mockUserId),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should set confirmedAt timestamp when transitioning to CONFIRMED', async () => {
+    it("should set confirmedAt timestamp when transitioning to CONFIRMED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PENDING,
@@ -615,7 +615,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should set preparingAt timestamp when transitioning to PREPARING', async () => {
+    it("should set preparingAt timestamp when transitioning to PREPARING", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.CONFIRMED,
@@ -630,7 +630,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should set readyAt timestamp when transitioning to READY', async () => {
+    it("should set readyAt timestamp when transitioning to READY", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -645,7 +645,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should set outForDeliveryAt timestamp when transitioning to OUT_FOR_DELIVERY', async () => {
+    it("should set outForDeliveryAt timestamp when transitioning to OUT_FOR_DELIVERY", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -660,7 +660,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should set completedAt timestamp when transitioning to COMPLETED', async () => {
+    it("should set completedAt timestamp when transitioning to COMPLETED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.READY,
@@ -675,7 +675,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should set actualPickupTime for pickup orders when completed', async () => {
+    it("should set actualPickupTime for pickup orders when completed", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.READY,
@@ -691,7 +691,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should set cancelledAt and cancelledById when transitioning to CANCELLED', async () => {
+    it("should set cancelledAt and cancelledById when transitioning to CANCELLED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PENDING,
@@ -711,26 +711,26 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should include notes and ipAddress in status log', async () => {
+    it("should include notes and ipAddress in status log", async () => {
       await service.updateStatus(
         mockOrderId,
         OrderStatus.CONFIRMED,
         mockUserId,
-        'Order confirmed by admin',
-        '192.168.1.1',
+        "Order confirmed by admin",
+        "192.168.1.1",
       );
 
       expect(statusLogRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          notes: 'Order confirmed by admin',
-          ipAddress: '192.168.1.1',
+          notes: "Order confirmed by admin",
+          ipAddress: "192.168.1.1",
           changedById: mockUserId,
         }),
       );
     });
   });
 
-  describe('cancelOrder', () => {
+  describe("cancelOrder", () => {
     beforeEach(() => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
@@ -748,26 +748,26 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should allow user to cancel their own pending order', async () => {
+    it("should allow user to cancel their own pending order", async () => {
       await service.cancelOrder(
         mockOrderId,
         mockUserId,
-        'Changed my mind',
+        "Changed my mind",
         false,
       );
 
       expect(orderRepository.save).toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when user tries to cancel another users order', async () => {
-      const differentUserId = '550e8400-e29b-41d4-a716-446655440099';
+    it("should throw BadRequestException when user tries to cancel another users order", async () => {
+      const differentUserId = "550e8400-e29b-41d4-a716-446655440099";
 
       await expect(
-        service.cancelOrder(mockOrderId, differentUserId, 'Testing', false),
+        service.cancelOrder(mockOrderId, differentUserId, "Testing", false),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException when user tries to cancel non-cancellable order', async () => {
+    it("should throw BadRequestException when user tries to cancel non-cancellable order", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -775,11 +775,11 @@ describe('OrdersService', () => {
       } as Order);
 
       await expect(
-        service.cancelOrder(mockOrderId, mockUserId, 'Changed my mind', false),
+        service.cancelOrder(mockOrderId, mockUserId, "Changed my mind", false),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should allow admin to cancel orders in any status except completed/cancelled/refunded', async () => {
+    it("should allow admin to cancel orders in any status except completed/cancelled/refunded", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -788,65 +788,65 @@ describe('OrdersService', () => {
 
       await service.cancelOrder(
         mockOrderId,
-        'admin-user-id',
-        'Restaurant issue',
+        "admin-user-id",
+        "Restaurant issue",
         true,
       );
 
       expect(orderRepository.save).toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException when trying to cancel completed order', async () => {
+    it("should throw BadRequestException when trying to cancel completed order", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.COMPLETED,
       } as Order);
 
       await expect(
-        service.cancelOrder(mockOrderId, mockUserId, 'Too late', true),
+        service.cancelOrder(mockOrderId, mockUserId, "Too late", true),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException when trying to cancel already cancelled order', async () => {
+    it("should throw BadRequestException when trying to cancel already cancelled order", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.CANCELLED,
       } as Order);
 
       await expect(
-        service.cancelOrder(mockOrderId, mockUserId, 'Double cancel', true),
+        service.cancelOrder(mockOrderId, mockUserId, "Double cancel", true),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException when trying to cancel refunded order', async () => {
+    it("should throw BadRequestException when trying to cancel refunded order", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.REFUNDED,
       } as Order);
 
       await expect(
-        service.cancelOrder(mockOrderId, mockUserId, 'Already refunded', true),
+        service.cancelOrder(mockOrderId, mockUserId, "Already refunded", true),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should set cancellation reason on order', async () => {
+    it("should set cancellation reason on order", async () => {
       await service.cancelOrder(
         mockOrderId,
         mockUserId,
-        'Item unavailable',
+        "Item unavailable",
         false,
       );
 
       expect(orderRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          cancellationReason: 'Item unavailable',
+          cancellationReason: "Item unavailable",
         }),
       );
     });
   });
 
-  describe('linkPayment', () => {
-    it('should link payment to order', async () => {
+  describe("linkPayment", () => {
+    it("should link payment to order", async () => {
       orderRepository.findOne.mockResolvedValue(mockOrder as Order);
       orderRepository.save.mockImplementation((order) =>
         Promise.resolve(order as Order),
@@ -861,16 +861,16 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should throw NotFoundException when order not found', async () => {
+    it("should throw NotFoundException when order not found", async () => {
       orderRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.linkPayment('non-existent', mockPaymentId),
+        service.linkPayment("non-existent", mockPaymentId),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('confirmOrder', () => {
+  describe("confirmOrder", () => {
     beforeEach(() => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
@@ -887,7 +887,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should confirm order by updating status to CONFIRMED', async () => {
+    it("should confirm order by updating status to CONFIRMED", async () => {
       await service.confirmOrder(mockOrderId, mockUserId);
 
       expect(orderRepository.save).toHaveBeenCalledWith(
@@ -897,7 +897,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should throw BadRequestException if order is not pending', async () => {
+    it("should throw BadRequestException if order is not pending", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -909,8 +909,8 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('getOrderStats', () => {
-    it('should return order statistics', async () => {
+  describe("getOrderStats", () => {
+    it("should return order statistics", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getCount
         .mockResolvedValueOnce(100) // totalOrders
@@ -934,7 +934,7 @@ describe('OrdersService', () => {
       });
     });
 
-    it('should filter by branchId when provided', async () => {
+    it("should filter by branchId when provided", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getCount.mockResolvedValue(0);
       mockQueryBuilder.getRawOne.mockResolvedValue({ total: 0 });
@@ -945,12 +945,12 @@ describe('OrdersService', () => {
       await service.getOrderStats(mockBranchId);
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'order.branchId = :branchId',
+        "order.branchId = :branchId",
         { branchId: mockBranchId },
       );
     });
 
-    it('should return zero average when no completed orders', async () => {
+    it("should return zero average when no completed orders", async () => {
       const mockQueryBuilder = createMockQueryBuilder();
       mockQueryBuilder.getCount.mockResolvedValue(0);
       mockQueryBuilder.getRawOne.mockResolvedValue({ total: null });
@@ -965,8 +965,8 @@ describe('OrdersService', () => {
     });
   });
 
-  describe('requiresRefund', () => {
-    it('should return true for CONFIRMED status', async () => {
+  describe("requiresRefund", () => {
+    it("should return true for CONFIRMED status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.CONFIRMED,
@@ -977,7 +977,7 @@ describe('OrdersService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true for PREPARING status', async () => {
+    it("should return true for PREPARING status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -988,7 +988,7 @@ describe('OrdersService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true for READY status', async () => {
+    it("should return true for READY status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.READY,
@@ -999,7 +999,7 @@ describe('OrdersService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true for OUT_FOR_DELIVERY status', async () => {
+    it("should return true for OUT_FOR_DELIVERY status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.OUT_FOR_DELIVERY,
@@ -1010,7 +1010,7 @@ describe('OrdersService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false for PENDING status', async () => {
+    it("should return false for PENDING status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PENDING,
@@ -1021,7 +1021,7 @@ describe('OrdersService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false for COMPLETED status', async () => {
+    it("should return false for COMPLETED status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.COMPLETED,
@@ -1032,7 +1032,7 @@ describe('OrdersService', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false for CANCELLED status', async () => {
+    it("should return false for CANCELLED status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.CANCELLED,
@@ -1043,16 +1043,16 @@ describe('OrdersService', () => {
       expect(result).toBe(false);
     });
 
-    it('should throw NotFoundException when order not found', async () => {
+    it("should throw NotFoundException when order not found", async () => {
       orderRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.requiresRefund('non-existent')).rejects.toThrow(
+      await expect(service.requiresRefund("non-existent")).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
-  describe('status transitions', () => {
+  describe("status transitions", () => {
     beforeEach(() => {
       orderRepository.save.mockImplementation((order) =>
         Promise.resolve(order as Order),
@@ -1065,7 +1065,7 @@ describe('OrdersService', () => {
       );
     });
 
-    it('should allow PENDING -> CONFIRMED', async () => {
+    it("should allow PENDING -> CONFIRMED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PENDING,
@@ -1076,7 +1076,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should allow PENDING -> CANCELLED', async () => {
+    it("should allow PENDING -> CANCELLED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PENDING,
@@ -1087,7 +1087,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should allow CONFIRMED -> PREPARING', async () => {
+    it("should allow CONFIRMED -> PREPARING", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.CONFIRMED,
@@ -1098,7 +1098,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should allow PREPARING -> READY', async () => {
+    it("should allow PREPARING -> READY", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -1109,7 +1109,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should allow PREPARING -> OUT_FOR_DELIVERY', async () => {
+    it("should allow PREPARING -> OUT_FOR_DELIVERY", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PREPARING,
@@ -1120,7 +1120,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should allow READY -> COMPLETED', async () => {
+    it("should allow READY -> COMPLETED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.READY,
@@ -1131,7 +1131,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should allow OUT_FOR_DELIVERY -> COMPLETED', async () => {
+    it("should allow OUT_FOR_DELIVERY -> COMPLETED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.OUT_FOR_DELIVERY,
@@ -1142,7 +1142,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should allow COMPLETED -> REFUNDED', async () => {
+    it("should allow COMPLETED -> REFUNDED", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.COMPLETED,
@@ -1153,7 +1153,7 @@ describe('OrdersService', () => {
       ).resolves.not.toThrow();
     });
 
-    it('should NOT allow PENDING -> PREPARING (skip CONFIRMED)', async () => {
+    it("should NOT allow PENDING -> PREPARING (skip CONFIRMED)", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.PENDING,
@@ -1164,7 +1164,7 @@ describe('OrdersService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should NOT allow CANCELLED -> any status', async () => {
+    it("should NOT allow CANCELLED -> any status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.CANCELLED,
@@ -1175,7 +1175,7 @@ describe('OrdersService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should NOT allow REFUNDED -> any status', async () => {
+    it("should NOT allow REFUNDED -> any status", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.REFUNDED,
@@ -1186,7 +1186,7 @@ describe('OrdersService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should NOT allow backwards transitions (CONFIRMED -> PENDING)', async () => {
+    it("should NOT allow backwards transitions (CONFIRMED -> PENDING)", async () => {
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         status: OrderStatus.CONFIRMED,

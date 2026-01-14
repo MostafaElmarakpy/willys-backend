@@ -60,7 +60,7 @@
         "noStaticOnlyClass": "off"
       },
       "style": {
-        "useImportType": "error",
+        "useImportType": "off",
         "useConst": "error",
         "noNonNullAssertion": "off"
       }

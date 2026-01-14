@@ -1,11 +1,11 @@
 import {
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsEnum,
   MaxLength,
-} from 'class-validator';
-import { OrderStatus } from 'src/common/enums/OrderStatus';
+} from "class-validator";
+import { OrderStatus } from "src/common/enums/OrderStatus";
 
 export class UpdateOrderStatusDto {
   @IsNotEmpty()

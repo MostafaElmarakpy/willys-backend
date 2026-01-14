@@ -1,28 +1,28 @@
-import { Exclude } from 'class-transformer';
-import { AccessToken } from 'src/database/entities/access-token.entity';
-import { ResetPasswordToken } from 'src/database/entities/reset-password-token.entity';
-import { Role } from 'src/database/entities/role.entity';
-import { UserGender } from 'src/common/enums/UserGender';
-import { UserProvider } from 'src/common/enums/UserProvider';
-import { UserRole } from 'src/common/enums/UserRole';
-import { UserStatus } from 'src/common/enums/UserStatus';
+import { Exclude } from "class-transformer";
+import { UserGender } from "src/common/enums/UserGender";
+import { UserProvider } from "src/common/enums/UserProvider";
+import { UserRole } from "src/common/enums/UserRole";
+import { UserStatus } from "src/common/enums/UserStatus";
+import { AccessToken } from "src/database/entities/access-token.entity";
+import { ResetPasswordToken } from "src/database/entities/reset-password-token.entity";
+import { Role } from "src/database/entities/role.entity";
 import {
   Column,
+  CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   Index,
-} from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import { v4 as uuidv4 } from "uuid";
 
-@Entity('users')
+@Entity("users")
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string = uuidv4();
 
   @Column()
@@ -52,7 +52,7 @@ export class User {
   countryCode?: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: UserRole,
     default: UserRole.user,
   })
@@ -63,7 +63,7 @@ export class User {
   confirmAccount!: boolean;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: UserStatus,
     default: UserStatus.Offline,
   })
@@ -80,14 +80,14 @@ export class User {
   joined?: Date;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: UserGender,
     nullable: true,
   })
   gender?: UserGender;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: UserProvider,
     default: UserProvider.System,
   })
@@ -114,17 +114,27 @@ export class User {
   @Column({ nullable: true })
   lastLogout?: Date;
 
-  @OneToMany(() => ResetPasswordToken, (token) => token.user)
+  @OneToMany(
+    () => ResetPasswordToken,
+    (token) => token.user,
+  )
   resetPasswordTokens: ResetPasswordToken[];
 
-  @OneToMany(() => AccessToken, (accessToken) => accessToken.user)
+  @OneToMany(
+    () => AccessToken,
+    (accessToken) => accessToken.user,
+  )
   accessTokens: AccessToken[];
 
-  @ManyToOne(() => Role, (role) => role.users, { eager: true, nullable: true })
-  @JoinColumn({ name: 'adminRoleId' })
+  @ManyToOne(
+    () => Role,
+    (role) => role.users,
+    { eager: true, nullable: true },
+  )
+  @JoinColumn({ name: "adminRoleId" })
   adminRole?: Role;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: "uuid", nullable: true })
   @Index()
   adminRoleId?: string;
 }

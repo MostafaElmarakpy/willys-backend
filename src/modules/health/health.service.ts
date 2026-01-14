@@ -1,15 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from 'src/config/config.service';
-import { DataSource } from 'typeorm';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as os from 'os';
-import * as fs from 'fs';
+import { exec } from "node:child_process";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import { promisify } from "node:util";
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "src/config/config.service";
+import { DataSource } from "typeorm";
 
 const execAsync = promisify(exec);
 
 export interface HealthStatus {
-  status: 'ok' | 'error';
+  status: "ok" | "error";
   message?: string;
   details?: any;
 }
@@ -49,7 +49,7 @@ export class HealthService {
   private readonly logger = new Logger(HealthService.name);
 
   constructor(
-    private readonly configService: ConfigService,
+    readonly configService: ConfigService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -59,23 +59,23 @@ export class HealthService {
 
       if (!isInDocker) {
         return {
-          status: 'ok',
-          message: 'Application is not running in Docker',
+          status: "ok",
+          message: "Application is not running in Docker",
           details: { containerized: false },
         };
       }
 
       const dockerStatus = await this.getDockerContainerStatus();
       return {
-        status: 'ok',
-        message: 'Docker container is healthy',
+        status: "ok",
+        message: "Docker container is healthy",
         details: dockerStatus,
       };
     } catch (error) {
-      this.logger.error('Docker health check failed', error);
+      this.logger.error("Docker health check failed", error);
       return {
-        status: 'error',
-        message: 'Docker health check failed',
+        status: "error",
+        message: "Docker health check failed",
         details: { error: error.message },
       };
     }
@@ -95,25 +95,25 @@ export class HealthService {
     return {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'unknown',
-      version: process.env.npm_package_version || '0.0.1',
+      environment: process.env.NODE_ENV || "unknown",
+      version: process.env.npm_package_version || "0.0.1",
       database:
-        databaseStatus.status === 'fulfilled'
+        databaseStatus.status === "fulfilled"
           ? databaseStatus.value
-          : { status: 'error', message: 'Failed to check database' },
+          : { status: "error", message: "Failed to check database" },
       docker:
-        dockerStatus.status === 'fulfilled'
+        dockerStatus.status === "fulfilled"
           ? dockerStatus.value
-          : { status: 'error', message: 'Failed to check docker' },
+          : { status: "error", message: "Failed to check docker" },
       system:
-        systemInfo.status === 'fulfilled'
+        systemInfo.status === "fulfilled"
           ? systemInfo.value
           : {
               platform: process.platform,
               arch: process.arch,
               nodeVersion: process.version,
               memory: { total: 0, free: 0, used: 0, usagePercentage: 0 },
-              cpu: { cores: 0, model: 'unknown', loadAverage: [] },
+              cpu: { cores: 0, model: "unknown", loadAverage: [] },
               disk: { free: 0, total: 0, usagePercentage: 0 },
             },
     };
@@ -121,11 +121,11 @@ export class HealthService {
 
   private async checkDatabaseHealth(): Promise<HealthStatus> {
     try {
-      await this.dataSource.query('SELECT 1');
+      await this.dataSource.query("SELECT 1");
       const options = this.dataSource.options as any;
       return {
-        status: 'ok',
-        message: 'Database connection is healthy',
+        status: "ok",
+        message: "Database connection is healthy",
         details: {
           type: options.type,
           host: options.host,
@@ -133,10 +133,10 @@ export class HealthService {
         },
       };
     } catch (error) {
-      this.logger.error('Database health check failed', error);
+      this.logger.error("Database health check failed", error);
       return {
-        status: 'error',
-        message: 'Database connection failed',
+        status: "error",
+        message: "Database connection failed",
         details: { error: error.message },
       };
     }
@@ -145,14 +145,14 @@ export class HealthService {
   private async isRunningInDocker(): Promise<boolean> {
     try {
       // Check for Docker-specific files
-      const dockerFiles = ['/.dockerenv', '/proc/self/cgroup'];
+      const dockerFiles = ["/.dockerenv", "/proc/self/cgroup"];
 
       for (const file of dockerFiles) {
         try {
           await fs.promises.access(file);
-          if (file === '/proc/self/cgroup') {
-            const cgroup = await fs.promises.readFile(file, 'utf8');
-            if (cgroup.includes('docker') || cgroup.includes('kubepods')) {
+          if (file === "/proc/self/cgroup") {
+            const cgroup = await fs.promises.readFile(file, "utf8");
+            if (cgroup.includes("docker") || cgroup.includes("kubepods")) {
               return true;
             }
           } else {
@@ -165,7 +165,7 @@ export class HealthService {
 
       return false;
     } catch (error) {
-      this.logger.warn('Could not determine if running in Docker', error);
+      this.logger.warn("Could not determine if running in Docker", error);
       return false;
     }
   }
@@ -183,7 +183,7 @@ export class HealthService {
 
       // Try to get more Docker info if available
       try {
-        const { stdout: dockerVersion } = await execAsync('docker --version', {
+        const { stdout: dockerVersion } = await execAsync("docker --version", {
           timeout: 5000,
         });
         containerInfo.dockerVersion = dockerVersion.trim();
@@ -193,7 +193,7 @@ export class HealthService {
 
       // Get container stats if possible
       try {
-        const cgroup = await fs.promises.readFile('/proc/self/cgroup', 'utf8');
+        const cgroup = await fs.promises.readFile("/proc/self/cgroup", "utf8");
         const containerIdMatch = cgroup.match(/docker\/([a-f0-9]{64})/);
         if (containerIdMatch) {
           containerInfo.fullContainerId = containerIdMatch[1];
@@ -220,14 +220,14 @@ export class HealthService {
 
     try {
       // Try to get disk usage
-      const { stdout } = await execAsync('df -BG / | tail -1', {
+      const { stdout } = await execAsync("df -BG / | tail -1", {
         timeout: 5000,
       });
       const diskStats = stdout.trim().split(/\s+/);
       if (diskStats.length >= 4) {
-        const total = parseInt(diskStats[1]) * 1024 * 1024 * 1024; // Convert GB to bytes
-        const used = parseInt(diskStats[2]) * 1024 * 1024 * 1024;
-        const free = parseInt(diskStats[3]) * 1024 * 1024 * 1024;
+        const total = parseInt(diskStats[1], 10) * 1024 * 1024 * 1024; // Convert GB to bytes
+        const used = parseInt(diskStats[2], 10) * 1024 * 1024 * 1024;
+        const free = parseInt(diskStats[3], 10) * 1024 * 1024 * 1024;
         diskInfo = {
           total,
           free,
@@ -235,7 +235,7 @@ export class HealthService {
         };
       }
     } catch (error) {
-      this.logger.warn('Could not get disk usage information', error);
+      this.logger.warn("Could not get disk usage information", error);
     }
 
     return {
@@ -250,7 +250,7 @@ export class HealthService {
       },
       cpu: {
         cores: os.cpus().length,
-        model: os.cpus()[0]?.model || 'Unknown',
+        model: os.cpus()[0]?.model || "Unknown",
         loadAverage: os.loadavg(),
       },
       disk: diskInfo,

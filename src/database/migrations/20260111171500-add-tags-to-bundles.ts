@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddTagsToBundles20260111171500 implements MigrationInterface {
-  name = 'AddTagsToBundles20260111171500';
+  name = "AddTagsToBundles20260111171500";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add tags column to bundles table

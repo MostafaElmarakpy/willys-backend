@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreateRbacSystem20260111121400 implements MigrationInterface {
-  name = 'CreateRbacSystem20260111121400';
+  name = "CreateRbacSystem20260111121400";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create roles table

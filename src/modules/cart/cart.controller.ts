@@ -1,110 +1,110 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
-  UseGuards,
   ParseUUIDPipe,
-} from '@nestjs/common';
-import { CartService } from './cart.service';
-import { AddToCartDto } from './dto/add-to-cart.dto';
-import { UpdateCartItemDto } from './dto/update-cart-item.dto';
+  Patch,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
+import { User } from "src/common/decorators/user.decorator";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import {
-  SetOrderTypeDto,
+  createCreatedResponse,
+  createSuccessResponse,
+} from "src/common/utils/api-response-wrapper";
+import { CartService } from "./cart.service";
+import { AddToCartDto } from "./dto/add-to-cart.dto";
+import { ApplyDiscountDto } from "./dto/apply-discount.dto";
+import { CartResponseDto } from "./dto/cart-response.dto";
+import {
   SetBranchDto,
   SetDeliveryAddressDto,
+  SetOrderTypeDto,
   SetPickupTimeDto,
-} from './dto/set-order-type.dto';
-import { ApplyDiscountDto } from './dto/apply-discount.dto';
-import { CartResponseDto } from './dto/cart-response.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { User } from 'src/common/decorators/user.decorator';
-import {
-  createSuccessResponse,
-  createCreatedResponse,
-} from 'src/common/utils/api-response-wrapper';
+} from "./dto/set-order-type.dto";
+import { UpdateCartItemDto } from "./dto/update-cart-item.dto";
 
-@Controller('cart')
+@Controller("cart")
 @UseGuards(JwtAuthGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Get()
-  async getCart(@User('id') userId: string) {
+  async getCart(@User("id") userId: string) {
     const cart = await this.cartService.getCart(userId);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Cart retrieved successfully',
+      "Cart retrieved successfully",
     );
   }
 
-  @Post('items')
-  async addItem(@User('id') userId: string, @Body() dto: AddToCartDto) {
+  @Post("items")
+  async addItem(@User("id") userId: string, @Body() dto: AddToCartDto) {
     const cart = await this.cartService.addItem(userId, dto);
     return createCreatedResponse(
       new CartResponseDto(cart),
-      'Item added to cart successfully',
+      "Item added to cart successfully",
     );
   }
 
-  @Patch('items/:id')
+  @Patch("items/:id")
   async updateItem(
-    @User('id') userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
+    @User("id") userId: string,
+    @Param("id", ParseUUIDPipe) id: string,
     @Body() dto: UpdateCartItemDto,
   ) {
     const cart = await this.cartService.updateItem(userId, id, dto);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Cart item updated successfully',
+      "Cart item updated successfully",
     );
   }
 
-  @Delete('items/:id')
+  @Delete("items/:id")
   async removeItem(
-    @User('id') userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
+    @User("id") userId: string,
+    @Param("id", ParseUUIDPipe) id: string,
   ) {
     const cart = await this.cartService.removeItem(userId, id);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Item removed from cart successfully',
+      "Item removed from cart successfully",
     );
   }
 
   @Delete()
-  async clearCart(@User('id') userId: string) {
+  async clearCart(@User("id") userId: string) {
     const cart = await this.cartService.clearCart(userId);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Cart cleared successfully',
+      "Cart cleared successfully",
     );
   }
 
-  @Post('order-type')
-  async setOrderType(@User('id') userId: string, @Body() dto: SetOrderTypeDto) {
+  @Post("order-type")
+  async setOrderType(@User("id") userId: string, @Body() dto: SetOrderTypeDto) {
     const cart = await this.cartService.setOrderType(userId, dto.orderType);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Order type set successfully',
+      "Order type set successfully",
     );
   }
 
-  @Post('branch')
-  async setBranch(@User('id') userId: string, @Body() dto: SetBranchDto) {
+  @Post("branch")
+  async setBranch(@User("id") userId: string, @Body() dto: SetBranchDto) {
     const cart = await this.cartService.setBranch(userId, dto.branchId);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Branch set successfully',
+      "Branch set successfully",
     );
   }
 
-  @Post('delivery-address')
+  @Post("delivery-address")
   async setDeliveryAddress(
-    @User('id') userId: string,
+    @User("id") userId: string,
     @Body() dto: SetDeliveryAddressDto,
   ) {
     const cart = await this.cartService.setDeliveryAddress(
@@ -113,13 +113,13 @@ export class CartController {
     );
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Delivery address set successfully',
+      "Delivery address set successfully",
     );
   }
 
-  @Post('pickup-time')
+  @Post("pickup-time")
   async setPickupTime(
-    @User('id') userId: string,
+    @User("id") userId: string,
     @Body() dto: SetPickupTimeDto,
   ) {
     const cart = await this.cartService.setPickupTime(
@@ -128,44 +128,44 @@ export class CartController {
     );
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Pickup time set successfully',
+      "Pickup time set successfully",
     );
   }
 
-  @Post('discount')
+  @Post("discount")
   async applyDiscount(
-    @User('id') userId: string,
+    @User("id") userId: string,
     @Body() dto: ApplyDiscountDto,
   ) {
     const cart = await this.cartService.applyDiscount(userId, dto.code);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Discount applied successfully',
+      "Discount applied successfully",
     );
   }
 
-  @Delete('discount/:id')
+  @Delete("discount/:id")
   async removeDiscount(
-    @User('id') userId: string,
-    @Param('id', ParseUUIDPipe) id: string,
+    @User("id") userId: string,
+    @Param("id", ParseUUIDPipe) id: string,
   ) {
     const cart = await this.cartService.removeDiscount(userId, id);
     return createSuccessResponse(
       new CartResponseDto(cart),
-      'Discount removed successfully',
+      "Discount removed successfully",
     );
   }
 
-  @Post('validate')
-  async validateCart(@User('id') userId: string) {
+  @Post("validate")
+  async validateCart(@User("id") userId: string) {
     const result = await this.cartService.validateCart(userId);
-    return createSuccessResponse(result, 'Cart validation completed');
+    return createSuccessResponse(result, "Cart validation completed");
   }
 
-  @Get('summary')
-  async getCartSummary(@User('id') userId: string) {
+  @Get("summary")
+  async getCartSummary(@User("id") userId: string) {
     const cart = await this.cartService.getCart(userId);
     const cartDto = new CartResponseDto(cart);
-    return createSuccessResponse(cartDto.summary, 'Cart summary retrieved');
+    return createSuccessResponse(cartDto.summary, "Cart summary retrieved");
   }
 }

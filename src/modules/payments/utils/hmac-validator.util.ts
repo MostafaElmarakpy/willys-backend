@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import * as crypto from "node:crypto";
 
 export class HmacValidator {
   static verifyPaymobWebhook(
@@ -29,13 +29,13 @@ export class HmacValidator {
         payload.obj.source_data.sub_type,
         payload.obj.source_data.type,
         payload.obj.success,
-      ].join('');
+      ].join("");
 
       // Generate HMAC
       const calculatedHmac = crypto
-        .createHmac('sha512', secretKey)
+        .createHmac("sha512", secretKey)
         .update(concatenatedString)
-        .digest('hex');
+        .digest("hex");
 
       return calculatedHmac === receivedHmac;
     } catch (_error) {

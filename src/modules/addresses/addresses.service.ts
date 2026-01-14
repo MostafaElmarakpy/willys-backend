@@ -1,16 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { UserAddress } from 'src/database/entities/user-address.entity';
-import { CreateAddressDto } from './dto/create-address.dto';
-import { UpdateAddressDto } from './dto/update-address.dto';
-import { OrderRoutingService } from '../branches/order-routing.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { UserAddress } from "src/database/entities/user-address.entity";
+import { IsNull, type Repository } from "typeorm";
+import { OrderRoutingService } from "../branches/order-routing.service";
+import { CreateAddressDto } from "./dto/create-address.dto";
+import { UpdateAddressDto } from "./dto/update-address.dto";
 
 @Injectable()
 export class AddressesService {
   constructor(
     @InjectRepository(UserAddress)
-    private readonly addressRepository: Repository<UserAddress>,
+    readonly addressRepository: Repository<UserAddress>,
     private readonly orderRoutingService: OrderRoutingService,
   ) {}
 
@@ -49,7 +49,7 @@ export class AddressesService {
   async findAll(userId: string): Promise<UserAddress[]> {
     return this.addressRepository.find({
       where: { userId, isActive: true, deletedAt: IsNull() },
-      order: { isDefault: 'DESC', createdAt: 'DESC' },
+      order: { isDefault: "DESC", createdAt: "DESC" },
     });
   }
 
@@ -59,7 +59,7 @@ export class AddressesService {
     });
 
     if (!address) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException("Address not found");
     }
 
     return address;
@@ -103,7 +103,7 @@ export class AddressesService {
     if (address.isDefault) {
       const otherAddress = await this.addressRepository.findOne({
         where: { userId, deletedAt: IsNull() },
-        order: { createdAt: 'DESC' },
+        order: { createdAt: "DESC" },
       });
 
       if (otherAddress && otherAddress.id !== id) {
@@ -152,7 +152,7 @@ export class AddressesService {
       isDeliverable: true,
       branchId: routingResult.assignedBranch?.id,
       branchName:
-        typeof routingResult.assignedBranch?.name === 'object'
+        typeof routingResult.assignedBranch?.name === "object"
           ? routingResult.assignedBranch.name.en
           : routingResult.assignedBranch?.name,
       deliveryFee: routingResult.deliveryFee,

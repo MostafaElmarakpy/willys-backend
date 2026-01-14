@@ -1,50 +1,50 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
   Post,
-  Body,
+  Request,
   UseGuards,
   Version,
-  Request,
-} from '@nestjs/common';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
-import { DiscountsService } from './discounts.service';
-import { DiscountResponseDto } from './dto/discount-response.dto';
+} from "@nestjs/common";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { createSuccessResponse } from "src/common/utils/api-response-wrapper";
+import { DiscountsService } from "./discounts.service";
+import { DiscountResponseDto } from "./dto/discount-response.dto";
 
 @UseGuards(JwtAuthGuard)
-@Controller('discounts')
+@Controller("discounts")
 export class DiscountsController {
   constructor(private readonly discountsService: DiscountsService) {}
 
-  @Get('my-discounts')
-  @Version('1')
+  @Get("my-discounts")
+  @Version("1")
   async getMyDiscounts(@Request() req: any) {
     const discounts = await this.discountsService.getUserDiscounts(req.user.id);
     const response = discounts.map((d) => new DiscountResponseDto(d));
     return createSuccessResponse(
       response,
-      'User discounts retrieved successfully',
+      "User discounts retrieved successfully",
     );
   }
 
-  @Get('item/:itemId')
-  @Version('1')
-  async getItemDiscounts(@Param('itemId') itemId: string) {
+  @Get("item/:itemId")
+  @Version("1")
+  async getItemDiscounts(@Param("itemId") itemId: string) {
     const discounts = await this.discountsService.getItemDiscounts(itemId);
     const response = discounts.map((d) => new DiscountResponseDto(d));
     return createSuccessResponse(
       response,
-      'Item discounts retrieved successfully',
+      "Item discounts retrieved successfully",
     );
   }
 
-  @Post('validate')
-  @Version('1')
+  @Post("validate")
+  @Version("1")
   async validateDiscount(
-    @Body('discountId') discountId: string,
-    @Body('itemId') itemId: string,
+    @Body("discountId") discountId: string,
+    @Body("itemId") itemId: string,
     @Request() req: any,
   ) {
     const result = await this.discountsService.canUseDiscount(
@@ -60,7 +60,7 @@ export class DiscountsController {
           isEligible: true,
           discount: new DiscountResponseDto(discount),
         },
-        'Discount is valid',
+        "Discount is valid",
       );
     } else {
       return createSuccessResponse(
@@ -68,17 +68,17 @@ export class DiscountsController {
           isEligible: false,
           reason: result.reason,
         },
-        'Discount validation result',
+        "Discount validation result",
       );
     }
   }
 
-  @Post('calculate')
-  @Version('1')
+  @Post("calculate")
+  @Version("1")
   async calculateDiscount(
-    @Body('discountId') discountId: string,
-    @Body('originalPrice') originalPrice: number,
-    @Body('quantity') quantity: number = 1,
+    @Body("discountId") discountId: string,
+    @Body("originalPrice") originalPrice: number,
+    @Body("quantity") quantity: number = 1,
     @Request() req: any,
   ) {
     const discount = await this.discountsService.findOne(discountId);
@@ -93,7 +93,7 @@ export class DiscountsController {
           canApply: false,
           reason: canUseResult.reason,
         },
-        'Discount cannot be applied',
+        "Discount cannot be applied",
       );
     }
 
@@ -110,7 +110,7 @@ export class DiscountsController {
         finalPrice: originalPrice - discountAmount,
         discount: new DiscountResponseDto(discount),
       },
-      'Discount calculated successfully',
+      "Discount calculated successfully",
     );
   }
 }

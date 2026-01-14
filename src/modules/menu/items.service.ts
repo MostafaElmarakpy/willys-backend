@@ -1,21 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { Item } from 'src/database/entities/item.entity';
-import { Ingredient } from 'src/database/entities/ingredient.entity';
-import { CreateItemDto } from './dto/item/create-item.dto';
-import { UpdateItemDto } from './dto/item/update-item.dto';
-import { ItemFilterDto } from './dto/item/item-filter.dto';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
-import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { ItemStatus } from "src/common/enums/ItemStatus";
+import { Ingredient } from "src/database/entities/ingredient.entity";
+import { Item } from "src/database/entities/item.entity";
+import { UploadMediaService } from "src/services/upload-media/upload-media.service";
+import { IsNull, type Repository } from "typeorm";
+import { CreateItemDto } from "./dto/item/create-item.dto";
+import { ItemFilterDto } from "./dto/item/item-filter.dto";
+import { UpdateItemDto } from "./dto/item/update-item.dto";
 
 @Injectable()
 export class ItemsService {
   constructor(
-    @InjectRepository(Item)
-    private readonly itemRepository: Repository<Item>,
+    @InjectRepository(Item) readonly itemRepository: Repository<Item>,
     @InjectRepository(Ingredient)
-    private readonly ingredientRepository: Repository<Ingredient>,
+    readonly ingredientRepository: Repository<Ingredient>,
     private readonly uploadMediaService: UploadMediaService,
   ) {}
 
@@ -41,27 +40,27 @@ export class ItemsService {
               sortOrder?: number;
             }>;
           }>;
-          type: 'number' | 'object';
+          type: "number" | "object";
         };
-    if (typeof pricing === 'number') {
+    if (typeof pricing === "number") {
       // Direct number value
       pricingValue = pricing;
-    } else if (typeof pricing === 'string') {
+    } else if (typeof pricing === "string") {
       // String number value
       const price = parseFloat(pricing);
-      if (isNaN(price)) {
-        throw new Error('Invalid price string');
+      if (Number.isNaN(price)) {
+        throw new Error("Invalid price string");
       }
       pricingValue = price;
     } else if (
-      typeof pricing === 'object' &&
-      pricing.type === 'number' &&
+      typeof pricing === "object" &&
+      pricing.type === "number" &&
       pricing.price
     ) {
       // Object with type: 'number' and price field
       pricingValue = parseFloat(pricing.price);
-      if (isNaN(pricingValue)) {
-        throw new Error('Invalid price in pricing object');
+      if (Number.isNaN(pricingValue)) {
+        throw new Error("Invalid price in pricing object");
       }
     } else {
       pricingValue = pricing as any;
@@ -76,11 +75,11 @@ export class ItemsService {
       ingredientsWithQuantity: ingredients || [],
     });
 
-    if (files['image']) {
+    if (files.image) {
       item.image = (
         await this.uploadMediaService.saveOneFile(
           files?.image,
-          'properties',
+          "properties",
           item.id,
         )
       )?.url;
@@ -104,23 +103,23 @@ export class ItemsService {
       categoriesIds,
       minPrice,
       maxPrice,
-      sortBy = 'createdAt',
-      sortOrder = 'DESC',
+      sortBy = "createdAt",
+      sortOrder = "DESC",
       fromDate,
       toDate,
     } = filterDto;
 
     const validSortFields = [
-      'name',
-      'pricing',
-      'createdAt',
-      'updatedAt',
-      'sortOrder',
+      "name",
+      "pricing",
+      "createdAt",
+      "updatedAt",
+      "sortOrder",
     ];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
 
-    let whereConditions: string[] = ['i."deletedAt" IS NULL'];
-    let parameters: any[] = [];
+    const whereConditions: string[] = ['i."deletedAt" IS NULL'];
+    const parameters: any[] = [];
     let paramIndex = 1;
 
     if (search) {
@@ -186,13 +185,13 @@ export class ItemsService {
 
     const whereClause =
       whereConditions.length > 0
-        ? `WHERE ${whereConditions.join(' AND ')}`
-        : '';
+        ? `WHERE ${whereConditions.join(" AND ")}`
+        : "";
 
-    let orderByClause = '';
-    if (sortField === 'name') {
+    let orderByClause = "";
+    if (sortField === "name") {
       orderByClause = `ORDER BY i.name ->> 'en' ${sortOrder}`;
-    } else if (sortField === 'pricing') {
+    } else if (sortField === "pricing") {
       orderByClause = `ORDER BY (CASE WHEN jsonb_typeof(i.pricing) = 'number' THEN (i.pricing::text)::numeric ELSE 0 END) ${sortOrder}`;
     } else {
       orderByClause = `ORDER BY i."${sortField}" ${sortOrder}`;
@@ -239,7 +238,7 @@ export class ItemsService {
       this.itemRepository.query(countQuery, countParameters),
     ]);
 
-    const total = parseInt(countResult[0].total);
+    const total = parseInt(countResult[0].total, 10);
 
     return {
       items,
@@ -253,7 +252,7 @@ export class ItemsService {
   async findOne(id: string): Promise<Item> {
     const item = await this.itemRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['category', 'ingredients'],
+      relations: ["category", "ingredients"],
     });
 
     if (!item) {
@@ -279,25 +278,25 @@ export class ItemsService {
 
     if (pricing !== undefined) {
       // Convert pricing to the correct format for the entity
-      if (typeof pricing === 'number') {
+      if (typeof pricing === "number") {
         // Direct number value
         item.pricing = pricing;
-      } else if (typeof pricing === 'string') {
+      } else if (typeof pricing === "string") {
         // String number value
         const price = parseFloat(pricing);
-        if (isNaN(price)) {
-          throw new Error('Invalid price string');
+        if (Number.isNaN(price)) {
+          throw new Error("Invalid price string");
         }
         item.pricing = price;
       } else if (
-        typeof pricing === 'object' &&
-        pricing.type === 'number' &&
+        typeof pricing === "object" &&
+        pricing.type === "number" &&
         pricing.price
       ) {
         // Object with type: 'number' and price field
         const price = parseFloat(pricing.price);
-        if (isNaN(price)) {
-          throw new Error('Invalid price in pricing object');
+        if (Number.isNaN(price)) {
+          throw new Error("Invalid price in pricing object");
         }
         item.pricing = price;
       } else {
@@ -318,11 +317,11 @@ export class ItemsService {
       item.ingredientsWithQuantity = ingredients;
     }
 
-    if (files['image']) {
+    if (files.image) {
       item.image = (
         await this.uploadMediaService.saveOneFile(
           files?.image,
-          'properties',
+          "properties",
           item.id,
         )
       )?.url;
@@ -349,8 +348,8 @@ export class ItemsService {
   async findByCategory(categoryId: string): Promise<Item[]> {
     return await this.itemRepository.find({
       where: { categoryId, status: ItemStatus.ACTIVE, deletedAt: IsNull() },
-      relations: ['ingredients'],
-      order: { sortOrder: 'ASC', createdAt: 'DESC' },
+      relations: ["ingredients"],
+      order: { sortOrder: "ASC", createdAt: "DESC" },
     });
   }
 

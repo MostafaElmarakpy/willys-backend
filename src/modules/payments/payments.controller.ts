@@ -1,28 +1,29 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
+  Headers,
+  Ip,
   Param,
+  Post,
   Query,
+  Request,
   UseGuards,
   Version,
-  Request,
-  Ip,
-  Headers,
-} from '@nestjs/common';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
-import { PaymentsService } from './payments.service';
-import { RefundsService } from './refunds.service';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { CreateRefundDto } from './dto/create-refund.dto';
-import { PaymentFilterDto } from './dto/payment-filter.dto';
-import { PaymentResponseDto } from './dto/payment-response.dto';
-import { PaymentType } from 'src/common/enums/PaymentType';
+} from "@nestjs/common";
+import { PaymentType } from "src/common/enums/PaymentType";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { createSuccessResponse } from "src/common/utils/api-response-wrapper";
+import { CreatePaymentDto } from "./dto/create-payment.dto";
+import { CreatePaymentResponseDto } from "./dto/create-payment-response.dto";
+import { CreateRefundDto } from "./dto/create-refund.dto";
+import { PaymentFilterDto } from "./dto/payment-filter.dto";
+import { PaymentResponseDto } from "./dto/payment-response.dto";
+import { PaymentsService } from "./payments.service";
+import { RefundsService } from "./refunds.service";
 
 @UseGuards(JwtAuthGuard)
-@Controller('payments')
+@Controller("payments")
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
@@ -30,12 +31,12 @@ export class PaymentsController {
   ) {}
 
   @Post()
-  @Version('1')
+  @Version("1")
   async createPayment(
     @Body() createPaymentDto: CreatePaymentDto,
     @Request() req: any,
     @Ip() ipAddress: string,
-    @Headers('user-agent') userAgent: string,
+    @Headers("user-agent") userAgent: string,
   ) {
     const payment = await this.paymentsService.createPayment(
       createPaymentDto,
@@ -45,7 +46,7 @@ export class PaymentsController {
     );
 
     // Process payment based on type
-    let result;
+    let result: CreatePaymentResponseDto;
     if (createPaymentDto.paymentType === PaymentType.CARD) {
       result = await this.paymentsService.processCardPayment(
         payment.id,
@@ -58,11 +59,11 @@ export class PaymentsController {
       );
     }
 
-    return createSuccessResponse(result, 'Payment created successfully');
+    return createSuccessResponse(result, "Payment created successfully");
   }
 
   @Get()
-  @Version('1')
+  @Version("1")
   async getMyPayments(
     @Request() req: any,
     @Query() filterDto: PaymentFilterDto,
@@ -73,23 +74,23 @@ export class PaymentsController {
       userId: req.user.id,
     });
 
-    return createSuccessResponse(result, 'Payments retrieved successfully');
+    return createSuccessResponse(result, "Payments retrieved successfully");
   }
 
-  @Get(':id')
-  @Version('1')
-  async getPayment(@Param('id') id: string, @Request() req: any) {
+  @Get(":id")
+  @Version("1")
+  async getPayment(@Param("id") id: string, @Request() req: any) {
     const payment = await this.paymentsService.findOne(id, req.user.id);
     return createSuccessResponse(
       new PaymentResponseDto(payment),
-      'Payment retrieved successfully',
+      "Payment retrieved successfully",
     );
   }
 
-  @Post(':id/refund')
-  @Version('1')
+  @Post(":id/refund")
+  @Version("1")
   async requestRefund(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() createRefundDto: CreateRefundDto,
     @Request() req: any,
   ) {
@@ -101,7 +102,7 @@ export class PaymentsController {
 
     return createSuccessResponse(
       refund,
-      'Refund request submitted successfully',
+      "Refund request submitted successfully",
     );
   }
 }

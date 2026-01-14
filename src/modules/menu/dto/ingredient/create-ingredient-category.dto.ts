@@ -1,14 +1,14 @@
+import { Type } from "class-transformer";
 import {
-  IsOptional,
   IsBoolean,
   IsNumber,
+  IsOptional,
   ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+} from "class-validator";
 import {
   BilingualString,
   BilingualStringOptional,
-} from 'src/common/dto/bilingual-string.dto';
+} from "src/common/dto/bilingual-string.dto";
 
 export class CreateIngredientCategoryDto {
   @ValidateNested()

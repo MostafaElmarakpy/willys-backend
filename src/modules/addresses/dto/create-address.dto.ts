@@ -1,21 +1,21 @@
+import { Type } from "class-transformer";
 import {
+  IsBoolean,
+  IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
-  IsNumber,
-  IsEnum,
-  IsBoolean,
-  ValidateNested,
-  Min,
   Max,
   MaxLength,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { AddressType } from 'src/common/enums/AddressType';
+  Min,
+  ValidateNested,
+} from "class-validator";
 import {
   BilingualString,
-  BilingualStringObject,
-} from 'src/common/dto/bilingual-string.dto';
+  type BilingualStringObject,
+} from "src/common/dto/bilingual-string.dto";
+import { AddressType } from "src/common/enums/AddressType";
 
 export class CreateAddressDto {
   @IsNotEmpty()

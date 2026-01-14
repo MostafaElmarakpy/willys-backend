@@ -1,7 +1,9 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateUsersAndRelatedTables20260111120000 implements MigrationInterface {
-  name = 'CreateUsersAndRelatedTables20260111120000';
+export class CreateUsersAndRelatedTables20260111120000
+  implements MigrationInterface
+{
+  name = "CreateUsersAndRelatedTables20260111120000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create enum types first

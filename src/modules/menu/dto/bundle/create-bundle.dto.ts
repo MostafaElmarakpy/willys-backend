@@ -1,20 +1,20 @@
+import { Type } from "class-transformer";
 import {
-  IsNotEmpty,
-  IsOptional,
-  IsNumber,
-  IsString,
-  IsEnum,
   IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
   ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+} from "class-validator";
 import {
   BilingualString,
   BilingualStringOptional,
-} from 'src/common/dto/bilingual-string.dto';
-import { BundleStatus } from 'src/common/enums/BundleStatus';
-import { ItemExtra } from '../item/pricing.dto';
-import { CreateBundleComponentDto } from './bundle-component.dto';
+} from "src/common/dto/bilingual-string.dto";
+import { BundleStatus } from "src/common/enums/BundleStatus";
+import { ItemExtra } from "../item/pricing.dto";
+import { CreateBundleComponentDto } from "./bundle-component.dto";
 
 export class CreateBundleDto {
   @ValidateNested()

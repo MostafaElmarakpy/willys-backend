@@ -1,16 +1,16 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { Order } from 'src/database/entities/order.entity';
-import { Cart } from 'src/database/entities/cart.entity';
-import { User } from 'src/database/entities/user.entity';
-import { CartService } from '../cart/cart.service';
-import { OrdersService } from './orders.service';
-import { PaymentsService } from '../payments/payments.service';
-import { DiscountsService } from '../discounts/discounts.service';
-import { CheckoutDto } from './dto/checkout.dto';
-import { PaymentType } from 'src/common/enums/PaymentType';
-import { PaymentStatus } from 'src/common/enums/PaymentStatus';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { PaymentStatus } from "src/common/enums/PaymentStatus";
+import { PaymentType } from "src/common/enums/PaymentType";
+import { Cart } from "src/database/entities/cart.entity";
+import { Order } from "src/database/entities/order.entity";
+import { User } from "src/database/entities/user.entity";
+import { DataSource, type Repository } from "typeorm";
+import { CartService } from "../cart/cart.service";
+import { DiscountsService } from "../discounts/discounts.service";
+import { PaymentsService } from "../payments/payments.service";
+import { CheckoutDto } from "./dto/checkout.dto";
+import { OrdersService } from "./orders.service";
 
 interface CheckoutResult {
   order: Order;
@@ -27,12 +27,9 @@ export class CheckoutService {
   private readonly processedIdempotencyKeys = new Map<string, string>();
 
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
-    @InjectRepository(Cart)
-    private readonly cartRepository: Repository<Cart>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(Order) readonly orderRepository: Repository<Order>,
+    @InjectRepository(Cart) readonly cartRepository: Repository<Cart>,
+    @InjectRepository(User) readonly userRepository: Repository<User>,
     private readonly cartService: CartService,
     private readonly ordersService: OrdersService,
     private readonly paymentsService: PaymentsService,
@@ -55,8 +52,8 @@ export class CheckoutService {
       return {
         order: existingOrder,
         payment: {
-          id: existingOrder.paymentId || '',
-          status: 'EXISTING',
+          id: existingOrder.paymentId || "",
+          status: "EXISTING",
         },
       };
     }
@@ -65,7 +62,7 @@ export class CheckoutService {
     const validationResult = await this.cartService.validateCart(userId);
     if (!validationResult.isValid) {
       throw new BadRequestException({
-        message: 'Cart validation failed',
+        message: "Cart validation failed",
         errors: validationResult.errors,
       });
     }
@@ -74,15 +71,15 @@ export class CheckoutService {
     const cart = await this.cartService.getCart(userId);
 
     if (!cart.items || cart.items.length === 0) {
-      throw new BadRequestException('Cart is empty');
+      throw new BadRequestException("Cart is empty");
     }
 
     if (!cart.orderType) {
-      throw new BadRequestException('Order type not selected');
+      throw new BadRequestException("Order type not selected");
     }
 
     if (!cart.branchId) {
-      throw new BadRequestException('Branch not selected');
+      throw new BadRequestException("Branch not selected");
     }
 
     // Load user data for payment processing
@@ -91,12 +88,12 @@ export class CheckoutService {
     });
 
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException("User not found");
     }
 
     if (!user.phoneNumber || !user.phoneNumberCountryCode) {
       throw new BadRequestException(
-        'User phone number is required for checkout',
+        "User phone number is required for checkout",
       );
     }
 
@@ -149,9 +146,9 @@ export class CheckoutService {
 
       if (dto.paymentType === PaymentType.CARD) {
         // Parse user's full name into first and last name
-        const nameParts = user.fullName.split(' ');
-        const firstName = nameParts[0] || 'Customer';
-        const lastName = nameParts.slice(1).join(' ') || 'Name';
+        const nameParts = user.fullName.split(" ");
+        const firstName = nameParts[0] || "Customer";
+        const lastName = nameParts.slice(1).join(" ") || "Name";
 
         paymentResult = await this.paymentsService.processCardPayment(
           payment.id,
@@ -196,7 +193,7 @@ export class CheckoutService {
         order: updatedOrder,
         payment: {
           id: payment.id,
-          status: paymentResult.status || 'PENDING',
+          status: paymentResult.status || "PENDING",
           iframeUrl: paymentResult.iframeUrl,
           cashReferenceNumber: paymentResult.cashReferenceNumber,
         },
@@ -219,7 +216,7 @@ export class CheckoutService {
     const validation = await this.cartService.validateCart(userId);
 
     const estimatedTime =
-      (cart.orderType === 'DELIVERY' ? 30 : 15) + (cart.items?.length || 0) * 2;
+      (cart.orderType === "DELIVERY" ? 30 : 15) + (cart.items?.length || 0) * 2;
 
     return {
       cart,
@@ -250,7 +247,7 @@ export class CheckoutService {
       await this.ordersService.cancelOrder(
         order.id,
         order.userId,
-        'Payment failed',
+        "Payment failed",
         true,
       );
     }

@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class CreatePaymentsModule20260111121300 implements MigrationInterface {
-  name = 'CreatePaymentsModule20260111121300';
+  name = "CreatePaymentsModule20260111121300";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create enum types

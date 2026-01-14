@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type } from "class-transformer";
 import {
   IsDate,
   IsEmail,
@@ -9,14 +9,14 @@ import {
   IsUUID,
   MaxLength,
   MinLength,
-} from 'class-validator';
-import { CountryCode } from 'libphonenumber-js/max';
-import { IsUnique } from 'src/common/decorators/is-unique.decorator';
-import { UserStatus } from 'src/common/enums/UserStatus';
-import { IsPhoneNumberWithCountryCode } from 'src/common/validator/is-phone-number-with-Country-code';
-import { UserRole } from 'src/common/enums/UserRole';
-import { UserGender } from 'src/common/enums/UserGender';
-import { User } from 'src/database/entities/user.entity';
+} from "class-validator";
+import { CountryCode } from "libphonenumber-js/max";
+import { IsUnique } from "src/common/decorators/is-unique.decorator";
+import { UserGender } from "src/common/enums/UserGender";
+import { UserRole } from "src/common/enums/UserRole";
+import { UserStatus } from "src/common/enums/UserStatus";
+import { IsPhoneNumberWithCountryCode } from "src/common/validator/is-phone-number-with-Country-code";
+import { User } from "src/database/entities/user.entity";
 
 export class CreateUserDto {
   @IsString()
@@ -25,7 +25,7 @@ export class CreateUserDto {
 
   @IsEmail()
   @IsNotEmpty()
-  @IsUnique(User, 'email')
+  @IsUnique(User, "email")
   email?: string;
 
   @IsString()
@@ -34,10 +34,10 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  @IsPhoneNumberWithCountryCode('phoneNumberCountryCode', {
-    message: 'Invalid phone number for the provided country code',
+  @IsPhoneNumberWithCountryCode("phoneNumberCountryCode", {
+    message: "Invalid phone number for the provided country code",
   })
-  @IsUnique(User, 'phoneNumber')
+  @IsUnique(User, "phoneNumber")
   phoneNumber?: string;
 
   @IsOptional()
@@ -70,5 +70,5 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  userLocale: string = 'ar';
+  userLocale: string = "ar";
 }

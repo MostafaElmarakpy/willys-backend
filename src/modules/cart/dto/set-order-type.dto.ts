@@ -1,11 +1,11 @@
 import {
-  IsNotEmpty,
+  IsDateString,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsUUID,
-  IsDateString,
-} from 'class-validator';
-import { OrderType } from 'src/common/enums/OrderType';
+} from "class-validator";
+import { OrderType } from "src/common/enums/OrderType";
 
 export class SetOrderTypeDto {
   @IsNotEmpty()

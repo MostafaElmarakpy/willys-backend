@@ -1,23 +1,27 @@
 import {
   Column,
   Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   OneToMany,
-  JoinColumn,
-  Index,
-} from 'typeorm';
-import { Bundle } from './bundle.entity';
-import { Category } from './category.entity';
-import { Item } from './item.entity';
-import { BundleComponentItem } from './bundle-component-item.entity';
-import { BaseEntity } from './base.entity';
+} from "typeorm";
+import { BaseEntity } from "./base.entity";
+import { Bundle } from "./bundle.entity";
+import { BundleComponentItem } from "./bundle-component-item.entity";
+import { Category } from "./category.entity";
+import { Item } from "./item.entity";
 
-@Entity('bundle_components')
+@Entity("bundle_components")
 export class BundleComponent extends BaseEntity {
-  @ManyToOne(() => Bundle, (bundle) => bundle.components, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'bundleId' })
+  @ManyToOne(
+    () => Bundle,
+    (bundle) => bundle.components,
+    {
+      onDelete: "CASCADE",
+    },
+  )
+  @JoinColumn({ name: "bundleId" })
   bundle: Bundle;
 
   @Column()
@@ -25,7 +29,7 @@ export class BundleComponent extends BaseEntity {
   bundleId: string;
 
   @ManyToOne(() => Category, { nullable: false })
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({ name: "categoryId" })
   category: Category;
 
   @Column()
@@ -33,21 +37,25 @@ export class BundleComponent extends BaseEntity {
   categoryId: string;
 
   @ManyToOne(() => Item, { nullable: false })
-  @JoinColumn({ name: 'defaultItemId' })
+  @JoinColumn({ name: "defaultItemId" })
   defaultItem: Item;
 
   @Column()
   @Index()
   defaultItemId: string;
 
-  @Column({ type: 'int' })
+  @Column({ type: "int" })
   quantity: number;
 
   @Column({ default: 0 })
   sortOrder: number;
 
-  @OneToMany(() => BundleComponentItem, (item) => item.component, {
-    cascade: true,
-  })
+  @OneToMany(
+    () => BundleComponentItem,
+    (item) => item.component,
+    {
+      cascade: true,
+    },
+  )
   items: BundleComponentItem[];
 }

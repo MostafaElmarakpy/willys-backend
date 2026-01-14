@@ -1,21 +1,21 @@
-import { User } from 'src/database/entities/user.entity';
+import { User } from "src/database/entities/user.entity";
 import {
-  Entity,
   Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  DeleteDateColumn,
   CreateDateColumn,
-  UpdateDateColumn,
-  JoinColumn,
+  DeleteDateColumn,
+  Entity,
   Index,
-} from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from "typeorm";
+import { v4 as uuidv4 } from "uuid";
 
-@Entity('upload_media')
-@Index(['entityType', 'entityId'])
+@Entity("upload_media")
+@Index(["entityType", "entityId"])
 export class UploadMedia {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string = uuidv4();
 
   @Column()
@@ -44,14 +44,14 @@ export class UploadMedia {
   createdById?: string;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'createdById' })
+  @JoinColumn({ name: "createdById" })
   createdBy?: User;
 
   @Column({ nullable: true })
   updatedById?: string;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'updatedById' })
+  @JoinColumn({ name: "updatedById" })
   updatedBy?: User;
 
   @CreateDateColumn()

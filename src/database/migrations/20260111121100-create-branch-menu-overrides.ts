@@ -1,7 +1,9 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateBranchMenuOverrides20260111121100 implements MigrationInterface {
-  name = 'CreateBranchMenuOverrides20260111121100';
+export class CreateBranchMenuOverrides20260111121100
+  implements MigrationInterface
+{
+  name = "CreateBranchMenuOverrides20260111121100";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create branch_category_overrides table

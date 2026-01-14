@@ -1,13 +1,13 @@
+import { Type } from "class-transformer";
 import {
-  IsNotEmpty,
-  IsOptional,
-  IsNumber,
-  IsString,
   IsArray,
-  ValidateNested,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
   Min,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+  ValidateNested,
+} from "class-validator";
 
 export class CreateBundleComponentItemDto {
   @IsNotEmpty()

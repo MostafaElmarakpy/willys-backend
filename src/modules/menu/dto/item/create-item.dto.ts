@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform, Type } from "class-transformer";
 import {
   IsArray,
   IsEnum,
@@ -7,18 +7,18 @@ import {
   IsOptional,
   IsString,
   ValidateNested,
-} from 'class-validator';
+} from "class-validator";
 import {
   BilingualString,
   BilingualStringOptional,
-} from 'src/common/dto/bilingual-string.dto';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
+} from "src/common/dto/bilingual-string.dto";
+import { ItemStatus } from "src/common/enums/ItemStatus";
 import {
   ItemExtra,
   ItemIngredient,
-  PricingObject,
+  type PricingObject,
   transformPricing,
-} from './pricing.dto';
+} from "./pricing.dto";
 
 export class CreateItemDto {
   @ValidateNested()

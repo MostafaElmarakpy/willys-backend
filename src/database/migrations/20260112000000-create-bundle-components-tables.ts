@@ -1,7 +1,9 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateBundleComponentsTables20260112000000 implements MigrationInterface {
-  name = 'CreateBundleComponentsTables20260112000000';
+export class CreateBundleComponentsTables20260112000000
+  implements MigrationInterface
+{
+  name = "CreateBundleComponentsTables20260112000000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create bundle_components table

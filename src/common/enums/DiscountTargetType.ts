@@ -1,4 +1,4 @@
 export enum DiscountTargetType {
-  USER = 'user',
-  ITEM = 'item',
+  USER = "user",
+  ITEM = "item",
 }

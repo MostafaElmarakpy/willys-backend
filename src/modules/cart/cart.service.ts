@@ -1,48 +1,44 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, IsNull } from 'typeorm';
-import { Cart, AppliedDiscount } from 'src/database/entities/cart.entity';
-import { CartItem } from 'src/database/entities/cart-item.entity';
-import { Item } from 'src/database/entities/item.entity';
-import { Bundle } from 'src/database/entities/bundle.entity';
-import { UserAddress } from 'src/database/entities/user-address.entity';
-import { Branch } from 'src/database/entities/branch.entity';
-import { AddToCartDto } from './dto/add-to-cart.dto';
-import { UpdateCartItemDto } from './dto/update-cart-item.dto';
-import { OrderType } from 'src/common/enums/OrderType';
-import { DiscountsService } from '../discounts/discounts.service';
-import { OrderRoutingService } from '../branches/order-routing.service';
-import { BranchMenuService } from '../branch-menu/branch-menu.service';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { OrderType } from "src/common/enums/OrderType";
+import { Branch } from "src/database/entities/branch.entity";
+import { Bundle } from "src/database/entities/bundle.entity";
+import { AppliedDiscount, Cart } from "src/database/entities/cart.entity";
+import { CartItem } from "src/database/entities/cart-item.entity";
+import { Item } from "src/database/entities/item.entity";
+import { UserAddress } from "src/database/entities/user-address.entity";
+import { DataSource, IsNull, type Repository } from "typeorm";
+import { BranchMenuService } from "../branch-menu/branch-menu.service";
+import { OrderRoutingService } from "../branches/order-routing.service";
+import { DiscountsService } from "../discounts/discounts.service";
+import { AddToCartDto } from "./dto/add-to-cart.dto";
+import { UpdateCartItemDto } from "./dto/update-cart-item.dto";
 
 @Injectable()
 export class CartService {
   constructor(
-    @InjectRepository(Cart)
-    private readonly cartRepository: Repository<Cart>,
+    @InjectRepository(Cart) readonly cartRepository: Repository<Cart>,
     @InjectRepository(CartItem)
-    private readonly cartItemRepository: Repository<CartItem>,
-    @InjectRepository(Item)
-    private readonly itemRepository: Repository<Item>,
-    @InjectRepository(Bundle)
-    private readonly bundleRepository: Repository<Bundle>,
+    readonly cartItemRepository: Repository<CartItem>,
+    @InjectRepository(Item) readonly itemRepository: Repository<Item>,
+    @InjectRepository(Bundle) readonly bundleRepository: Repository<Bundle>,
     @InjectRepository(UserAddress)
-    private readonly addressRepository: Repository<UserAddress>,
-    @InjectRepository(Branch)
-    private readonly branchRepository: Repository<Branch>,
+    readonly addressRepository: Repository<UserAddress>,
+    @InjectRepository(Branch) readonly branchRepository: Repository<Branch>,
     private readonly discountsService: DiscountsService,
     private readonly orderRoutingService: OrderRoutingService,
     private readonly branchMenuService: BranchMenuService,
-    private readonly dataSource: DataSource,
+    readonly dataSource: DataSource,
   ) {}
 
   async getOrCreateCart(userId: string): Promise<Cart> {
     let cart = await this.cartRepository.findOne({
       where: { userId, deletedAt: IsNull() },
-      relations: ['items', 'items.item', 'items.bundle', 'branch'],
+      relations: ["items", "items.item", "items.bundle", "branch"],
     });
 
     if (!cart) {
@@ -79,7 +75,7 @@ export class CartService {
         where: { id: dto.itemId, deletedAt: IsNull() },
       });
       if (!itemData) {
-        throw new NotFoundException('Item not found');
+        throw new NotFoundException("Item not found");
       }
 
       // Check branch availability if branch is selected
@@ -90,7 +86,7 @@ export class CartService {
         );
         if (!isAvailable) {
           throw new BadRequestException(
-            'Item is not available at the selected branch',
+            "Item is not available at the selected branch",
           );
         }
       }
@@ -102,7 +98,7 @@ export class CartService {
         where: { id: dto.bundleId, deletedAt: IsNull() },
       });
       if (!bundleData) {
-        throw new NotFoundException('Bundle not found');
+        throw new NotFoundException("Bundle not found");
       }
 
       // Check branch availability if branch is selected
@@ -113,7 +109,7 @@ export class CartService {
         );
         if (!isAvailable) {
           throw new BadRequestException(
-            'Bundle is not available at the selected branch',
+            "Bundle is not available at the selected branch",
           );
         }
       }
@@ -131,7 +127,7 @@ export class CartService {
     // Add customization prices (only for ADD/EXTRA actions)
     const customizationsTotal =
       dto.customizations?.reduce((sum, cust) => {
-        if (cust.action === 'ADD' || cust.action === 'EXTRA') {
+        if (cust.action === "ADD" || cust.action === "EXTRA") {
           return sum + cust.price;
         }
         return sum;
@@ -167,7 +163,7 @@ export class CartService {
       // Create new cart item
       const cartItem = this.cartItemRepository.create({
         cartId: cart.id,
-        itemType: dto.itemId ? 'ITEM' : 'BUNDLE',
+        itemType: dto.itemId ? "ITEM" : "BUNDLE",
         itemId: dto.itemId,
         bundleId: dto.bundleId,
         quantity: dto.quantity,
@@ -201,7 +197,7 @@ export class CartService {
     });
 
     if (!cartItem) {
-      throw new NotFoundException('Cart item not found');
+      throw new NotFoundException("Cart item not found");
     }
 
     if (dto.quantity !== undefined) {
@@ -232,7 +228,7 @@ export class CartService {
     // Recalculate total price
     const customizationsTotal =
       cartItem.customizations?.reduce((sum, cust) => {
-        if (cust.action === 'ADD' || cust.action === 'EXTRA') {
+        if (cust.action === "ADD" || cust.action === "EXTRA") {
           return sum + cust.price;
         }
         return sum;
@@ -258,7 +254,7 @@ export class CartService {
     });
 
     if (!cartItem) {
-      throw new NotFoundException('Cart item not found');
+      throw new NotFoundException("Cart item not found");
     }
 
     await this.cartItemRepository.softDelete(cartItemId);
@@ -307,7 +303,7 @@ export class CartService {
     });
 
     if (!branch) {
-      throw new NotFoundException('Branch not found');
+      throw new NotFoundException("Branch not found");
     }
 
     const cart = await this.getOrCreateCart(userId);
@@ -338,7 +334,7 @@ export class CartService {
 
       if (unavailableItems.length > 0) {
         throw new BadRequestException({
-          message: 'Some items are not available at the selected branch',
+          message: "Some items are not available at the selected branch",
           unavailableItems,
         });
       }
@@ -356,7 +352,7 @@ export class CartService {
     });
 
     if (!address) {
-      throw new NotFoundException('Address not found');
+      throw new NotFoundException("Address not found");
     }
 
     // Validate delivery zone
@@ -386,7 +382,7 @@ export class CartService {
     if (scheduledTime) {
       const pickupDate = new Date(scheduledTime);
       if (pickupDate < new Date()) {
-        throw new BadRequestException('Pickup time cannot be in the past');
+        throw new BadRequestException("Pickup time cannot be in the past");
       }
       cart.scheduledPickupTime = pickupDate;
     } else {
@@ -404,7 +400,7 @@ export class CartService {
     // Find discount by code
     const discount = await this.discountsService.findByCode(code);
     if (!discount) {
-      throw new NotFoundException('Discount code not found');
+      throw new NotFoundException("Discount code not found");
     }
 
     // Check if user can use this discount
@@ -421,7 +417,7 @@ export class CartService {
       (d) => d.discountId === discount.id,
     );
     if (alreadyApplied) {
-      throw new BadRequestException('Discount already applied');
+      throw new BadRequestException("Discount already applied");
     }
 
     // Check minimum purchase requirement
@@ -479,11 +475,11 @@ export class CartService {
   async recalculateTotals(userId: string): Promise<Cart> {
     const cart = await this.cartRepository.findOne({
       where: { userId, deletedAt: IsNull() },
-      relations: ['items', 'items.item', 'items.bundle', 'branch'],
+      relations: ["items", "items.item", "items.bundle", "branch"],
     });
 
     if (!cart) {
-      throw new NotFoundException('Cart not found');
+      throw new NotFoundException("Cart not found");
     }
 
     // Calculate subtotal
@@ -536,17 +532,17 @@ export class CartService {
 
     // Check if cart has items
     if (!cart.items || cart.items.length === 0) {
-      errors.push({ error: 'Cart is empty' });
+      errors.push({ error: "Cart is empty" });
     }
 
     // Check order type is set
     if (!cart.orderType) {
-      errors.push({ error: 'Order type not selected' });
+      errors.push({ error: "Order type not selected" });
     }
 
     // Check branch is set
     if (!cart.branchId) {
-      errors.push({ error: 'Branch not selected' });
+      errors.push({ error: "Branch not selected" });
     } else {
       // Check branch is active and open
       const branch = await this.branchRepository.findOne({
@@ -554,17 +550,17 @@ export class CartService {
       });
 
       if (!branch) {
-        errors.push({ error: 'Selected branch not found' });
+        errors.push({ error: "Selected branch not found" });
       } else if (!branch.isActive) {
-        errors.push({ error: 'Selected branch is not active' });
+        errors.push({ error: "Selected branch is not active" });
       } else if (!branch.isOpen) {
-        warnings.push({ warning: 'Selected branch is currently closed' });
+        warnings.push({ warning: "Selected branch is currently closed" });
       }
     }
 
     // For delivery, check address is set
     if (cart.orderType === OrderType.DELIVERY && !cart.deliveryAddressId) {
-      errors.push({ error: 'Delivery address not selected' });
+      errors.push({ error: "Delivery address not selected" });
     }
 
     // Validate each item
@@ -577,7 +573,7 @@ export class CartService {
         });
 
         if (!itemData) {
-          errors.push({ itemId: item.id, error: 'Item no longer exists' });
+          errors.push({ itemId: item.id, error: "Item no longer exists" });
           continue;
         }
 
@@ -589,7 +585,7 @@ export class CartService {
           if (!isAvailable) {
             errors.push({
               itemId: item.id,
-              error: 'Item not available at selected branch',
+              error: "Item not available at selected branch",
             });
           }
         }
@@ -608,7 +604,7 @@ export class CartService {
         });
 
         if (!bundleData) {
-          errors.push({ itemId: item.id, error: 'Bundle no longer exists' });
+          errors.push({ itemId: item.id, error: "Bundle no longer exists" });
           continue;
         }
 
@@ -620,7 +616,7 @@ export class CartService {
           if (!isAvailable) {
             errors.push({
               itemId: item.id,
-              error: 'Bundle not available at selected branch',
+              error: "Bundle not available at selected branch",
             });
           }
         }
@@ -643,7 +639,7 @@ export class CartService {
     // Update validation status
     cart.lastValidatedAt = new Date();
     cart.validationErrors = errors.map((e) => ({
-      itemId: e.itemId || '',
+      itemId: e.itemId || "",
       error: e.error,
     }));
     await this.cartRepository.save(cart);
@@ -672,17 +668,17 @@ export class CartService {
     const pricing = item.pricing;
 
     // If pricing is a number, return it directly
-    if (typeof pricing === 'number') {
+    if (typeof pricing === "number") {
       return pricing;
     }
 
     // If pricing is an object with type 'number' and a price field
     if (
       pricing &&
-      typeof pricing === 'object' &&
-      'type' in pricing &&
-      pricing.type === 'number' &&
-      'price' in pricing
+      typeof pricing === "object" &&
+      "type" in pricing &&
+      pricing.type === "number" &&
+      "price" in pricing
     ) {
       return Number(pricing.price);
     }
@@ -690,8 +686,8 @@ export class CartService {
     // If pricing has variants, return the first variant's first value price as default
     if (
       pricing &&
-      typeof pricing === 'object' &&
-      'variants' in pricing &&
+      typeof pricing === "object" &&
+      "variants" in pricing &&
       pricing.variants?.length > 0
     ) {
       const firstVariant = pricing.variants[0];

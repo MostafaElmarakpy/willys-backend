@@ -1,15 +1,15 @@
+import { Type } from "class-transformer";
 import {
+  IsDateString,
+  IsEnum,
+  IsNumber,
   IsOptional,
   IsString,
-  IsEnum,
   IsUUID,
-  IsDateString,
-  IsNumber,
   Min,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { OrderStatus } from 'src/common/enums/OrderStatus';
-import { OrderType } from 'src/common/enums/OrderType';
+} from "class-validator";
+import { OrderStatus } from "src/common/enums/OrderStatus";
+import { OrderType } from "src/common/enums/OrderType";
 
 export class OrderFilterDto {
   @IsOptional()
@@ -50,9 +50,9 @@ export class OrderFilterDto {
 
   @IsOptional()
   @IsString()
-  sortBy?: string = 'createdAt';
+  sortBy?: string = "createdAt";
 
   @IsOptional()
-  @IsEnum(['ASC', 'DESC'])
-  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+  @IsEnum(["ASC", "DESC"])
+  sortOrder?: "ASC" | "DESC" = "DESC";
 }

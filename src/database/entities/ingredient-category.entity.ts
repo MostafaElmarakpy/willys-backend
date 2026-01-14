@@ -1,22 +1,22 @@
+import { BilingualStringObject } from "src/common/dto/bilingual-string.dto";
 import {
   Column,
   Entity,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
   Index,
-} from 'typeorm';
-import { User } from './user.entity';
-import { Ingredient } from './ingredient.entity';
-import { BaseEntity } from './base.entity';
-import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm";
+import { BaseEntity } from "./base.entity";
+import { Ingredient } from "./ingredient.entity";
+import { User } from "./user.entity";
 
-@Entity('ingredient_categories')
+@Entity("ingredient_categories")
 export class IngredientCategory extends BaseEntity {
-  @Column({ type: 'json' })
+  @Column({ type: "json" })
   name: BilingualStringObject;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: "json", nullable: true })
   description?: BilingualStringObject;
 
   @Column({ default: true })
@@ -27,19 +27,22 @@ export class IngredientCategory extends BaseEntity {
   sortOrder: number;
 
   @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'createdBy' })
+  @JoinColumn({ name: "createdBy" })
   createdByUser: User;
 
   @Column()
   createdBy: string;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'updatedBy' })
+  @JoinColumn({ name: "updatedBy" })
   updatedByUser?: User;
 
   @Column({ nullable: true })
   updatedBy?: string;
 
-  @OneToMany(() => Ingredient, (ingredient) => ingredient.category)
+  @OneToMany(
+    () => Ingredient,
+    (ingredient) => ingredient.category,
+  )
   ingredients: Ingredient[];
 }

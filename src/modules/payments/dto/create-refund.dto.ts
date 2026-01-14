@@ -1,10 +1,10 @@
 import {
   IsNotEmpty,
-  IsString,
-  IsOptional,
   IsNumber,
+  IsOptional,
+  IsString,
   Min,
-} from 'class-validator';
+} from "class-validator";
 
 export class CreateRefundDto {
   @IsOptional()

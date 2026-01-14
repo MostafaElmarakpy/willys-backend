@@ -1,11 +1,11 @@
-import { Cart, AppliedDiscount } from 'src/database/entities/cart.entity';
-import { CartItem } from 'src/database/entities/cart-item.entity';
-import { OrderType } from 'src/common/enums/OrderType';
-import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
+import { BilingualStringObject } from "src/common/dto/bilingual-string.dto";
+import { OrderType } from "src/common/enums/OrderType";
+import { AppliedDiscount, Cart } from "src/database/entities/cart.entity";
+import { CartItem } from "src/database/entities/cart-item.entity";
 
 export class CartItemResponseDto {
   id: string;
-  itemType: 'ITEM' | 'BUNDLE';
+  itemType: "ITEM" | "BUNDLE";
   itemId?: string;
   bundleId?: string;
   name?: BilingualStringObject;
@@ -21,7 +21,7 @@ export class CartItemResponseDto {
   customizations?: Array<{
     ingredientId: string;
     name: BilingualStringObject;
-    action: 'ADD' | 'REMOVE' | 'EXTRA';
+    action: "ADD" | "REMOVE" | "EXTRA";
     price: number;
   }>;
   extras?: Array<{

@@ -1,10 +1,10 @@
 import {
-  CallHandler,
-  ExecutionContext,
+  type CallHandler,
+  type ExecutionContext,
   Injectable,
-  NestInterceptor,
-} from '@nestjs/common';
-import { Observable } from 'rxjs';
+  type NestInterceptor,
+} from "@nestjs/common";
+import { Observable } from "rxjs";
 
 @Injectable()
 export class LocaleInterceptor implements NestInterceptor {
@@ -12,11 +12,11 @@ export class LocaleInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
 
     const _locale =
-      request.headers['accept-language'] ??
-      request.headers['Accept-Language'] ??
-      request.headers['x-language'] ??
-      request.headers['x-locale'] ??
-      'en';
+      request.headers["accept-language"] ??
+      request.headers["Accept-Language"] ??
+      request.headers["x-language"] ??
+      request.headers["x-locale"] ??
+      "en";
 
     return next.handle();
   }

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException } from "@nestjs/common";
 
 export interface PriceValidationEntity {
   starting_price: number;
@@ -22,9 +22,9 @@ export function validatePriceAgainstParent(
 
   // Validate the price is positive
   if (!itemPrice || itemPrice <= 0) {
-    const priceFieldName = options.priceFieldName || 'starting_price';
+    const priceFieldName = options.priceFieldName || "starting_price";
     throw new BadRequestException(
-      `${options.itemName} ${priceFieldName.replace('_', ' ')} must be a positive number`,
+      `${options.itemName} ${priceFieldName.replace("_", " ")} must be a positive number`,
     );
   }
 
@@ -33,13 +33,13 @@ export function validatePriceAgainstParent(
     const parentName = getEntityName(parentEntity);
     const itemIdentifier = options.itemIdentifier
       ? ` with ID "${options.itemIdentifier}"`
-      : '';
-    const priceFieldName = options.priceFieldName || 'starting_price';
+      : "";
+    const priceFieldName = options.priceFieldName || "starting_price";
 
-    const errorMessage = `${options.itemName} ${priceFieldName.replace('_', ' ')} (${itemPrice}) cannot be less than the ${options.parentName}'s starting price (${parentEntity.starting_price}) for ${options.parentName} "${parentName}"`;
+    const errorMessage = `${options.itemName} ${priceFieldName.replace("_", " ")} (${itemPrice}) cannot be less than the ${options.parentName}'s starting price (${parentEntity.starting_price}) for ${options.parentName} "${parentName}"`;
 
     throw new BadRequestException({
-      message: 'Validation failed',
+      message: "Validation failed",
       errors: [
         {
           key: priceFieldName,
@@ -51,11 +51,11 @@ export function validatePriceAgainstParent(
 }
 
 function getEntityName(entity: PriceValidationEntity): string {
-  if (!entity.name) return 'Unknown';
+  if (!entity.name) return "Unknown";
 
-  if (typeof entity.name === 'string') {
+  if (typeof entity.name === "string") {
     return entity.name;
   }
 
-  return entity.name.en || entity.name.ar || 'Unknown';
+  return entity.name.en || entity.name.ar || "Unknown";
 }

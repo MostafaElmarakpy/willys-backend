@@ -1,17 +1,17 @@
+import { Type } from "class-transformer";
 import {
-  IsOptional,
-  IsEnum,
-  IsString,
   IsBoolean,
   IsDateString,
-  IsNumber,
+  IsEnum,
   IsIn,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { DiscountType } from 'src/common/enums/DiscountType';
-import { DiscountStatus } from 'src/common/enums/DiscountStatus';
-import { DiscountTargetType } from 'src/common/enums/DiscountTargetType';
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
+import { PaginationDto } from "src/common/dto/pagination.dto";
+import { DiscountStatus } from "src/common/enums/DiscountStatus";
+import { DiscountTargetType } from "src/common/enums/DiscountTargetType";
+import { DiscountType } from "src/common/enums/DiscountType";
 
 export class DiscountFilterDto extends PaginationDto {
   @IsOptional()
@@ -55,11 +55,11 @@ export class DiscountFilterDto extends PaginationDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['createdAt', 'updatedAt', 'startDate', 'value', 'status'])
-  sortBy?: string = 'createdAt';
+  @IsIn(["createdAt", "updatedAt", "startDate", "value", "status"])
+  sortBy?: string = "createdAt";
 
   @IsOptional()
   @IsString()
-  @IsIn(['ASC', 'DESC'])
-  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+  @IsIn(["ASC", "DESC"])
+  sortOrder?: "ASC" | "DESC" = "DESC";
 }

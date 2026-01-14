@@ -1,7 +1,9 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddQuantityTypeToIngredientsAndExtras20260111120500 implements MigrationInterface {
-  name = 'AddQuantityTypeToIngredientsAndExtras20260111120500';
+export class AddQuantityTypeToIngredientsAndExtras20260111120500
+  implements MigrationInterface
+{
+  name = "AddQuantityTypeToIngredientsAndExtras20260111120500";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create quantity_type enum

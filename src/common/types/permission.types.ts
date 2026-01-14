@@ -1,5 +1,5 @@
-import { PermissionModule } from '../enums/PermissionModule';
-import { PermissionAction } from '../enums/PermissionAction';
+import { PermissionAction } from "../enums/PermissionAction";
+import { PermissionModule } from "../enums/PermissionModule";
 
 export type Permission = `${PermissionModule}:${PermissionAction}`;
 

@@ -1,9 +1,9 @@
-import { Column, Entity, OneToMany, Index } from 'typeorm';
-import { BaseEntity } from './base.entity';
-import { User } from './user.entity';
-import { PermissionsMap } from 'src/common/types/permission.types';
+import { PermissionsMap } from "src/common/types/permission.types";
+import { Column, Entity, Index, OneToMany } from "typeorm";
+import { BaseEntity } from "./base.entity";
+import { User } from "./user.entity";
 
-@Entity('roles')
+@Entity("roles")
 export class Role extends BaseEntity {
   @Column({ unique: true })
   @Index()
@@ -12,10 +12,10 @@ export class Role extends BaseEntity {
   @Column({ nullable: true })
   displayName: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: "text", nullable: true })
   description: string;
 
-  @Column({ type: 'jsonb', default: '{}' })
+  @Column({ type: "jsonb", default: "{}" })
   permissions: PermissionsMap;
 
   @Column({ default: false })
@@ -25,6 +25,9 @@ export class Role extends BaseEntity {
   @Index()
   isActive: boolean;
 
-  @OneToMany(() => User, (user) => user.adminRole)
+  @OneToMany(
+    () => User,
+    (user) => user.adminRole,
+  )
   users: User[];
 }

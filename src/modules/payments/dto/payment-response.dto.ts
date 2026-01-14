@@ -1,6 +1,6 @@
-import { Payment } from 'src/database/entities/payment.entity';
-import { PaymentType } from 'src/common/enums/PaymentType';
-import { PaymentStatus } from 'src/common/enums/PaymentStatus';
+import { PaymentStatus } from "src/common/enums/PaymentStatus";
+import { PaymentType } from "src/common/enums/PaymentType";
+import { Payment } from "src/database/entities/payment.entity";
 
 export class PaymentResponseDto {
   id: string;

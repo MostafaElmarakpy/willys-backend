@@ -1,16 +1,16 @@
+import { Type } from "class-transformer";
 import {
-  IsOptional,
-  IsInt,
-  IsEnum,
-  IsUUID,
   IsDateString,
+  IsEnum,
+  IsInt,
   IsNumber,
-  Min,
+  IsOptional,
+  IsUUID,
   Max,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { PaymentStatus } from 'src/common/enums/PaymentStatus';
-import { PaymentType } from 'src/common/enums/PaymentType';
+  Min,
+} from "class-validator";
+import { PaymentStatus } from "src/common/enums/PaymentStatus";
+import { PaymentType } from "src/common/enums/PaymentType";
 
 export class PaymentFilterDto {
   @IsOptional()

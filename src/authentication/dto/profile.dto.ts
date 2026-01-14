@@ -1,8 +1,8 @@
-import { UserGender } from 'src/common/enums/UserGender';
-import { UserProvider } from 'src/common/enums/UserProvider';
-import { UserRole } from 'src/common/enums/UserRole';
-import { UserStatus } from 'src/common/enums/UserStatus';
-import { Role } from 'src/database/entities/role.entity';
+import { UserGender } from "src/common/enums/UserGender";
+import { UserProvider } from "src/common/enums/UserProvider";
+import { UserRole } from "src/common/enums/UserRole";
+import { UserStatus } from "src/common/enums/UserStatus";
+import { Role } from "src/database/entities/role.entity";
 
 export class ProfileDto {
   id: string;

@@ -1,37 +1,38 @@
+import * as crypto from "node:crypto";
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
-import { MailService } from 'src/common/mail/mail.service';
-import { ConfigService } from 'src/config/config.service';
-import { UsersService } from 'src/modules/users/users.service';
-import { MoreThan, Repository } from 'typeorm';
-import { AccessToken } from '../database/entities/access-token.entity';
-import { ResetPasswordToken } from '../database/entities/reset-password-token.entity';
-import { ChangeEmailDto } from './dto/changeEmail.dto';
-import { ChangePasswordDto } from './dto/changePassword.dto';
-import { ForgotPasswordDto } from './dto/forgotPassword.dto';
-import { LoginDto } from './dto/login.dto';
-import { ProfileDto } from './dto/profile.dto';
-import { RegisterDto } from './dto/register.dto';
-import { ResendVerificationEmailDto } from './dto/resendVerificationEmail.dto';
-import { ResetPasswordDto } from './dto/resetPassword.dto';
-import { UpdateProfileDto } from './dto/updateProfile.dto';
-import { VerifyEmailDto } from './dto/verifyEmail.dto';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import * as bcrypt from "bcrypt";
+import { MailService } from "src/common/mail/mail.service";
+import { ConfigService } from "src/config/config.service";
+import { User } from "src/database/entities/user.entity";
+import { UsersService } from "src/modules/users/users.service";
+import { MoreThan, type Repository } from "typeorm";
+import { AccessToken } from "../database/entities/access-token.entity";
+import { ResetPasswordToken } from "../database/entities/reset-password-token.entity";
+import { ChangeEmailDto } from "./dto/changeEmail.dto";
+import { ChangePasswordDto } from "./dto/changePassword.dto";
+import { ForgotPasswordDto } from "./dto/forgotPassword.dto";
+import { LoginDto } from "./dto/login.dto";
+import { ProfileDto } from "./dto/profile.dto";
+import { RegisterDto } from "./dto/register.dto";
+import { ResendVerificationEmailDto } from "./dto/resendVerificationEmail.dto";
+import { ResetPasswordDto } from "./dto/resetPassword.dto";
+import { UpdateProfileDto } from "./dto/updateProfile.dto";
+import { VerifyEmailDto } from "./dto/verifyEmail.dto";
 
 @Injectable()
 export class AuthenticationService {
   constructor(
     @InjectRepository(ResetPasswordToken)
-    private readonly resetPasswordTokenRepository: Repository<ResetPasswordToken>,
+    readonly resetPasswordTokenRepository: Repository<ResetPasswordToken>,
     @InjectRepository(AccessToken)
-    private readonly accessTokenRepository: Repository<AccessToken>,
+    readonly accessTokenRepository: Repository<AccessToken>,
     private readonly userService: UsersService,
     private readonly mailService: MailService,
     private jwtService: JwtService,
@@ -39,7 +40,7 @@ export class AuthenticationService {
   ) {}
 
   async validateUser(identifier: string, pass: string): Promise<any> {
-    const user = identifier.includes('@')
+    const user = identifier.includes("@")
       ? await this.userService.findByEmail(identifier)
       : await this.userService.findByPhoneNumber(identifier);
 
@@ -51,13 +52,10 @@ export class AuthenticationService {
   }
 
   async generateAccessToken(user: any) {
-    if (
-      !user.hasOwnProperty('confirmAccount') ||
-      !user.hasOwnProperty('status')
-    ) {
+    if (!("confirmAccount" in user) || !("status" in user)) {
       user = await this.userService.findOne(user.id);
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        throw new UnauthorizedException("User not found");
       }
     }
 
@@ -65,7 +63,7 @@ export class AuthenticationService {
     const expirationDate = new Date(
       Date.now() +
         this.parseExpirationTime(
-          this.configService.get('jwtAccessExpiration') as string,
+          this.configService.get("jwtAccessExpiration") as string,
         ) *
           1000,
     );
@@ -74,7 +72,7 @@ export class AuthenticationService {
     const refreshExpirationDate = new Date(
       Date.now() +
         this.parseExpirationTime(
-          this.configService.get('jwtRefreshExpiration') as string,
+          this.configService.get("jwtRefreshExpiration") as string,
         ) *
           1000,
     );
@@ -93,7 +91,7 @@ export class AuthenticationService {
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
       expiresIn: this.parseExpirationTime(
-        this.configService.get('jwtRefreshExpiration') as string,
+        this.configService.get("jwtRefreshExpiration") as string,
       ),
     });
 
@@ -111,7 +109,7 @@ export class AuthenticationService {
     return {
       user: new ProfileDto(user),
       token: {
-        type: 'Bearer',
+        type: "Bearer",
         access_token: accessToken,
         access_token_expire: expirationDate.toISOString(),
         refresh_token: refreshToken,
@@ -143,11 +141,11 @@ export class AuthenticationService {
     const { loginMethod, identifier, phoneNumberCountryCode, password } =
       loginDto;
 
-    let user;
-    if (loginMethod === 'email' && identifier) {
+    let user: User | null;
+    if (loginMethod === "email" && identifier) {
       user = await this.userService.findByEmail(identifier);
     } else if (
-      loginMethod === 'phone' &&
+      loginMethod === "phone" &&
       identifier &&
       phoneNumberCountryCode
     ) {
@@ -156,17 +154,17 @@ export class AuthenticationService {
         phoneNumberCountryCode,
       );
     } else {
-      throw new BadRequestException('Invalid login method');
+      throw new BadRequestException("Invalid login method");
     }
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials.');
+      throw new UnauthorizedException("Invalid credentials.");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const token = (await this.generateAccessToken(user)).token;
@@ -180,35 +178,39 @@ export class AuthenticationService {
 
       return await this.generateAccessToken(payload);
     } catch (_e) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException("Invalid refresh token");
     }
   }
 
-  async register(registerDto: RegisterDto, avatar: any) {
-    let user;
+  async register(registerDto: RegisterDto, avatar: any): Promise<ProfileDto> {
+    let existingUser: User | null | undefined;
 
-    if (registerDto.registerMethod === 'email') {
-      user = await this.userService.findByEmail(registerDto.email as string);
-      if (user) {
-        throw new BadRequestException('Email already in use');
+    if (registerDto.registerMethod === "email") {
+      existingUser = await this.userService.findByEmail(
+        registerDto.email as string,
+      );
+      if (existingUser) {
+        throw new BadRequestException("Email already in use");
       }
     }
 
     if (registerDto.phoneNumber)
-      user = await this.userService.findByPhoneNumber(registerDto.phoneNumber);
-    if (user) {
-      throw new BadRequestException('Phone number already in use');
+      existingUser = await this.userService.findByPhoneNumber(
+        registerDto.phoneNumber,
+      );
+    if (existingUser) {
+      throw new BadRequestException("Phone number already in use");
     } else if (!registerDto.registerMethod) {
-      throw new BadRequestException('Invalid registration method');
+      throw new BadRequestException("Invalid registration method");
     }
 
-    user = await this.userService.register(
+    const registeredUser = await this.userService.register(
       registerDto.registerMethod,
       registerDto,
       avatar,
     );
 
-    return new ProfileDto(user);
+    return registeredUser;
   }
 
   async logout(_request: any) {
@@ -218,7 +220,7 @@ export class AuthenticationService {
 
   async profile(userId: string) {
     const user = await this.userService.findOne(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException("User not found");
     return new ProfileDto(user);
   }
 
@@ -239,15 +241,15 @@ export class AuthenticationService {
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const user = await this.userService.findByEmail(forgotPasswordDto.email);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
-    const token = crypto.randomBytes(20).toString('hex');
+    const token = crypto.randomBytes(20).toString("hex");
 
     const encryptedToken = crypto
-      .createHash('sha256')
+      .createHash("sha256")
       .update(token)
-      .digest('hex');
+      .digest("hex");
 
     const tokenValidity = new Date(Date.now() + 20 * 60 * 1000); // valid for 20 minutes
 
@@ -265,26 +267,26 @@ export class AuthenticationService {
 
     await this.mailService.sendMail({
       to: user.email as string,
-      subject: 'Reset Your Password',
+      subject: "Reset Your Password",
       html: `Here is the link to reset your password. The link is valid for 20 minutes: <a href="${resetPasswordURL}">${resetPasswordURL}</a>`,
     });
 
-    return 'Password reset instructions sent to your email';
+    return "Password reset instructions sent to your email";
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const encryptedToken = crypto
-      .createHash('sha256')
+      .createHash("sha256")
       .update(resetPasswordDto.token)
-      .digest('hex');
+      .digest("hex");
 
     const user = await this.resetPasswordTokenRepository.findOne({
       where: { resetToken: encryptedToken, expiresAt: MoreThan(new Date()) },
-      relations: ['user'],
+      relations: ["user"],
     });
 
     if (!user) {
-      throw new BadRequestException('Invalid request or link expired');
+      throw new BadRequestException("Invalid request or link expired");
     }
 
     const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10);
@@ -293,27 +295,27 @@ export class AuthenticationService {
       resetToken: encryptedToken,
     });
 
-    return 'Password changed successfully';
+    return "Password changed successfully";
   }
 
   async changeEmail(userId: string, _changeEmailDto: ChangeEmailDto) {
     const user = await this.userService.findOne(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     // TODO: Implement email verification logic
     // You might want to send a verification email to the new email address
 
     // await this.userService.updateEmail(user.id, changeEmailDto.newEmail);
-    return 'Email changed successfully';
+    return "Email changed successfully";
   }
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const user = await this.userService.findOne(userId);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -322,7 +324,7 @@ export class AuthenticationService {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Current password is incorrect');
+      throw new UnauthorizedException("Current password is incorrect");
     }
 
     const hashedNewPassword = await bcrypt.hash(
@@ -335,7 +337,7 @@ export class AuthenticationService {
       hashedNewPassword,
     );
 
-    return 'Password changed successfully';
+    return "Password changed successfully";
   }
 
   async verifyEmail(verifyEmailDto: VerifyEmailDto) {
@@ -345,13 +347,13 @@ export class AuthenticationService {
       const user = await this.userService.findOne(payload.userId);
 
       if (!user) {
-        throw new NotFoundException('User not found');
+        throw new NotFoundException("User not found");
       }
 
       await this.userService.verifyUserEmail(user.email as string);
-      return 'Email verified successfully';
+      return "Email verified successfully";
     } catch (_error) {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException("Invalid or expired token");
     }
   }
 
@@ -363,40 +365,48 @@ export class AuthenticationService {
     );
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     if (user.confirmAccount) {
-      return 'Email is already verified';
+      return "Email is already verified";
     }
 
     const verificationToken = this.jwtService.sign(
       { userId: user.id },
-      { expiresIn: '1d' },
+      { expiresIn: "1d" },
     );
 
     const verificationEmailURL = `${resendVerificationEmailDto.callbackUrl}?verify-email&token=${verificationToken}`;
 
-    await this.mailService.sendMail({
-      to: user.email as string,
-      subject: 'Request Verification Your Email',
-      html: `Here is the link to verify your email. The link is valid for 20 minutes: <a href="${verificationEmailURL}">${verificationEmailURL}</a>`,
-    });
+    // Send email asynchronously
+    this.mailService
+      .sendMail({
+        to: user.email as string,
+        subject: "Request Verification Your Email",
+        html: `Here is the link to verify your email. The link is valid for 20 minutes: <a href="${verificationEmailURL}">${verificationEmailURL}</a>`,
+      })
+      .catch((error) => {
+        console.warn(
+          `Failed to send verification email to ${user.email}:`,
+          error.message,
+        );
+      });
 
-    return 'Verification email resent successfully';
+    return "Verification email resent successfully";
   }
 
   async deleteAccount(userId: string) {
     const user = await this.userService.findOne(userId);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     // TODO: Implement any necessary cleanup logic
     // For example, you might want to delete associated data, revoke tokens, etc.
 
     // await this.userService.deleteUser(user.id);
-    return 'Account deleted successfully';
+    return "Account deleted successfully";
   }
 
   decodeToken(token: string): any {
@@ -405,23 +415,23 @@ export class AuthenticationService {
 
   // Helper method to parse expiration time
   private parseExpirationTime(expiration: string | number): number {
-    if (typeof expiration === 'number') {
+    if (typeof expiration === "number") {
       return expiration;
     }
     const match = expiration.match(/(\d+)([smhd])/);
     if (!match) {
       return 3600; // Default to 1 hour if parsing fails
     }
-    const value = parseInt(match[1]);
+    const value = parseInt(match[1], 10);
     const unit = match[2];
     switch (unit) {
-      case 's':
+      case "s":
         return value;
-      case 'm':
+      case "m":
         return value * 60;
-      case 'h':
+      case "h":
         return value * 3600;
-      case 'd':
+      case "d":
         return value * 86400;
       default:
         return 3600;

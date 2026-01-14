@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddSoftDeleteColumns20260111121000 implements MigrationInterface {
-  name = 'AddSoftDeleteColumns20260111121000';
+  name = "AddSoftDeleteColumns20260111121000";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add deletedAt column to access_tokens table

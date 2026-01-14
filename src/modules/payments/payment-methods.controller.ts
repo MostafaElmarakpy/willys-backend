@@ -1,27 +1,27 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Patch,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
+  Patch,
+  Post,
+  Request,
   UseGuards,
   Version,
-  Request,
-} from '@nestjs/common';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
-import { PaymentMethodsService } from './payment-methods.service';
-import { SavePaymentMethodDto } from './dto/save-payment-method.dto';
+} from "@nestjs/common";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { createSuccessResponse } from "src/common/utils/api-response-wrapper";
+import { SavePaymentMethodDto } from "./dto/save-payment-method.dto";
+import { PaymentMethodsService } from "./payment-methods.service";
 
 @UseGuards(JwtAuthGuard)
-@Controller('payment-methods')
+@Controller("payment-methods")
 export class PaymentMethodsController {
   constructor(private readonly paymentMethodsService: PaymentMethodsService) {}
 
   @Post()
-  @Version('1')
+  @Version("1")
   async savePaymentMethod(
     @Body() savePaymentMethodDto: SavePaymentMethodDto,
     @Request() req: any,
@@ -33,25 +33,25 @@ export class PaymentMethodsController {
 
     return createSuccessResponse(
       paymentMethod,
-      'Payment method saved successfully',
+      "Payment method saved successfully",
     );
   }
 
   @Get()
-  @Version('1')
+  @Version("1")
   async getMyPaymentMethods(@Request() req: any) {
     const paymentMethods =
       await this.paymentMethodsService.findUserPaymentMethods(req.user.id);
 
     return createSuccessResponse(
       paymentMethods,
-      'Payment methods retrieved successfully',
+      "Payment methods retrieved successfully",
     );
   }
 
-  @Patch(':id/default')
-  @Version('1')
-  async setDefault(@Param('id') id: string, @Request() req: any) {
+  @Patch(":id/default")
+  @Version("1")
+  async setDefault(@Param("id") id: string, @Request() req: any) {
     const paymentMethod = await this.paymentMethodsService.setDefault(
       id,
       req.user.id,
@@ -59,15 +59,15 @@ export class PaymentMethodsController {
 
     return createSuccessResponse(
       paymentMethod,
-      'Default payment method updated successfully',
+      "Default payment method updated successfully",
     );
   }
 
-  @Delete(':id')
-  @Version('1')
-  async removePaymentMethod(@Param('id') id: string, @Request() req: any) {
+  @Delete(":id")
+  @Version("1")
+  async removePaymentMethod(@Param("id") id: string, @Request() req: any) {
     await this.paymentMethodsService.remove(id, req.user.id);
 
-    return createSuccessResponse(null, 'Payment method removed successfully');
+    return createSuccessResponse(null, "Payment method removed successfully");
   }
 }

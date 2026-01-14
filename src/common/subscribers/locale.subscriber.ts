@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { EventSubscriber, EntitySubscriberInterface } from 'typeorm';
-import { I18nContext } from 'nestjs-i18n';
+import { Injectable } from "@nestjs/common";
+import { I18nContext } from "nestjs-i18n";
+import { EntitySubscriberInterface, EventSubscriber } from "typeorm";
 
 @Injectable()
 @EventSubscriber()
@@ -23,11 +23,11 @@ export class LocaleSubscriber implements EntitySubscriberInterface {
   private extractLocaleFromEntity(entity: any, locale: string): any {
     for (const key in entity) {
       if (
-        entity.hasOwnProperty(key) &&
-        typeof entity[key] === 'object' &&
+        Object.hasOwn(entity, key) &&
+        typeof entity[key] === "object" &&
         entity[key] !== null
       ) {
-        if (entity[key].hasOwnProperty(locale)) {
+        if (Object.hasOwn(entity[key], locale)) {
           entity[key] = entity[key][locale];
         }
       }

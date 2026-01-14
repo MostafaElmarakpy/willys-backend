@@ -1,9 +1,9 @@
-import slugify from 'slugify';
-import { Repository } from 'typeorm';
+import slugify from "slugify";
+import { Repository } from "typeorm";
 import {
   BilingualString,
   BilingualStringObject,
-} from '../dto/bilingual-string.dto';
+} from "../dto/bilingual-string.dto";
 
 interface SlugGenerationOptions {
   maxLength?: number;
@@ -22,7 +22,7 @@ interface HasSlugField {
 const SLUG_CONFIG = {
   DEFAULT_MAX_LENGTH: 100,
   DEFAULT_MAX_ATTEMPTS: 50,
-  DEFAULT_SEPARATOR: '-',
+  DEFAULT_SEPARATOR: "-",
   ARABIC_UNICODE_RANGE: /[\u0600-\u06FF]/g,
   ENGLISH_SLUG_OPTIONS: {
     lower: true,
@@ -40,7 +40,7 @@ function generateEnglishSlug(
   options: SlugGenerationOptions = {},
 ): string {
   if (!name?.trim()) {
-    throw new Error('Name cannot be empty for English slug generation');
+    throw new Error("Name cannot be empty for English slug generation");
   }
 
   const { maxLength = SLUG_CONFIG.DEFAULT_MAX_LENGTH, customSeparator } =
@@ -57,9 +57,9 @@ function generateEnglishSlug(
   slug = slug.replace(
     new RegExp(
       `^${slugOptions.replacement}+|${slugOptions.replacement}+$`,
-      'g',
+      "g",
     ),
-    '',
+    "",
   );
 
   // Limit length if specified
@@ -73,7 +73,7 @@ function generateEnglishSlug(
     }
   }
 
-  return slug || 'untitled'; // Fallback if slug becomes empty
+  return slug || "untitled"; // Fallback if slug becomes empty
 }
 
 /**
@@ -84,7 +84,7 @@ function generateArabicSlug(
   options: SlugGenerationOptions = {},
 ): string {
   if (!name?.trim()) {
-    throw new Error('Name cannot be empty for Arabic slug generation');
+    throw new Error("Name cannot be empty for Arabic slug generation");
   }
 
   const {
@@ -93,17 +93,17 @@ function generateArabicSlug(
   } = options;
 
   let slug = name
-    .normalize('NFKD') // Normalize Unicode
+    .normalize("NFKD") // Normalize Unicode
     .trim()
     .replace(/[\s_\u00A0]+/g, customSeparator) // Replace whitespace and non-breaking spaces
-    .replace(new RegExp(`[^a-z0-9\\u0600-\\u06FF${customSeparator}]`, 'gi'), '') // Keep Arabic, English, numbers, and separators
-    .replace(new RegExp(`${customSeparator}+`, 'g'), customSeparator) // Remove duplicate separators
+    .replace(new RegExp(`[^a-z0-9\\u0600-\\u06FF${customSeparator}]`, "gi"), "") // Keep Arabic, English, numbers, and separators
+    .replace(new RegExp(`${customSeparator}+`, "g"), customSeparator) // Remove duplicate separators
     .toLowerCase();
 
   // Remove leading/trailing separators
   slug = slug.replace(
-    new RegExp(`^${customSeparator}+|${customSeparator}+$`, 'g'),
-    '',
+    new RegExp(`^${customSeparator}+|${customSeparator}+$`, "g"),
+    "",
   );
 
   // Limit length if specified
@@ -115,7 +115,7 @@ function generateArabicSlug(
     }
   }
 
-  return slug || 'غير-مسمى'; // Arabic fallback
+  return slug || "غير-مسمى"; // Arabic fallback
 }
 
 /**
@@ -127,14 +127,14 @@ async function checkSlugExists<T extends HasSlugField>(
   excludeId?: string | number,
 ): Promise<boolean> {
   const queryBuilder = repository
-    .createQueryBuilder('entity')
+    .createQueryBuilder("entity")
     .where(`entity.slug ->> 'en' = :en OR entity.slug ->> 'ar' = :ar`, {
       en: slug.en,
       ar: slug.ar,
     });
 
   if (excludeId !== undefined) {
-    queryBuilder.andWhere('entity.id != :excludeId', { excludeId });
+    queryBuilder.andWhere("entity.id != :excludeId", { excludeId });
   }
 
   const existing = await queryBuilder.getOne();
@@ -151,10 +151,10 @@ export async function generateUniqueSlug<T extends HasSlugField>(
   excludeId?: string | number,
 ): Promise<BilingualString> {
   if (!name?.en?.trim() || !name?.ar?.trim()) {
-    throw new Error('Both English and Arabic names are required');
+    throw new Error("Both English and Arabic names are required");
   }
 
-  const { maxAttempts = SLUG_CONFIG.DEFAULT_MAX_ATTEMPTS, suffix = '' } =
+  const { maxAttempts = SLUG_CONFIG.DEFAULT_MAX_ATTEMPTS, suffix = "" } =
     options;
 
   try {
@@ -200,7 +200,7 @@ export async function generateUniqueSlug<T extends HasSlugField>(
     };
   } catch (error) {
     throw new Error(
-      `Failed to generate unique slug: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to generate unique slug: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -239,19 +239,19 @@ export function validateSlugFormat(slug: BilingualString): {
   const errors: string[] = [];
 
   if (!slug.en?.trim()) {
-    errors.push('English slug is required');
+    errors.push("English slug is required");
   } else if (!/^[a-z0-9-]+$/.test(slug.en)) {
-    errors.push('English slug contains invalid characters');
-  } else if (slug.en.startsWith('-') || slug.en.endsWith('-')) {
-    errors.push('English slug cannot start or end with hyphens');
+    errors.push("English slug contains invalid characters");
+  } else if (slug.en.startsWith("-") || slug.en.endsWith("-")) {
+    errors.push("English slug cannot start or end with hyphens");
   }
 
   if (!slug.ar?.trim()) {
-    errors.push('Arabic slug is required');
+    errors.push("Arabic slug is required");
   } else if (!/^[a-z0-9\u0600-\u06FF-]+$/i.test(slug.ar)) {
-    errors.push('Arabic slug contains invalid characters');
-  } else if (slug.ar.startsWith('-') || slug.ar.endsWith('-')) {
-    errors.push('Arabic slug cannot start or end with hyphens');
+    errors.push("Arabic slug contains invalid characters");
+  } else if (slug.ar.startsWith("-") || slug.ar.endsWith("-")) {
+    errors.push("Arabic slug cannot start or end with hyphens");
   }
 
   return {

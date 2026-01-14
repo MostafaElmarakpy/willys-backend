@@ -1,4 +1,4 @@
-import { PaymentMethod } from 'src/database/entities/payment-method.entity';
+import { PaymentMethod } from "src/database/entities/payment-method.entity";
 
 export class PaymentMethodResponseDto {
   id: string;

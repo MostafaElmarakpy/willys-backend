@@ -1,16 +1,14 @@
 // Package.
-import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
-import { HttpException } from '@nestjs/common/exceptions/http.exception';
-import { NextFunction, Response } from 'express';
+import { HttpStatus, Injectable, type NestMiddleware } from "@nestjs/common";
+import { HttpException } from "@nestjs/common/exceptions/http.exception";
+import { NextFunction, Response } from "express";
 
-export const MISSING_AUTH_HEADER = 'Missing Authorization Header';
+export const MISSING_AUTH_HEADER = "Missing Authorization Header";
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor() {}
-
-  public async use(req: any, res: Response, next: NextFunction) {
-    const _tag = 'AuthMiddleware';
+  public async use(req: any, _res: Response, next: NextFunction) {
+    const _tag = "AuthMiddleware";
 
     const { authorization } = req.headers;
     if (!authorization) {

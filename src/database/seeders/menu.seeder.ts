@@ -1,11 +1,11 @@
-import { DataSource } from 'typeorm';
-import { User } from '../entities/user.entity';
-import { Category } from '../entities/category.entity';
-import { IngredientCategory } from '../entities/ingredient-category.entity';
-import { Ingredient } from '../entities/ingredient.entity';
-import { Item } from '../entities/item.entity';
-import { UserRole } from 'src/common/enums/UserRole';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
+import { ItemStatus } from "src/common/enums/ItemStatus";
+import { UserRole } from "src/common/enums/UserRole";
+import { DataSource } from "typeorm";
+import { Category } from "../entities/category.entity";
+import { Ingredient } from "../entities/ingredient.entity";
+import { IngredientCategory } from "../entities/ingredient-category.entity";
+import { Item } from "../entities/item.entity";
+import { User } from "../entities/user.entity";
 
 export class MenuSeeder {
   constructor(private readonly dataSource: DataSource) {}
@@ -24,53 +24,53 @@ export class MenuSeeder {
     });
 
     if (!adminUser) {
-      throw new Error('Admin user not found. Please run user seeder first.');
+      throw new Error("Admin user not found. Please run user seeder first.");
     }
 
     // Check if menu data already exists
     const existingCategories = await categoryRepository.count();
     if (existingCategories > 0) {
-      console.log('⚠️  Menu data already exists');
+      console.log("⚠️  Menu data already exists");
       return;
     }
 
-    console.log('🍽️  Creating menu categories...');
+    console.log("🍽️  Creating menu categories...");
 
     // Create Categories
     const categoriesData = [
       {
-        name: { en: 'Appetizers', ar: 'المقبلات' },
+        name: { en: "Appetizers", ar: "المقبلات" },
         description: {
-          en: 'Start your meal with our delicious appetizers',
-          ar: 'ابدأ وجبتك بمقبلاتنا الشهية',
+          en: "Start your meal with our delicious appetizers",
+          ar: "ابدأ وجبتك بمقبلاتنا الشهية",
         },
       },
       {
-        name: { en: 'Main Dishes', ar: 'الأطباق الرئيسية' },
+        name: { en: "Main Dishes", ar: "الأطباق الرئيسية" },
         description: {
-          en: 'Our signature main courses',
-          ar: 'أطباقنا الرئيسية المميزة',
+          en: "Our signature main courses",
+          ar: "أطباقنا الرئيسية المميزة",
         },
       },
       {
-        name: { en: 'Desserts', ar: 'الحلويات' },
+        name: { en: "Desserts", ar: "الحلويات" },
         description: {
-          en: 'Sweet treats to end your meal',
-          ar: 'حلويات لذيذة لإنهاء وجبتك',
+          en: "Sweet treats to end your meal",
+          ar: "حلويات لذيذة لإنهاء وجبتك",
         },
       },
       {
-        name: { en: 'Beverages', ar: 'المشروبات' },
+        name: { en: "Beverages", ar: "المشروبات" },
         description: {
-          en: 'Refreshing drinks and hot beverages',
-          ar: 'مشروبات منعشة وساخنة',
+          en: "Refreshing drinks and hot beverages",
+          ar: "مشروبات منعشة وساخنة",
         },
       },
       {
-        name: { en: 'Salads', ar: 'السلطات' },
+        name: { en: "Salads", ar: "السلطات" },
         description: {
-          en: 'Fresh and healthy salad options',
-          ar: 'خيارات سلطات طازجة وصحية',
+          en: "Fresh and healthy salad options",
+          ar: "خيارات سلطات طازجة وصحية",
         },
       },
     ];
@@ -90,38 +90,38 @@ export class MenuSeeder {
       console.log(`  ✅ Category created: ${categoryData.name.en}`);
     }
 
-    console.log('🥬 Creating ingredient categories...');
+    console.log("🥬 Creating ingredient categories...");
 
     // Create Ingredient Categories
     const ingredientCategoriesData = [
       {
-        name: { en: 'Vegetables', ar: 'الخضروات' },
+        name: { en: "Vegetables", ar: "الخضروات" },
         description: {
-          en: 'Fresh vegetables and greens',
-          ar: 'خضروات ورقيات طازجة',
+          en: "Fresh vegetables and greens",
+          ar: "خضروات ورقيات طازجة",
         },
       },
       {
-        name: { en: 'Proteins', ar: 'البروتينات' },
+        name: { en: "Proteins", ar: "البروتينات" },
         description: {
-          en: 'Meat, chicken, and seafood',
-          ar: 'لحوم ودجاج ومأكولات بحرية',
+          en: "Meat, chicken, and seafood",
+          ar: "لحوم ودجاج ومأكولات بحرية",
         },
       },
       {
-        name: { en: 'Dairy', ar: 'منتجات الألبان' },
+        name: { en: "Dairy", ar: "منتجات الألبان" },
         description: {
-          en: 'Cheese, milk, and dairy products',
-          ar: 'جبن ولبن ومنتجات ألبان',
+          en: "Cheese, milk, and dairy products",
+          ar: "جبن ولبن ومنتجات ألبان",
         },
       },
       {
-        name: { en: 'Spices', ar: 'التوابل' },
-        description: { en: 'Herbs and spices', ar: 'أعشاب وتوابل' },
+        name: { en: "Spices", ar: "التوابل" },
+        description: { en: "Herbs and spices", ar: "أعشاب وتوابل" },
       },
       {
-        name: { en: 'Grains', ar: 'الحبوب' },
-        description: { en: 'Rice, pasta, and bread', ar: 'أرز ومعكرونة وخبز' },
+        name: { en: "Grains", ar: "الحبوب" },
+        description: { en: "Rice, pasta, and bread", ar: "أرز ومعكرونة وخبز" },
       },
     ];
 
@@ -140,75 +140,75 @@ export class MenuSeeder {
       console.log(`  ✅ Ingredient category created: ${categoryData.name.en}`);
     }
 
-    console.log('🧄 Creating ingredients...');
+    console.log("🧄 Creating ingredients...");
 
     // Create Ingredients
     const ingredientsData = [
       {
-        name: { en: 'Tomatoes', ar: 'طماطم' },
+        name: { en: "Tomatoes", ar: "طماطم" },
         quantity: 100,
         stockPercentage: 85,
         isOptional: false,
         categoryIndex: 0,
       },
       {
-        name: { en: 'Lettuce', ar: 'خس' },
+        name: { en: "Lettuce", ar: "خس" },
         quantity: 50,
         stockPercentage: 90,
         isOptional: true,
         categoryIndex: 0,
       },
       {
-        name: { en: 'Onions', ar: 'بصل' },
+        name: { en: "Onions", ar: "بصل" },
         quantity: 80,
         stockPercentage: 75,
         isOptional: true,
         categoryIndex: 0,
       },
       {
-        name: { en: 'Chicken Breast', ar: 'صدر دجاج' },
+        name: { en: "Chicken Breast", ar: "صدر دجاج" },
         quantity: 200,
         stockPercentage: 95,
         isOptional: false,
         categoryIndex: 1,
       },
       {
-        name: { en: 'Ground Beef', ar: 'لحم مفروم' },
+        name: { en: "Ground Beef", ar: "لحم مفروم" },
         quantity: 150,
         stockPercentage: 80,
         isOptional: false,
         categoryIndex: 1,
       },
       {
-        name: { en: 'Mozzarella Cheese', ar: 'جبن موزاريلا' },
+        name: { en: "Mozzarella Cheese", ar: "جبن موزاريلا" },
         quantity: 75,
         stockPercentage: 70,
         isOptional: true,
         categoryIndex: 2,
       },
       {
-        name: { en: 'Cheddar Cheese', ar: 'جبن شيدر' },
+        name: { en: "Cheddar Cheese", ar: "جبن شيدر" },
         quantity: 60,
         stockPercentage: 65,
         isOptional: true,
         categoryIndex: 2,
       },
       {
-        name: { en: 'Black Pepper', ar: 'فلفل أسود' },
+        name: { en: "Black Pepper", ar: "فلفل أسود" },
         quantity: 10,
         stockPercentage: 100,
         isOptional: true,
         categoryIndex: 3,
       },
       {
-        name: { en: 'Salt', ar: 'ملح' },
+        name: { en: "Salt", ar: "ملح" },
         quantity: 20,
         stockPercentage: 100,
         isOptional: false,
         categoryIndex: 3,
       },
       {
-        name: { en: 'Rice', ar: 'أرز' },
+        name: { en: "Rice", ar: "أرز" },
         quantity: 300,
         stockPercentage: 90,
         isOptional: false,
@@ -232,41 +232,41 @@ export class MenuSeeder {
       console.log(`  ✅ Ingredient created: ${ingredientData.name.en}`);
     }
 
-    console.log('🍽️  Creating menu items...');
+    console.log("🍽️  Creating menu items...");
 
     // Create Items with new pricing structure
     const itemsData = [
       {
         name: {
-          en: 'Grilled Chicken Caesar Salad',
-          ar: 'سلطة قيصر بالدجاج المشوي',
+          en: "Grilled Chicken Caesar Salad",
+          ar: "سلطة قيصر بالدجاج المشوي",
         },
         description: {
-          en: 'Fresh romaine lettuce with grilled chicken, parmesan cheese, and caesar dressing',
-          ar: 'خس روماني طازج مع دجاج مشوي وجبن بارميزان وصوص قيصر',
+          en: "Fresh romaine lettuce with grilled chicken, parmesan cheese, and caesar dressing",
+          ar: "خس روماني طازج مع دجاج مشوي وجبن بارميزان وصوص قيصر",
         },
         pricing: {
-          price: '45.0',
+          price: "45.0",
           variants: [
             {
-              name: 'Size',
+              name: "Size",
               sortOrder: 0,
               values: [
-                { value: 'Small', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '10', sortOrder: 1 },
-                { value: 'Large', price: '20', sortOrder: 2 },
+                { value: "Small", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "10", sortOrder: 1 },
+                { value: "Large", price: "20", sortOrder: 2 },
               ],
             },
             {
-              name: 'Extras',
+              name: "Extras",
               sortOrder: 1,
               values: [
-                { value: 'Extra Cheese', price: '15', sortOrder: 0 },
-                { value: 'Extra Vegetables', price: '10', sortOrder: 1 },
+                { value: "Extra Cheese", price: "15", sortOrder: 0 },
+                { value: "Extra Vegetables", price: "10", sortOrder: 1 },
               ],
             },
           ],
-          type: 'object' as const,
+          type: "object" as const,
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 4, // Salads
@@ -274,119 +274,119 @@ export class MenuSeeder {
         ingredientIndexes: [0, 1, 3, 5, 8], // Tomatoes, Lettuce, Chicken Breast, Mozzarella Cheese, Salt
       },
       {
-        name: { en: 'Beef Burger Deluxe', ar: 'برجر لحم ديلكس' },
+        name: { en: "Beef Burger Deluxe", ar: "برجر لحم ديلكس" },
         description: {
-          en: 'Juicy beef patty with cheese, lettuce, tomato, and our special sauce',
-          ar: 'قطعة لحم عصيرة مع الجبن والخس والطماطم وصوصنا الخاص',
+          en: "Juicy beef patty with cheese, lettuce, tomato, and our special sauce",
+          ar: "قطعة لحم عصيرة مع الجبن والخس والطماطم وصوصنا الخاص",
         },
         pricing: {
-          price: '65.0',
+          price: "65.0",
           variants: [
             {
-              name: 'Size',
+              name: "Size",
               sortOrder: 0,
               values: [
-                { value: 'Small', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '10', sortOrder: 1 },
-                { value: 'Large', price: '20', sortOrder: 2 },
+                { value: "Small", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "10", sortOrder: 1 },
+                { value: "Large", price: "20", sortOrder: 2 },
               ],
             },
             {
-              name: 'Extras',
+              name: "Extras",
               sortOrder: 1,
               values: [
-                { value: 'Extra Cheese', price: '15', sortOrder: 0 },
-                { value: 'Extra Meat', price: '25', sortOrder: 1 },
+                { value: "Extra Cheese", price: "15", sortOrder: 0 },
+                { value: "Extra Meat", price: "25", sortOrder: 1 },
               ],
             },
             {
-              name: 'Spice Level',
+              name: "Spice Level",
               sortOrder: 2,
               values: [
-                { value: 'Mild', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '0', sortOrder: 1 },
-                { value: 'Hot', price: '0', sortOrder: 2 },
+                { value: "Mild", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "0", sortOrder: 1 },
+                { value: "Hot", price: "0", sortOrder: 2 },
               ],
             },
           ],
-          type: 'object' as const,
+          type: "object" as const,
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
         ingredientIndexes: [0, 1, 2, 4, 6, 8], // Tomatoes, Lettuce, Onions, Ground Beef, Cheddar Cheese, Salt
       },
       {
-        name: { en: 'Margherita Pizza', ar: 'بيتزا مارغريتا' },
+        name: { en: "Margherita Pizza", ar: "بيتزا مارغريتا" },
         description: {
-          en: 'Classic pizza with tomato sauce, mozzarella cheese, and fresh basil',
-          ar: 'بيتزا كلاسيكية بصلصة الطماطم وجبن الموزاريلا والريحان الطازج',
+          en: "Classic pizza with tomato sauce, mozzarella cheese, and fresh basil",
+          ar: "بيتزا كلاسيكية بصلصة الطماطم وجبن الموزاريلا والريحان الطازج",
         },
         pricing: {
-          price: '55.0',
+          price: "55.0",
           variants: [
             {
-              name: 'Size',
+              name: "Size",
               sortOrder: 0,
               values: [
-                { value: 'Small', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '10', sortOrder: 1 },
-                { value: 'Large', price: '20', sortOrder: 2 },
+                { value: "Small", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "10", sortOrder: 1 },
+                { value: "Large", price: "20", sortOrder: 2 },
               ],
             },
             {
-              name: 'Extras',
+              name: "Extras",
               sortOrder: 1,
               values: [
-                { value: 'Extra Cheese', price: '15', sortOrder: 0 },
-                { value: 'Extra Vegetables', price: '10', sortOrder: 1 },
+                { value: "Extra Cheese", price: "15", sortOrder: 0 },
+                { value: "Extra Vegetables", price: "10", sortOrder: 1 },
               ],
             },
           ],
-          type: 'object' as const,
+          type: "object" as const,
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
         ingredientIndexes: [0, 5, 8], // Tomatoes, Mozzarella Cheese, Salt
       },
       {
-        name: { en: 'Chicken Wings', ar: 'أجنحة دجاج' },
+        name: { en: "Chicken Wings", ar: "أجنحة دجاج" },
         description: {
-          en: 'Crispy chicken wings with your choice of sauce',
-          ar: 'أجنحة دجاج مقرمشة مع الصوص المفضل لديك',
+          en: "Crispy chicken wings with your choice of sauce",
+          ar: "أجنحة دجاج مقرمشة مع الصوص المفضل لديك",
         },
         pricing: {
-          price: '35.0',
+          price: "35.0",
           variants: [
             {
-              name: 'Size',
+              name: "Size",
               sortOrder: 0,
               values: [
-                { value: 'Small', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '10', sortOrder: 1 },
-                { value: 'Large', price: '20', sortOrder: 2 },
+                { value: "Small", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "10", sortOrder: 1 },
+                { value: "Large", price: "20", sortOrder: 2 },
               ],
             },
             {
-              name: 'Spice Level',
+              name: "Spice Level",
               sortOrder: 1,
               values: [
-                { value: 'Mild', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '0', sortOrder: 1 },
-                { value: 'Hot', price: '0', sortOrder: 2 },
+                { value: "Mild", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "0", sortOrder: 1 },
+                { value: "Hot", price: "0", sortOrder: 2 },
               ],
             },
           ],
-          type: 'object' as const,
+          type: "object" as const,
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 0, // Appetizers
         ingredientIndexes: [3, 7, 8], // Chicken Breast, Black Pepper, Salt
       },
       {
-        name: { en: 'Chocolate Cake', ar: 'كعكة الشوكولاتة' },
+        name: { en: "Chocolate Cake", ar: "كعكة الشوكولاتة" },
         description: {
-          en: 'Rich chocolate cake with chocolate ganache',
-          ar: 'كعكة شوكولاتة غنية مع غاناش الشوكولاتة',
+          en: "Rich chocolate cake with chocolate ganache",
+          ar: "كعكة شوكولاتة غنية مع غاناش الشوكولاتة",
         },
         pricing: 25.0, // Simple number pricing for dessert
         status: ItemStatus.ACTIVE,
@@ -394,10 +394,10 @@ export class MenuSeeder {
         ingredientIndexes: [], // No specific ingredients for dessert
       },
       {
-        name: { en: 'Fresh Orange Juice', ar: 'عصير برتقال طازج' },
+        name: { en: "Fresh Orange Juice", ar: "عصير برتقال طازج" },
         description: {
-          en: 'Freshly squeezed orange juice',
-          ar: 'عصير برتقال طازج',
+          en: "Freshly squeezed orange juice",
+          ar: "عصير برتقال طازج",
         },
         pricing: 15.0, // Simple number pricing for beverage
         status: ItemStatus.ACTIVE,
@@ -405,34 +405,34 @@ export class MenuSeeder {
         ingredientIndexes: [], // No specific ingredients for beverage
       },
       {
-        name: { en: 'Chicken Biryani', ar: 'برياني دجاج' },
+        name: { en: "Chicken Biryani", ar: "برياني دجاج" },
         description: {
-          en: 'Aromatic basmati rice with tender chicken and spices',
-          ar: 'أرز بسمتي عطري مع دجاج طري وتوابل',
+          en: "Aromatic basmati rice with tender chicken and spices",
+          ar: "أرز بسمتي عطري مع دجاج طري وتوابل",
         },
         pricing: {
-          price: '70.0',
+          price: "70.0",
           variants: [
             {
-              name: 'Size',
+              name: "Size",
               sortOrder: 0,
               values: [
-                { value: 'Small', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '10', sortOrder: 1 },
-                { value: 'Large', price: '20', sortOrder: 2 },
+                { value: "Small", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "10", sortOrder: 1 },
+                { value: "Large", price: "20", sortOrder: 2 },
               ],
             },
             {
-              name: 'Spice Level',
+              name: "Spice Level",
               sortOrder: 1,
               values: [
-                { value: 'Mild', price: '0', sortOrder: 0 },
-                { value: 'Medium', price: '0', sortOrder: 1 },
-                { value: 'Hot', price: '0', sortOrder: 2 },
+                { value: "Mild", price: "0", sortOrder: 0 },
+                { value: "Medium", price: "0", sortOrder: 1 },
+                { value: "Hot", price: "0", sortOrder: 2 },
               ],
             },
           ],
-          type: 'object' as const,
+          type: "object" as const,
         },
         status: ItemStatus.ACTIVE,
         categoryIndex: 1, // Main Dishes
@@ -461,7 +461,7 @@ export class MenuSeeder {
           ingredientIndexes && ingredientIndexes.length > 0
             ? ingredientIndexes.map((index: number) => ({
                 id: savedIngredients[index].id,
-                quantity: '1', // Default quantity
+                quantity: "1", // Default quantity
               }))
             : undefined,
         extras: undefined, // No extras for seeded items initially
@@ -482,6 +482,6 @@ export class MenuSeeder {
       console.log(`  ✅ Item created: ${itemData.name.en}`);
     }
 
-    console.log('🎉 Menu seeding completed successfully!');
+    console.log("🎉 Menu seeding completed successfully!");
   }
 }

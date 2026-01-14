@@ -1,20 +1,20 @@
-import { Column, Entity, ManyToOne, JoinColumn, Index } from 'typeorm';
-import { User } from './user.entity';
-import { IngredientCategory } from './ingredient-category.entity';
-import { BaseEntity } from './base.entity';
-import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
-import { QuantityType } from 'src/common/enums/QuantityType';
+import { BilingualStringObject } from "src/common/dto/bilingual-string.dto";
+import { QuantityType } from "src/common/enums/QuantityType";
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { BaseEntity } from "./base.entity";
+import { IngredientCategory } from "./ingredient-category.entity";
+import { User } from "./user.entity";
 
-@Entity('ingredients')
+@Entity("ingredients")
 export class Ingredient extends BaseEntity {
-  @Column({ type: 'json' })
+  @Column({ type: "json" })
   name: BilingualStringObject;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: "decimal", precision: 10, scale: 2 })
   quantity: number;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: QuantityType,
     default: QuantityType.PIECE,
   })
@@ -26,10 +26,10 @@ export class Ingredient extends BaseEntity {
   isOptional: boolean;
 
   @Column({
-    type: 'decimal',
+    type: "decimal",
     precision: 5,
     scale: 2,
-    comment: 'Stock percentage (0-100)',
+    comment: "Stock percentage (0-100)",
   })
   stockPercentage: number;
 
@@ -41,24 +41,28 @@ export class Ingredient extends BaseEntity {
   @Index()
   isDefaultExtra: boolean;
 
-  @ManyToOne(() => IngredientCategory, (category) => category.ingredients, {
-    nullable: false,
-  })
-  @JoinColumn({ name: 'categoryId' })
+  @ManyToOne(
+    () => IngredientCategory,
+    (category) => category.ingredients,
+    {
+      nullable: false,
+    },
+  )
+  @JoinColumn({ name: "categoryId" })
   category: IngredientCategory;
 
   @Column()
   categoryId: string;
 
   @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'createdBy' })
+  @JoinColumn({ name: "createdBy" })
   createdByUser: User;
 
   @Column()
   createdBy: string;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'updatedBy' })
+  @JoinColumn({ name: "updatedBy" })
   updatedByUser?: User;
 
   @Column({ nullable: true })

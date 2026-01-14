@@ -1,16 +1,16 @@
 import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
+  type CanActivate,
+  type ExecutionContext,
   ForbiddenException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+  Injectable,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import {
   PERMISSIONS_KEY,
-  RequiredPermission,
   PERMISSIONS_MODE_KEY,
-} from '../decorators/permissions.decorator';
-import { PermissionsMap } from '../types/permission.types';
+  type RequiredPermission,
+} from "../decorators/permissions.decorator";
+import { PermissionsMap } from "../types/permission.types";
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -31,7 +31,7 @@ export class PermissionsGuard implements CanActivate {
       return false;
     }
 
-    if (user.adminRole?.name === 'SUPER_ADMIN') {
+    if (user.adminRole?.name === "SUPER_ADMIN") {
       return true;
     }
 
@@ -44,7 +44,7 @@ export class PermissionsGuard implements CanActivate {
 
     let hasPermission: boolean;
 
-    if (mode === 'AND') {
+    if (mode === "AND") {
       hasPermission = requiredPermissions.every((perm) =>
         this.hasPermission(userPermissions, perm),
       );
@@ -56,7 +56,7 @@ export class PermissionsGuard implements CanActivate {
 
     if (!hasPermission) {
       throw new ForbiddenException(
-        'You do not have permission to perform this action',
+        "You do not have permission to perform this action",
       );
     }
 

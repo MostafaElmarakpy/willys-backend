@@ -1,17 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Category } from 'src/database/entities/category.entity';
-import { DataSource, IsNull, Repository } from 'typeorm';
-import { CategoryOrderBy } from './dto/category/category-filter.dto';
-import { CreateCategoryDto } from './dto/category/create-category.dto';
-import { UpdateCategoryDto } from './dto/category/update-category.dto';
-import { ReorderCategoriesDto } from './dto/category/reorder-categories.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Category } from "src/database/entities/category.entity";
+import { DataSource, IsNull, type Repository } from "typeorm";
+import { CategoryOrderBy } from "./dto/category/category-filter.dto";
+import { CreateCategoryDto } from "./dto/category/create-category.dto";
+import { ReorderCategoriesDto } from "./dto/category/reorder-categories.dto";
+import { UpdateCategoryDto } from "./dto/category/update-category.dto";
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
+    readonly categoryRepository: Repository<Category>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -21,9 +21,9 @@ export class CategoriesService {
   ): Promise<Category> {
     // Get the highest sortOrder value and add 1
     const maxSortOrder = await this.categoryRepository
-      .createQueryBuilder('category')
-      .select('MAX(category.sortOrder)', 'max')
-      .where('category.deletedAt IS NULL')
+      .createQueryBuilder("category")
+      .select("MAX(category.sortOrder)", "max")
+      .where("category.deletedAt IS NULL")
       .getRawOne();
 
     const nextSortOrder = (maxSortOrder?.max ?? -1) + 1;
@@ -42,12 +42,12 @@ export class CategoriesService {
     search?: string,
     isActive?: string,
     sortBy?: CategoryOrderBy,
-    sortOrder: 'ASC' | 'DESC' = 'ASC',
+    sortOrder: "ASC" | "DESC" = "ASC",
   ) {
     const queryBuilder = this.categoryRepository
-      .createQueryBuilder('category')
-      .where('category.deletedAt IS NULL')
-      .loadRelationCountAndMap('category.itemsCount', 'category.items');
+      .createQueryBuilder("category")
+      .where("category.deletedAt IS NULL")
+      .loadRelationCountAndMap("category.itemsCount", "category.items");
 
     // Search filter
     if (search) {
@@ -58,9 +58,9 @@ export class CategoriesService {
     }
 
     // Status filter
-    if (isActive === 'true' || isActive === 'false') {
-      const isActiveBoolean = isActive === 'true';
-      queryBuilder.andWhere('category.isActive = :isActive', {
+    if (isActive === "true" || isActive === "false") {
+      const isActiveBoolean = isActive === "true";
+      queryBuilder.andWhere("category.isActive = :isActive", {
         isActive: isActiveBoolean,
       });
     }
@@ -69,27 +69,27 @@ export class CategoriesService {
     if (sortBy) {
       switch (sortBy) {
         case CategoryOrderBy.SORT_ORDER:
-          queryBuilder.orderBy('category.sortOrder', sortOrder);
+          queryBuilder.orderBy("category.sortOrder", sortOrder);
           break;
         case CategoryOrderBy.UPDATED_AT:
-          queryBuilder.orderBy('category.updatedAt', sortOrder);
+          queryBuilder.orderBy("category.updatedAt", sortOrder);
           break;
         case CategoryOrderBy.ITEMS_COUNT:
           // For ordering by items count, we need to use a subquery approach
           queryBuilder
             .addSelect((qb) => {
               return qb
-                .select('COUNT(items.id)')
-                .from('items', 'items')
-                .where('items.categoryId = category.id');
-            }, 'items_count')
-            .orderBy('items_count', sortOrder);
+                .select("COUNT(items.id)")
+                .from("items", "items")
+                .where("items.categoryId = category.id");
+            }, "items_count")
+            .orderBy("items_count", sortOrder);
           break;
         default:
-          queryBuilder.orderBy('category.sortOrder', sortOrder);
+          queryBuilder.orderBy("category.sortOrder", sortOrder);
       }
     } else {
-      queryBuilder.orderBy('category.sortOrder', sortOrder);
+      queryBuilder.orderBy("category.sortOrder", sortOrder);
     }
 
     const [categories, total] = await queryBuilder
@@ -109,7 +109,7 @@ export class CategoriesService {
   async findOne(id: string): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['items'],
+      relations: ["items"],
     });
 
     if (!category) {
@@ -141,7 +141,7 @@ export class CategoriesService {
   async findActiveCategories(): Promise<Category[]> {
     return await this.categoryRepository.find({
       where: { isActive: true, deletedAt: IsNull() },
-      order: { sortOrder: 'ASC', createdAt: 'DESC' },
+      order: { sortOrder: "ASC", createdAt: "DESC" },
     });
   }
 
@@ -158,14 +158,14 @@ export class CategoriesService {
       const categoryIds = categories.map((c) => c.id);
       const existingCategories = await categoryRepo.find({
         where: categoryIds.map((id) => ({ id, deletedAt: IsNull() })),
-        select: ['id'],
+        select: ["id"],
       });
 
       if (existingCategories.length !== categories.length) {
         const existingIds = new Set(existingCategories.map((c) => c.id));
         const missingIds = categoryIds.filter((id) => !existingIds.has(id));
         throw new NotFoundException(
-          `Categories not found: ${missingIds.join(', ')}`,
+          `Categories not found: ${missingIds.join(", ")}`,
         );
       }
 

@@ -1,0 +1,88 @@
+import { User } from "../../src/database/entities/user.entity";
+import { createAdmin, createCustomer } from "../factories/user.factory";
+
+export interface TestUsers {
+  customer: User;
+  admin: User;
+  customer2: User;
+  customer3: User;
+}
+
+/**
+ * Create a set of predefined test users
+ */
+export async function createTestUsers(): Promise<TestUsers> {
+  // Create a default customer
+  const customer = await createCustomer({
+    fullName: "John Doe",
+    email: "customer@test.com",
+    phoneNumber: "1234567890",
+    phoneNumberCountryCode: "+20",
+    password: "Test@1234",
+    confirmAccount: true,
+  });
+
+  // Create an admin user
+  const admin = await createAdmin({
+    fullName: "Admin User",
+    email: "admin@test.com",
+    phoneNumber: "0987654321",
+    phoneNumberCountryCode: "+20",
+    password: "Admin@1234",
+    confirmAccount: true,
+  });
+
+  // Create additional customers for multi-user tests
+  const customer2 = await createCustomer({
+    fullName: "Jane Smith",
+    email: "customer2@test.com",
+    phoneNumber: "1111111111",
+    phoneNumberCountryCode: "+20",
+    password: "Test@1234",
+    confirmAccount: true,
+  });
+
+  const customer3 = await createCustomer({
+    fullName: "Bob Wilson",
+    email: "customer3@test.com",
+    phoneNumber: "2222222222",
+    phoneNumberCountryCode: "+20",
+    password: "Test@1234",
+    confirmAccount: true,
+  });
+
+  return {
+    customer,
+    admin,
+    customer2,
+    customer3,
+  };
+}
+
+/**
+ * Create a single test customer with default credentials
+ */
+export async function createDefaultCustomer(): Promise<User> {
+  return createCustomer({
+    fullName: "Test Customer",
+    email: `test-${Date.now()}@test.com`,
+    phoneNumber: `${Math.floor(Math.random() * 10000000000)}`,
+    phoneNumberCountryCode: "+20",
+    password: "Test@1234",
+    confirmAccount: true,
+  });
+}
+
+/**
+ * Create a single test admin with default credentials
+ */
+export async function createDefaultAdmin(): Promise<User> {
+  return createAdmin({
+    fullName: "Test Admin",
+    email: `admin-${Date.now()}@test.com`,
+    phoneNumber: `${Math.floor(Math.random() * 10000000000)}`,
+    phoneNumberCountryCode: "+20",
+    password: "Admin@1234",
+    confirmAccount: true,
+  });
+}

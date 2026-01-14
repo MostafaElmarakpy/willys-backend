@@ -1,23 +1,21 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Zone } from '../../database/entities/zone.entity';
-import { Branch } from '../../database/entities/branch.entity';
-import { CreateZoneDto } from './dto/create-zone.dto';
-import { UpdateZoneDto } from './dto/update-zone.dto';
-import { ZoneCheckDto } from './dto/zone-check.dto';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Branch } from "../../database/entities/branch.entity";
+import { Zone } from "../../database/entities/zone.entity";
+import { CreateZoneDto } from "./dto/create-zone.dto";
+import { UpdateZoneDto } from "./dto/update-zone.dto";
+import { ZoneCheckDto } from "./dto/zone-check.dto";
 
 @Injectable()
 export class ZonesService {
   constructor(
-    @InjectRepository(Zone)
-    private zoneRepository: Repository<Zone>,
-    @InjectRepository(Branch)
-    private branchRepository: Repository<Branch>,
+    @InjectRepository(Zone) readonly zoneRepository: Repository<Zone>,
+    @InjectRepository(Branch) readonly branchRepository: Repository<Branch>,
   ) {}
 
   async create(createZoneDto: CreateZoneDto): Promise<Zone> {
@@ -59,7 +57,7 @@ export class ZonesService {
       // Return the zone with relations
       return await this.findOne(result[0].id);
     } catch (error) {
-      throw new BadRequestException('Failed to create zone: ' + error.message);
+      throw new BadRequestException(`Failed to create zone: ${error.message}`);
     }
   }
 
@@ -67,7 +65,7 @@ export class ZonesService {
     page: number = 1,
     limit: number = 10,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ): Promise<{
     zones: Zone[];
     total: number;
@@ -76,19 +74,19 @@ export class ZonesService {
     totalPages: number;
   }> {
     const skip = (page - 1) * limit;
-    const allowedSortFields = ['name', 'priority', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ["name", "priority", "createdAt", "updatedAt"];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'priority';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "priority";
 
     let orderConfig: any;
-    if (orderField === 'name') {
-      orderConfig = { name: sortOrder, createdAt: 'ASC' };
+    if (orderField === "name") {
+      orderConfig = { name: sortOrder, createdAt: "ASC" };
     } else {
-      orderConfig = { [orderField]: sortOrder, createdAt: 'ASC' };
+      orderConfig = { [orderField]: sortOrder, createdAt: "ASC" };
     }
 
     const [zones, total] = await this.zoneRepository.findAndCount({
-      relations: ['branch'],
+      relations: ["branch"],
       order: orderConfig,
       skip,
       take: limit,
@@ -108,15 +106,15 @@ export class ZonesService {
   async findByBranch(branchId: string): Promise<Zone[]> {
     return this.zoneRepository.find({
       where: { branchId, isActive: true },
-      relations: ['branch'],
-      order: { priority: 'DESC' },
+      relations: ["branch"],
+      order: { priority: "DESC" },
     });
   }
 
   async findOne(id: string): Promise<Zone> {
     const zone = await this.zoneRepository.findOne({
       where: { id },
-      relations: ['branch'],
+      relations: ["branch"],
     });
 
     if (!zone) {
@@ -134,7 +132,7 @@ export class ZonesService {
     try {
       return await this.zoneRepository.save(zone);
     } catch (error) {
-      throw new BadRequestException('Failed to update zone: ' + error.message);
+      throw new BadRequestException(`Failed to update zone: ${error.message}`);
     }
   }
 
@@ -162,8 +160,8 @@ export class ZonesService {
     // Find all active zones with their branches
     const zones = await this.zoneRepository.find({
       where: { isActive: true },
-      relations: ['branch'],
-      order: { priority: 'DESC' },
+      relations: ["branch"],
+      order: { priority: "DESC" },
     });
 
     const matchingBranches: Array<{
@@ -318,11 +316,11 @@ export class ZonesService {
 
   // Convert GeoJSON polygon to WKT format
   private geoJsonToWkt(polygon: {
-    type: 'Polygon';
+    type: "Polygon";
     coordinates: number[][][];
   }): string {
-    if (!polygon || polygon.type !== 'Polygon') {
-      throw new Error('Invalid polygon: must be a GeoJSON Polygon');
+    if (!polygon || polygon.type !== "Polygon") {
+      throw new Error("Invalid polygon: must be a GeoJSON Polygon");
     }
 
     if (
@@ -330,14 +328,14 @@ export class ZonesService {
       !Array.isArray(polygon.coordinates) ||
       polygon.coordinates.length === 0
     ) {
-      throw new Error('Invalid polygon: coordinates array is required');
+      throw new Error("Invalid polygon: coordinates array is required");
     }
 
     const coords = polygon.coordinates[0]; // First ring (exterior ring)
 
     if (!coords || coords.length < 4) {
       throw new Error(
-        'Invalid polygon: ring must have at least 4 coordinates (first and last must be the same)',
+        "Invalid polygon: ring must have at least 4 coordinates (first and last must be the same)",
       );
     }
 
@@ -351,7 +349,7 @@ export class ZonesService {
       }
 
       const [lng, lat] = coord;
-      if (typeof lng !== 'number' || typeof lat !== 'number') {
+      if (typeof lng !== "number" || typeof lat !== "number") {
         throw new Error(
           `Invalid coordinate at index ${i}: longitude and latitude must be numbers`,
         );
@@ -372,29 +370,29 @@ export class ZonesService {
 
     const wktCoords = coords
       .map((coord) => `${coord[0]} ${coord[1]}`)
-      .join(', ');
+      .join(", ");
     return `POLYGON((${wktCoords}))`;
   }
 
   // Convert WKT polygon to GeoJSON format
   private wktToGeoJson(wkt: string): {
-    type: 'Polygon';
+    type: "Polygon";
     coordinates: number[][][];
   } {
     // Simple WKT parser for POLYGON format
     const match = wkt.match(/POLYGON\(\(([^)]+)\)\)/);
     if (!match) {
-      throw new Error('Invalid WKT polygon format');
+      throw new Error("Invalid WKT polygon format");
     }
 
     const coordString = match[1];
-    const coords = coordString.split(', ').map((pair) => {
-      const [x, y] = pair.split(' ').map(Number);
+    const coords = coordString.split(", ").map((pair) => {
+      const [x, y] = pair.split(" ").map(Number);
       return [x, y];
     });
 
     return {
-      type: 'Polygon',
+      type: "Polygon",
       coordinates: [coords],
     };
   }

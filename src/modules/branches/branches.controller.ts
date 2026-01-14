@@ -1,35 +1,35 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
   ParseUUIDPipe,
-  Query,
+  Patch,
+  Post,
   Put,
+  Query,
   UseGuards,
   Version,
-} from '@nestjs/common';
-import { Permission } from '../../common/decorators/permissions.decorator';
-import { PermissionModule } from '../../common/enums/PermissionModule';
-import { PermissionAction } from '../../common/enums/PermissionAction';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../../common/guards/permissions.guard';
+} from "@nestjs/common";
+import { Permission } from "../../common/decorators/permissions.decorator";
+import { PaginationDto } from "../../common/dto/pagination.dto";
+import { PermissionAction } from "../../common/enums/PermissionAction";
+import { PermissionModule } from "../../common/enums/PermissionModule";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { PermissionsGuard } from "../../common/guards/permissions.guard";
 import {
-  createSuccessResponse,
   createCreatedResponse,
-} from '../../common/utils/api-response-wrapper';
-import { PaginationDto } from '../../common/dto/pagination.dto';
-import { BranchesService } from './branches.service';
-import { CreateBranchDto } from './dto/create-branch.dto';
-import { UpdateBranchDto } from './dto/update-branch.dto';
-import { ZoneCheckDto } from './dto/zone-check.dto';
-import { ZonesService } from './zones.service';
+  createSuccessResponse,
+} from "../../common/utils/api-response-wrapper";
+import { BranchesService } from "./branches.service";
+import { CreateBranchDto } from "./dto/create-branch.dto";
+import { UpdateBranchDto } from "./dto/update-branch.dto";
+import { ZoneCheckDto } from "./dto/zone-check.dto";
+import { ZonesService } from "./zones.service";
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-@Controller('admin/branches')
+@Controller("admin/branches")
 export class BranchesController {
   constructor(
     private readonly branchesService: BranchesService,
@@ -37,28 +37,28 @@ export class BranchesController {
   ) {}
 
   @Post()
-  @Version('1')
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.CREATE)
   async create(@Body() createBranchDto: CreateBranchDto) {
     const branch = await this.branchesService.create(createBranchDto);
-    return createCreatedResponse(branch, 'Branch created successfully');
+    return createCreatedResponse(branch, "Branch created successfully");
   }
 
   @Get()
-  @Version('1')
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.READ)
   async findAll(
-    @Query('status') status?: 'all' | 'active' | 'open',
+    @Query("status") status?: "all" | "active" | "open",
     @Query() pagination?: PaginationDto,
   ) {
     const page = pagination?.page || 1;
     const limit = pagination?.limit || 10;
     const sortBy = pagination?.sortBy;
-    const sortOrder = pagination?.sortOrder || 'DESC';
+    const sortOrder = pagination?.sortOrder || "DESC";
     let result: any;
 
     switch (status) {
-      case 'active':
+      case "active":
         result = await this.branchesService.findActive(
           page,
           limit,
@@ -66,7 +66,7 @@ export class BranchesController {
           sortOrder,
         );
         break;
-      case 'open':
+      case "open":
         result = await this.branchesService.findOpen(
           page,
           limit,
@@ -83,16 +83,16 @@ export class BranchesController {
         );
     }
 
-    return createSuccessResponse(result, 'Branches retrieved successfully');
+    return createSuccessResponse(result, "Branches retrieved successfully");
   }
 
-  @Get('nearby')
-  @Version('1')
+  @Get("nearby")
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.READ)
   async findNearby(
-    @Query('latitude') latitude: number,
-    @Query('longitude') longitude: number,
-    @Query('radius') radius?: number,
+    @Query("latitude") latitude: number,
+    @Query("longitude") longitude: number,
+    @Query("radius") radius?: number,
   ) {
     const branches = await this.branchesService.findNearby(
       latitude,
@@ -102,12 +102,12 @@ export class BranchesController {
 
     return createSuccessResponse(
       branches,
-      'Nearby branches retrieved successfully',
+      "Nearby branches retrieved successfully",
     );
   }
 
-  @Post('check-delivery-zone')
-  @Version('1')
+  @Post("check-delivery-zone")
+  @Version("1")
   @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async checkDeliveryZone(@Body() zoneCheckDto: ZoneCheckDto) {
     const result = await this.zonesService.checkPointInZone(zoneCheckDto);
@@ -118,12 +118,12 @@ export class BranchesController {
         availableBranches: result.matchingBranches,
         recommendedBranch: result.matchingBranches[0]?.branch || null,
       },
-      'Zone check completed',
+      "Zone check completed",
     );
   }
 
-  @Post('find-serving-branch')
-  @Version('1')
+  @Post("find-serving-branch")
+  @Version("1")
   @Permission(PermissionModule.ZONES, PermissionAction.READ)
   async findServingBranch(@Body() zoneCheckDto: ZoneCheckDto) {
     const branch =
@@ -131,58 +131,58 @@ export class BranchesController {
 
     return createSuccessResponse(
       { branch },
-      branch ? 'Serving branch found' : 'No serving branch found',
+      branch ? "Serving branch found" : "No serving branch found",
     );
   }
 
-  @Get(':id')
-  @Version('1')
+  @Get(":id")
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.READ)
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  async findOne(@Param("id", ParseUUIDPipe) id: string) {
     const branch = await this.branchesService.findOne(id);
 
-    return createSuccessResponse(branch, 'Branch retrieved successfully');
+    return createSuccessResponse(branch, "Branch retrieved successfully");
   }
 
-  @Get(':id/stats')
-  @Version('1')
+  @Get(":id/stats")
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.VIEW_STATS)
-  async getBranchStats(@Param('id', ParseUUIDPipe) id: string) {
+  async getBranchStats(@Param("id", ParseUUIDPipe) id: string) {
     const stats = await this.branchesService.getBranchStats(id);
 
     return createSuccessResponse(
       stats,
-      'Branch statistics retrieved successfully',
+      "Branch statistics retrieved successfully",
     );
   }
 
-  @Get(':id/zones')
-  @Version('1')
+  @Get(":id/zones")
+  @Version("1")
   @Permission(PermissionModule.ZONES, PermissionAction.READ)
-  async getBranchZones(@Param('id', ParseUUIDPipe) id: string) {
+  async getBranchZones(@Param("id", ParseUUIDPipe) id: string) {
     const zones = await this.zonesService.findByBranch(id);
 
-    return createSuccessResponse(zones, 'Branch zones retrieved successfully');
+    return createSuccessResponse(zones, "Branch zones retrieved successfully");
   }
 
-  @Put(':id')
-  @Version('1')
+  @Put(":id")
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.UPDATE)
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param("id", ParseUUIDPipe) id: string,
     @Body() updateBranchDto: UpdateBranchDto,
   ) {
     const branch = await this.branchesService.update(id, updateBranchDto);
 
-    return createSuccessResponse(branch, 'Branch updated successfully');
+    return createSuccessResponse(branch, "Branch updated successfully");
   }
 
-  @Patch(':id/toggle-status')
-  @Version('1')
+  @Patch(":id/toggle-status")
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.TOGGLE_STATUS)
   async toggleStatus(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('status') status: 'active' | 'open',
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body("status") status: "active" | "open",
   ) {
     const branch = await this.branchesService.toggleStatus(id, status);
 
@@ -192,12 +192,12 @@ export class BranchesController {
     );
   }
 
-  @Delete(':id')
-  @Version('1')
+  @Delete(":id")
+  @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.DELETE)
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param("id", ParseUUIDPipe) id: string) {
     await this.branchesService.remove(id);
 
-    return createSuccessResponse(null, 'Branch deleted successfully');
+    return createSuccessResponse(null, "Branch deleted successfully");
   }
 }

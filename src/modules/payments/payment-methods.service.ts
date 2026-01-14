@@ -1,9 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { PaymentMethod } from 'src/database/entities/payment-method.entity';
-import { SavePaymentMethodDto } from './dto/save-payment-method.dto';
-import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { PaymentMethod } from "src/database/entities/payment-method.entity";
+import { Repository } from "typeorm";
+import { PaymentMethodResponseDto } from "./dto/payment-method-response.dto";
+import { SavePaymentMethodDto } from "./dto/save-payment-method.dto";
 
 @Injectable()
 export class PaymentMethodsService {
@@ -11,7 +11,7 @@ export class PaymentMethodsService {
 
   constructor(
     @InjectRepository(PaymentMethod)
-    private readonly paymentMethodRepository: Repository<PaymentMethod>,
+    readonly paymentMethodRepository: Repository<PaymentMethod>,
   ) {}
 
   async savePaymentMethod(
@@ -51,7 +51,7 @@ export class PaymentMethodsService {
   ): Promise<PaymentMethodResponseDto[]> {
     const paymentMethods = await this.paymentMethodRepository.find({
       where: { userId, isActive: true },
-      order: { isDefault: 'DESC', createdAt: 'DESC' },
+      order: { isDefault: "DESC", createdAt: "DESC" },
     });
 
     return paymentMethods.map((method) => new PaymentMethodResponseDto(method));
@@ -63,7 +63,7 @@ export class PaymentMethodsService {
     });
 
     if (!paymentMethod) {
-      throw new NotFoundException('Payment method not found');
+      throw new NotFoundException("Payment method not found");
     }
 
     return paymentMethod;

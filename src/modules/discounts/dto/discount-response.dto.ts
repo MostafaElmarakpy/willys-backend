@@ -1,8 +1,8 @@
-import { Discount } from 'src/database/entities/discount.entity';
-import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
-import { DiscountType } from 'src/common/enums/DiscountType';
-import { DiscountStatus } from 'src/common/enums/DiscountStatus';
-import { DiscountTargetType } from 'src/common/enums/DiscountTargetType';
+import { BilingualStringObject } from "src/common/dto/bilingual-string.dto";
+import { DiscountStatus } from "src/common/enums/DiscountStatus";
+import { DiscountTargetType } from "src/common/enums/DiscountTargetType";
+import { DiscountType } from "src/common/enums/DiscountType";
+import { Discount } from "src/database/entities/discount.entity";
 
 export class DiscountResponseDto {
   id: string;

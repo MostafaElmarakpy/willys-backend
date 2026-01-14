@@ -1,27 +1,27 @@
-import { DataSource } from 'typeorm';
-import { Branch } from '../entities/branch.entity';
-import { Zone } from '../entities/zone.entity';
-import { User } from '../entities/user.entity';
-import { UserRole } from 'src/common/enums/UserRole';
+import { UserRole } from "src/common/enums/UserRole";
+import { DataSource } from "typeorm";
+import { Branch } from "../entities/branch.entity";
+import { User } from "../entities/user.entity";
+import { Zone } from "../entities/zone.entity";
 
 export class BranchSeeder {
   constructor(private readonly dataSource: DataSource) {}
 
   async createZonesForExistingBranches(
     branchRepository: any,
-    zoneRepository: any,
+    _zoneRepository: any,
     adminUser: any,
   ): Promise<void> {
     const branches = await branchRepository.find();
 
     const zonesData = [
       {
-        branchName: 'Downtown Cairo Branch',
+        branchName: "Downtown Cairo Branch",
         zones: [
           {
-            name: { en: 'Downtown Zone', ar: 'منطقة وسط البلد' },
+            name: { en: "Downtown Zone", ar: "منطقة وسط البلد" },
             polygon:
-              'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
+              "POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))",
             isActive: true,
             priority: 1,
             deliveryFee: 15.0,
@@ -29,12 +29,12 @@ export class BranchSeeder {
         ],
       },
       {
-        branchName: 'Nasr City Branch',
+        branchName: "Nasr City Branch",
         zones: [
           {
-            name: { en: 'Nasr City Zone', ar: 'منطقة مدينة نصر' },
+            name: { en: "Nasr City Zone", ar: "منطقة مدينة نصر" },
             polygon:
-              'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
+              "POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))",
             isActive: true,
             priority: 1,
             deliveryFee: 20.0,
@@ -42,12 +42,12 @@ export class BranchSeeder {
         ],
       },
       {
-        branchName: 'Zamalek Branch',
+        branchName: "Zamalek Branch",
         zones: [
           {
-            name: { en: 'Zamalek Zone', ar: 'منطقة الزمالك' },
+            name: { en: "Zamalek Zone", ar: "منطقة الزمالك" },
             polygon:
-              'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
+              "POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))",
             isActive: true,
             priority: 1,
             deliveryFee: 18.0,
@@ -67,7 +67,7 @@ export class BranchSeeder {
           [branch.id],
         );
 
-        if (parseInt(existingZones[0].count) === 0) {
+        if (parseInt(existingZones[0].count, 10) === 0) {
           for (const zone of zoneData.zones) {
             // Use raw query to insert geometry properly
             await this.dataSource.query(
@@ -118,25 +118,25 @@ export class BranchSeeder {
     });
 
     if (!adminUser) {
-      throw new Error('Admin user not found. Please run user seeder first.');
+      throw new Error("Admin user not found. Please run user seeder first.");
     }
 
     // Check if branches already exist
     const existingBranches = await branchRepository.count();
     if (existingBranches > 0) {
-      console.log('⚠️  Branches already exist');
+      console.log("⚠️  Branches already exist");
 
       // Check if zones exist, create them if missing
       const existingZones = await zoneRepository.count();
       if (existingZones === 0) {
-        console.log('🗺️  Creating missing zones for existing branches...');
+        console.log("🗺️  Creating missing zones for existing branches...");
         await this.createZonesForExistingBranches(
           branchRepository,
           zoneRepository,
           adminUser,
         );
       } else {
-        console.log('⚠️  Zones already exist');
+        console.log("⚠️  Zones already exist");
       }
       return;
     }
@@ -144,23 +144,23 @@ export class BranchSeeder {
     // Sample branch data for Cairo, Egypt
     const branchesData = [
       {
-        name: { en: 'Downtown Cairo Branch', ar: 'فرع وسط القاهرة' },
-        address: '15 Tahrir Square, Downtown, Cairo, Egypt',
+        name: { en: "Downtown Cairo Branch", ar: "فرع وسط القاهرة" },
+        address: "15 Tahrir Square, Downtown, Cairo, Egypt",
         latitude: 30.0444,
         longitude: 31.2357,
-        phone: '+201234567890',
-        email: 'downtown@willys.com',
+        phone: "+201234567890",
+        email: "downtown@willys.com",
         isActive: true,
         isOpen: true,
-        openingHours: '08:00',
-        closingHours: '23:00',
+        openingHours: "08:00",
+        closingHours: "23:00",
         estimatedDeliveryTime: 30,
         zones: [
           {
-            name: { en: 'Downtown Zone', ar: 'منطقة وسط البلد' },
+            name: { en: "Downtown Zone", ar: "منطقة وسط البلد" },
             // Simple polygon around downtown Cairo
             polygon:
-              'POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))',
+              "POLYGON((31.2300 30.0400, 31.2400 30.0400, 31.2400 30.0500, 31.2300 30.0500, 31.2300 30.0400))",
             isActive: true,
             priority: 1,
             deliveryFee: 15.0,
@@ -168,22 +168,22 @@ export class BranchSeeder {
         ],
       },
       {
-        name: { en: 'Nasr City Branch', ar: 'فرع مدينة نصر' },
-        address: 'Abbas El Akkad Street, Nasr City, Cairo, Egypt',
+        name: { en: "Nasr City Branch", ar: "فرع مدينة نصر" },
+        address: "Abbas El Akkad Street, Nasr City, Cairo, Egypt",
         latitude: 30.0626,
         longitude: 31.3219,
-        phone: '+201234567891',
-        email: 'nasrcity@willys.com',
+        phone: "+201234567891",
+        email: "nasrcity@willys.com",
         isActive: true,
         isOpen: true,
-        openingHours: '09:00',
-        closingHours: '22:00',
+        openingHours: "09:00",
+        closingHours: "22:00",
         estimatedDeliveryTime: 25,
         zones: [
           {
-            name: { en: 'Nasr City Zone', ar: 'منطقة مدينة نصر' },
+            name: { en: "Nasr City Zone", ar: "منطقة مدينة نصر" },
             polygon:
-              'POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))',
+              "POLYGON((31.3150 30.0550, 31.3300 30.0550, 31.3300 30.0700, 31.3150 30.0700, 31.3150 30.0550))",
             isActive: true,
             priority: 1,
             deliveryFee: 20.0,
@@ -191,22 +191,22 @@ export class BranchSeeder {
         ],
       },
       {
-        name: { en: 'Zamalek Branch', ar: 'فرع الزمالك' },
-        address: '26th July Street, Zamalek, Cairo, Egypt',
+        name: { en: "Zamalek Branch", ar: "فرع الزمالك" },
+        address: "26th July Street, Zamalek, Cairo, Egypt",
         latitude: 30.0616,
         longitude: 31.2194,
-        phone: '+201234567892',
-        email: 'zamalek@willys.com',
+        phone: "+201234567892",
+        email: "zamalek@willys.com",
         isActive: true,
         isOpen: true,
-        openingHours: '10:00',
-        closingHours: '24:00',
+        openingHours: "10:00",
+        closingHours: "24:00",
         estimatedDeliveryTime: 20,
         zones: [
           {
-            name: { en: 'Zamalek Zone', ar: 'منطقة الزمالك' },
+            name: { en: "Zamalek Zone", ar: "منطقة الزمالك" },
             polygon:
-              'POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))',
+              "POLYGON((31.2100 30.0550, 31.2250 30.0550, 31.2250 30.0680, 31.2100 30.0680, 31.2100 30.0550))",
             isActive: true,
             priority: 1,
             deliveryFee: 18.0,

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type } from "class-transformer";
 import {
   IsDate,
   IsEmail,
@@ -8,10 +8,10 @@ import {
   IsString,
   MaxLength,
   MinLength,
-} from 'class-validator';
-import { CountryCode } from 'libphonenumber-js/max';
-import { UserGender } from 'src/common/enums/UserGender';
-import { IsPhoneNumberWithCountryCode } from 'src/common/validator/is-phone-number-with-Country-code';
+} from "class-validator";
+import { CountryCode } from "libphonenumber-js/max";
+import { UserGender } from "src/common/enums/UserGender";
+import { IsPhoneNumberWithCountryCode } from "src/common/validator/is-phone-number-with-Country-code";
 
 export class UpdateProfileDto {
   @IsEmail()
@@ -20,8 +20,8 @@ export class UpdateProfileDto {
 
   @IsString()
   @IsOptional()
-  @IsPhoneNumberWithCountryCode('phoneNumberCountryCode', {
-    message: 'Invalid phone number for the provided country code',
+  @IsPhoneNumberWithCountryCode("phoneNumberCountryCode", {
+    message: "Invalid phone number for the provided country code",
   })
   phoneNumber: string;
 
@@ -46,5 +46,5 @@ export class UpdateProfileDto {
 
   @IsString()
   @IsNotEmpty()
-  userLocale: string = 'ar';
+  userLocale: string = "ar";
 }

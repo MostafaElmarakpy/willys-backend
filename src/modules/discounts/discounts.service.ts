@@ -2,31 +2,31 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DiscountStatus } from 'src/common/enums/DiscountStatus';
-import { DiscountTargetType } from 'src/common/enums/DiscountTargetType';
-import { DiscountType } from 'src/common/enums/DiscountType';
-import { DiscountUsageLog } from 'src/database/entities/discount-usage-log.entity';
-import { Discount } from 'src/database/entities/discount.entity';
-import { ItemDiscount } from 'src/database/entities/item-discount.entity';
-import { UserDiscount } from 'src/database/entities/user-discount.entity';
-import { IsNull, Repository } from 'typeorm';
-import { CreateDiscountDto } from './dto/create-discount.dto';
-import { DiscountFilterDto } from './dto/discount-filter.dto';
-import { UpdateDiscountDto } from './dto/update-discount.dto';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { DiscountStatus } from "src/common/enums/DiscountStatus";
+import { DiscountTargetType } from "src/common/enums/DiscountTargetType";
+import { DiscountType } from "src/common/enums/DiscountType";
+import { Discount } from "src/database/entities/discount.entity";
+import { DiscountUsageLog } from "src/database/entities/discount-usage-log.entity";
+import { ItemDiscount } from "src/database/entities/item-discount.entity";
+import { UserDiscount } from "src/database/entities/user-discount.entity";
+import { IsNull, type Repository } from "typeorm";
+import { CreateDiscountDto } from "./dto/create-discount.dto";
+import { DiscountFilterDto } from "./dto/discount-filter.dto";
+import { UpdateDiscountDto } from "./dto/update-discount.dto";
 
 @Injectable()
 export class DiscountsService {
   constructor(
     @InjectRepository(Discount)
-    private readonly discountRepository: Repository<Discount>,
+    readonly discountRepository: Repository<Discount>,
     @InjectRepository(UserDiscount)
-    private readonly userDiscountRepository: Repository<UserDiscount>,
+    readonly userDiscountRepository: Repository<UserDiscount>,
     @InjectRepository(ItemDiscount)
-    private readonly itemDiscountRepository: Repository<ItemDiscount>,
+    readonly itemDiscountRepository: Repository<ItemDiscount>,
     @InjectRepository(DiscountUsageLog)
-    private readonly usageLogRepository: Repository<DiscountUsageLog>,
+    readonly usageLogRepository: Repository<DiscountUsageLog>,
   ) {}
 
   async create(
@@ -69,21 +69,21 @@ export class DiscountsService {
       endDate,
       minValue,
       maxValue,
-      sortBy = 'createdAt',
-      sortOrder = 'DESC',
+      sortBy = "createdAt",
+      sortOrder = "DESC",
     } = filterDto;
 
     const validSortFields = [
-      'createdAt',
-      'updatedAt',
-      'startDate',
-      'value',
-      'status',
+      "createdAt",
+      "updatedAt",
+      "startDate",
+      "value",
+      "status",
     ];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
 
-    let whereConditions: string[] = ['d."deletedAt" IS NULL'];
-    let parameters: any[] = [];
+    const whereConditions: string[] = ['d."deletedAt" IS NULL'];
+    const parameters: any[] = [];
     let paramIndex = 1;
 
     if (search) {
@@ -152,8 +152,8 @@ export class DiscountsService {
 
     const whereClause =
       whereConditions.length > 0
-        ? `WHERE ${whereConditions.join(' AND ')}`
-        : '';
+        ? `WHERE ${whereConditions.join(" AND ")}`
+        : "";
 
     const orderByClause = `ORDER BY d."${sortField}" ${sortOrder}`;
 
@@ -197,21 +197,21 @@ export class DiscountsService {
       SELECT COUNT(DISTINCT d.id) as active_count
       FROM discounts d
       ${whereClause}
-      ${whereConditions.length > 0 ? 'AND' : 'WHERE'} d."isActive" = true
+      ${whereConditions.length > 0 ? "AND" : "WHERE"} d."isActive" = true
     `;
 
     const inactiveCountQuery = `
       SELECT COUNT(DISTINCT d.id) as inactive_count
       FROM discounts d
       ${whereClause}
-      ${whereConditions.length > 0 ? 'AND' : 'WHERE'} d."isActive" = false
+      ${whereConditions.length > 0 ? "AND" : "WHERE"} d."isActive" = false
     `;
 
     const percentageCountQuery = `
       SELECT COUNT(DISTINCT d.id) as percentage_count
       FROM discounts d
       ${whereClause}
-      ${whereConditions.length > 0 ? 'AND' : 'WHERE'} d."type" = 'percentage'
+      ${whereConditions.length > 0 ? "AND" : "WHERE"} d."type" = 'percentage'
     `;
 
     const discountsParameters = [...parameters, limit, (page - 1) * limit];
@@ -231,11 +231,12 @@ export class DiscountsService {
       this.discountRepository.query(percentageCountQuery, countParameters),
     ]);
 
-    const total = parseInt(countResult[0].total);
-    const activeCount = parseInt(activeCountResult[0].active_count);
-    const inactiveCount = parseInt(inactiveCountResult[0].inactive_count);
+    const total = parseInt(countResult[0].total, 10);
+    const activeCount = parseInt(activeCountResult[0].active_count, 10);
+    const inactiveCount = parseInt(inactiveCountResult[0].inactive_count, 10);
     const percentageDiscountsCount = parseInt(
       percentageCountResult[0].percentage_count,
+      10,
     );
 
     return {
@@ -253,11 +254,11 @@ export class DiscountsService {
   async findOne(id: string): Promise<Discount> {
     const discount = await this.discountRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['freeItem', 'createdByUser', 'updatedByUser'],
+      relations: ["freeItem", "createdByUser", "updatedByUser"],
     });
 
     if (!discount) {
-      throw new NotFoundException('Discount not found');
+      throw new NotFoundException("Discount not found");
     }
 
     return discount;
@@ -266,7 +267,7 @@ export class DiscountsService {
   async findByCode(code: string): Promise<Discount | null> {
     return this.discountRepository.findOne({
       where: { code, deletedAt: IsNull() },
-      relations: ['freeItem'],
+      relations: ["freeItem"],
     });
   }
 
@@ -281,7 +282,7 @@ export class DiscountsService {
       updateDiscountDto.targetType &&
       updateDiscountDto.targetType !== discount.targetType
     ) {
-      throw new BadRequestException('Cannot change discount target type');
+      throw new BadRequestException("Cannot change discount target type");
     }
 
     this.validateDiscountDto(updateDiscountDto);
@@ -335,7 +336,7 @@ export class DiscountsService {
 
     if (discount.targetType !== DiscountTargetType.USER) {
       throw new BadRequestException(
-        'This discount can only be assigned to items',
+        "This discount can only be assigned to items",
       );
     }
 
@@ -358,7 +359,7 @@ export class DiscountsService {
 
     if (discount.targetType !== DiscountTargetType.ITEM) {
       throw new BadRequestException(
-        'This discount can only be assigned to users',
+        "This discount can only be assigned to users",
       );
     }
 
@@ -388,7 +389,7 @@ export class DiscountsService {
   async getUserDiscounts(userId: string): Promise<Discount[]> {
     const userDiscounts = await this.userDiscountRepository.find({
       where: { userId },
-      relations: ['discount'],
+      relations: ["discount"],
     });
 
     return userDiscounts
@@ -399,7 +400,7 @@ export class DiscountsService {
   async getItemDiscounts(itemId: string): Promise<Discount[]> {
     const itemDiscounts = await this.itemDiscountRepository.find({
       where: { itemId },
-      relations: ['discount'],
+      relations: ["discount"],
     });
 
     return itemDiscounts
@@ -410,7 +411,7 @@ export class DiscountsService {
   async getAssignedUsers(discountId: string): Promise<any[]> {
     const userDiscounts = await this.userDiscountRepository.find({
       where: { discountId },
-      relations: ['user'],
+      relations: ["user"],
     });
 
     return userDiscounts.map((ud) => ({
@@ -426,7 +427,7 @@ export class DiscountsService {
   async getAssignedItems(discountId: string): Promise<any[]> {
     const itemDiscounts = await this.itemDiscountRepository.find({
       where: { discountId },
-      relations: ['item'],
+      relations: ["item"],
     });
 
     return itemDiscounts.map((id) => ({
@@ -444,14 +445,14 @@ export class DiscountsService {
     const discount = await this.findOne(discountId);
 
     if (!this.isDiscountActive(discount)) {
-      return { canUse: false, reason: 'Discount is not active or has expired' };
+      return { canUse: false, reason: "Discount is not active or has expired" };
     }
 
     if (
       discount.maxUsageTotal &&
       discount.currentUsageCount >= discount.maxUsageTotal
     ) {
-      return { canUse: false, reason: 'Discount usage limit reached' };
+      return { canUse: false, reason: "Discount usage limit reached" };
     }
 
     if (discount.targetType === DiscountTargetType.USER) {
@@ -460,7 +461,7 @@ export class DiscountsService {
       });
 
       if (!userDiscount) {
-        return { canUse: false, reason: 'Discount not assigned to this user' };
+        return { canUse: false, reason: "Discount not assigned to this user" };
       }
 
       if (
@@ -469,7 +470,7 @@ export class DiscountsService {
       ) {
         return {
           canUse: false,
-          reason: 'User has reached their usage limit for this discount',
+          reason: "User has reached their usage limit for this discount",
         };
       }
     }
@@ -480,7 +481,7 @@ export class DiscountsService {
       });
 
       if (!itemDiscount) {
-        return { canUse: false, reason: 'Discount not assigned to this item' };
+        return { canUse: false, reason: "Discount not assigned to this item" };
       }
     }
 
@@ -617,7 +618,7 @@ export class DiscountsService {
     if (dto.type === DiscountType.PERCENTAGE) {
       if (dto.value !== undefined && (dto.value < 0 || dto.value > 100)) {
         throw new BadRequestException(
-          'Percentage discount value must be between 0 and 100',
+          "Percentage discount value must be between 0 and 100",
         );
       }
     }
@@ -625,7 +626,7 @@ export class DiscountsService {
     if (dto.type === DiscountType.FIXED_AMOUNT) {
       if (dto.value !== undefined && dto.value < 0) {
         throw new BadRequestException(
-          'Fixed amount discount value must be positive',
+          "Fixed amount discount value must be positive",
         );
       }
     }
@@ -633,14 +634,14 @@ export class DiscountsService {
     if (dto.type === DiscountType.BUY_X_GET_Y) {
       if (!dto.buyQuantity || !dto.getQuantity) {
         throw new BadRequestException(
-          'Buy X Get Y discount requires buyQuantity and getQuantity',
+          "Buy X Get Y discount requires buyQuantity and getQuantity",
         );
       }
     }
 
     if (dto.type === DiscountType.FREE_ITEM) {
       if (!dto.freeItemId) {
-        throw new BadRequestException('Free item discount requires freeItemId');
+        throw new BadRequestException("Free item discount requires freeItemId");
       }
     }
 
@@ -648,7 +649,7 @@ export class DiscountsService {
       const start = new Date(dto.startDate);
       const end = new Date(dto.endDate);
       if (end <= start) {
-        throw new BadRequestException('End date must be after start date');
+        throw new BadRequestException("End date must be after start date");
       }
     }
   }

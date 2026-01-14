@@ -1,10 +1,10 @@
-import { IsOptional, IsEnum, IsString } from 'class-validator';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { IsEnum, IsOptional, IsString } from "class-validator";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 
 export enum CategoryOrderBy {
-  SORT_ORDER = 'sortOrder',
-  UPDATED_AT = 'updatedAt',
-  ITEMS_COUNT = 'itemsCount',
+  SORT_ORDER = "sortOrder",
+  UPDATED_AT = "updatedAt",
+  ITEMS_COUNT = "itemsCount",
 }
 
 export class CategoryFilterDto extends PaginationDto {
@@ -22,5 +22,5 @@ export class CategoryFilterDto extends PaginationDto {
 
   @IsOptional()
   @IsString()
-  sortOrder?: 'ASC' | 'DESC' = 'ASC';
+  sortOrder?: "ASC" | "DESC" = "ASC";
 }

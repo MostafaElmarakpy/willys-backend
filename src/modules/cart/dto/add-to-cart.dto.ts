@@ -1,22 +1,22 @@
+import { Type } from "class-transformer";
 import {
+  IsArray,
+  IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
-  IsNumber,
   IsUUID,
-  IsArray,
-  ValidateNested,
-  Min,
   Max,
   MaxLength,
-  IsEnum,
+  Min,
   ValidateIf,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+  ValidateNested,
+} from "class-validator";
 import {
   BilingualString,
-  BilingualStringObject,
-} from 'src/common/dto/bilingual-string.dto';
+  type BilingualStringObject,
+} from "src/common/dto/bilingual-string.dto";
 
 export class SelectedVariantDto {
   @IsNotEmpty()
@@ -44,8 +44,8 @@ export class CartItemCustomizationDto {
   name: BilingualStringObject;
 
   @IsNotEmpty()
-  @IsEnum(['ADD', 'REMOVE', 'EXTRA'])
-  action: 'ADD' | 'REMOVE' | 'EXTRA';
+  @IsEnum(["ADD", "REMOVE", "EXTRA"])
+  action: "ADD" | "REMOVE" | "EXTRA";
 
   @IsNotEmpty()
   @IsNumber()
@@ -75,12 +75,12 @@ export class CartItemExtraDto {
 
 export class AddToCartDto {
   @ValidateIf((o) => !o.bundleId)
-  @IsNotEmpty({ message: 'Either itemId or bundleId is required' })
+  @IsNotEmpty({ message: "Either itemId or bundleId is required" })
   @IsUUID()
   itemId?: string;
 
   @ValidateIf((o) => !o.itemId)
-  @IsNotEmpty({ message: 'Either itemId or bundleId is required' })
+  @IsNotEmpty({ message: "Either itemId or bundleId is required" })
   @IsUUID()
   bundleId?: string;
 

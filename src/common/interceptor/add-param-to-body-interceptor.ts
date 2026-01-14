@@ -1,14 +1,14 @@
 import {
+  type CallHandler,
+  type ExecutionContext,
   Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
-import { Observable } from 'rxjs';
+  type NestInterceptor,
+} from "@nestjs/common";
+import { Observable } from "rxjs";
 
 export enum TransformToTypeTypes {
-  int = 'int',
-  string = 'string',
+  int = "int",
+  string = "string",
 }
 
 export interface IAddParamsToBodyArgs {
@@ -26,12 +26,12 @@ export class AddParamToBodyInterceptor implements NestInterceptor {
     let value = req.params[this.args.paramName];
 
     if (this.args.transformTo === TransformToTypeTypes.int)
-      value = parseInt(value);
+      value = parseInt(value, 10);
     if (this.args.transformTo === TransformToTypeTypes.string)
       value = value.toString();
 
     // Ensure req.body is an object
-    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
       req.body = {};
     }
 

@@ -1,13 +1,13 @@
+import { Type } from "class-transformer";
 import {
-  IsOptional,
-  IsEnum,
-  IsString,
-  IsNumber,
   IsArray,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { ItemStatus } from 'src/common/enums/ItemStatus';
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from "class-validator";
+import { PaginationDto } from "src/common/dto/pagination.dto";
+import { ItemStatus } from "src/common/enums/ItemStatus";
 
 export class ItemFilterDto extends PaginationDto {
   @IsOptional()
@@ -33,11 +33,11 @@ export class ItemFilterDto extends PaginationDto {
 
   @IsOptional()
   @IsString()
-  sortBy?: string = 'createdAt';
+  sortBy?: string = "createdAt";
 
   @IsOptional()
   @IsString()
-  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+  sortOrder?: "ASC" | "DESC" = "DESC";
 
   @IsOptional()
   @IsArray()

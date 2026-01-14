@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { OtpService } from './otp.service';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { OtpService } from "./otp.service";
 
 @Module({
   imports: [ConfigModule.forRoot()],

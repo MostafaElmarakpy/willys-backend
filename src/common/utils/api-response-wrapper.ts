@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus } from "@nestjs/common";
 
 // Success Response Interface (matches current controller pattern)
 export interface SuccessResponse<T> {
@@ -32,7 +32,7 @@ export interface PaginatedResponse<T> {
  */
 export function createSuccessResponse<T>(
   data: T,
-  message: string = 'Operation successful',
+  message: string = "Operation successful",
   statusCode: number = HttpStatus.OK,
 ): SuccessResponse<T> {
   return {
@@ -47,7 +47,7 @@ export function createSuccessResponse<T>(
  */
 export function createCreatedResponse<T>(
   data: T,
-  message: string = 'Resource created successfully',
+  message: string = "Resource created successfully",
 ): SuccessResponse<T> {
   return {
     statusCode: HttpStatus.CREATED,
@@ -64,7 +64,7 @@ export function createPaginatedResponse<T>(
   page: number,
   limit: number,
   total: number,
-  message: string = 'Data retrieved successfully',
+  message: string = "Data retrieved successfully",
 ): PaginatedResponse<T> {
   const totalPages = Math.ceil(total / limit);
 
@@ -101,42 +101,42 @@ export function createErrorResponse(
 /**
  * Predefined error responses
  */
-export function throwBadRequest(message: string = 'Bad Request'): never {
-  return createErrorResponse(message, HttpStatus.BAD_REQUEST, 'Bad Request');
+export function throwBadRequest(message: string = "Bad Request"): never {
+  return createErrorResponse(message, HttpStatus.BAD_REQUEST, "Bad Request");
 }
 
-export function throwUnauthorized(message: string = 'Unauthorized'): never {
-  return createErrorResponse(message, HttpStatus.UNAUTHORIZED, 'Unauthorized');
+export function throwUnauthorized(message: string = "Unauthorized"): never {
+  return createErrorResponse(message, HttpStatus.UNAUTHORIZED, "Unauthorized");
 }
 
-export function throwForbidden(message: string = 'Forbidden'): never {
-  return createErrorResponse(message, HttpStatus.FORBIDDEN, 'Forbidden');
+export function throwForbidden(message: string = "Forbidden"): never {
+  return createErrorResponse(message, HttpStatus.FORBIDDEN, "Forbidden");
 }
 
-export function throwNotFound(message: string = 'Resource not found'): never {
-  return createErrorResponse(message, HttpStatus.NOT_FOUND, 'Not Found');
+export function throwNotFound(message: string = "Resource not found"): never {
+  return createErrorResponse(message, HttpStatus.NOT_FOUND, "Not Found");
 }
 
-export function throwConflict(message: string = 'Conflict'): never {
-  return createErrorResponse(message, HttpStatus.CONFLICT, 'Conflict');
+export function throwConflict(message: string = "Conflict"): never {
+  return createErrorResponse(message, HttpStatus.CONFLICT, "Conflict");
 }
 
 export function throwValidationError(
-  message: string | string[] = 'Validation failed',
+  message: string | string[] = "Validation failed",
 ): never {
   return createErrorResponse(
     message,
     HttpStatus.BAD_REQUEST,
-    'Validation Error',
+    "Validation Error",
   );
 }
 
 export function throwInternalError(
-  message: string = 'Internal server error',
+  message: string = "Internal server error",
 ): never {
   return createErrorResponse(
     message,
     HttpStatus.INTERNAL_SERVER_ERROR,
-    'Internal Server Error',
+    "Internal Server Error",
   );
 }

@@ -1,7 +1,9 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddIsDefaultExtraToIngredients20260111121700 implements MigrationInterface {
-  name = 'AddIsDefaultExtraToIngredients20260111121700';
+export class AddIsDefaultExtraToIngredients20260111121700
+  implements MigrationInterface
+{
+  name = "AddIsDefaultExtraToIngredients20260111121700";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add isDefaultExtra column to ingredients table

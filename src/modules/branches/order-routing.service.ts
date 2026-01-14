@@ -1,7 +1,7 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { ZonesService } from './zones.service';
-import { BranchesService } from './branches.service';
-import { Branch } from '../../database/entities/branch.entity';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { Branch } from "../../database/entities/branch.entity";
+import { BranchesService } from "./branches.service";
+import { ZonesService } from "./zones.service";
 
 export interface DeliveryLocation {
   latitude: number;
@@ -39,7 +39,7 @@ export class OrderRoutingService {
           canDeliver: false,
           assignedBranch: null,
           alternativeBranches: [],
-          message: 'Sorry, we do not serve this area yet.',
+          message: "Sorry, we do not serve this area yet.",
         };
       }
 
@@ -53,7 +53,7 @@ export class OrderRoutingService {
           canDeliver: false,
           assignedBranch: null,
           alternativeBranches: [],
-          message: 'All branches serving this area are currently closed.',
+          message: "All branches serving this area are currently closed.",
         };
       }
 
@@ -120,7 +120,7 @@ export class OrderRoutingService {
 
   async getBranchWorkload(branchId: string): Promise<{
     branchId: string;
-    currentLoad: 'low' | 'medium' | 'high';
+    currentLoad: "low" | "medium" | "high";
     estimatedWaitTime: number;
     canAcceptOrders: boolean;
   }> {
@@ -133,7 +133,7 @@ export class OrderRoutingService {
 
     return {
       branchId,
-      currentLoad: 'low',
+      currentLoad: "low",
       estimatedWaitTime: 30,
       canAcceptOrders: true,
     };

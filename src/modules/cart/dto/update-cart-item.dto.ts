@@ -1,19 +1,19 @@
+import { Type } from "class-transformer";
 import {
+  IsArray,
+  IsNumber,
   IsOptional,
   IsString,
-  IsNumber,
-  IsArray,
-  ValidateNested,
-  Min,
   Max,
   MaxLength,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+  Min,
+  ValidateNested,
+} from "class-validator";
 import {
-  SelectedVariantDto,
   CartItemCustomizationDto,
   CartItemExtraDto,
-} from './add-to-cart.dto';
+  SelectedVariantDto,
+} from "./add-to-cart.dto";
 
 export class UpdateCartItemDto {
   @IsOptional()

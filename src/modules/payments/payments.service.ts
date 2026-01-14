@@ -1,33 +1,32 @@
 import {
+  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Payment } from 'src/database/entities/payment.entity';
-import { PaymentTransactionLog } from 'src/database/entities/payment-transaction-log.entity';
-import { PaymentType } from 'src/common/enums/PaymentType';
-import { PaymentStatus } from 'src/common/enums/PaymentStatus';
-import { PaymentEventType } from 'src/common/enums/PaymentEventType';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { CreatePaymentResponseDto } from './dto/create-payment-response.dto';
-import { PaymentResponseDto } from './dto/payment-response.dto';
-import { PaymentFilterDto } from './dto/payment-filter.dto';
-import { PaymobService } from './paymob.service';
-import { PaymentReferenceGenerator } from './utils/payment-reference-generator.util';
-import { PaymobWebhookPayload } from './interfaces/paymob-webhook-payload.interface';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { PaymentEventType } from "src/common/enums/PaymentEventType";
+import { PaymentStatus } from "src/common/enums/PaymentStatus";
+import { PaymentType } from "src/common/enums/PaymentType";
+import { Payment } from "src/database/entities/payment.entity";
+import { PaymentTransactionLog } from "src/database/entities/payment-transaction-log.entity";
+import { Repository } from "typeorm";
+import { CreatePaymentDto } from "./dto/create-payment.dto";
+import { CreatePaymentResponseDto } from "./dto/create-payment-response.dto";
+import { PaymentFilterDto } from "./dto/payment-filter.dto";
+import { PaymentResponseDto } from "./dto/payment-response.dto";
+import { PaymobWebhookPayload } from "./interfaces/paymob-webhook-payload.interface";
+import { PaymobService } from "./paymob.service";
+import { PaymentReferenceGenerator } from "./utils/payment-reference-generator.util";
 
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
 
   constructor(
-    @InjectRepository(Payment)
-    private readonly paymentRepository: Repository<Payment>,
+    @InjectRepository(Payment) readonly paymentRepository: Repository<Payment>,
     @InjectRepository(PaymentTransactionLog)
-    private readonly transactionLogRepository: Repository<PaymentTransactionLog>,
+    readonly transactionLogRepository: Repository<PaymentTransactionLog>,
     private readonly paymobService: PaymobService,
   ) {}
 
@@ -48,7 +47,7 @@ export class PaymentsService {
           `Duplicate payment attempt with merchantOrderId: ${dto.merchantOrderId}`,
         );
         throw new BadRequestException(
-          'Payment with this order ID already exists',
+          "Payment with this order ID already exists",
         );
       }
     }
@@ -58,7 +57,7 @@ export class PaymentsService {
     const payment = this.paymentRepository.create({
       transactionId,
       amount: dto.amount,
-      currency: 'EGP',
+      currency: "EGP",
       paymentType: dto.paymentType,
       status: PaymentStatus.PENDING,
       userId,
@@ -98,16 +97,16 @@ export class PaymentsService {
     });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException("Payment not found");
     }
 
     if (payment.paymentType !== PaymentType.CARD) {
-      throw new BadRequestException('Payment type must be CARD');
+      throw new BadRequestException("Payment type must be CARD");
     }
 
     if (payment.status !== PaymentStatus.PENDING) {
       throw new BadRequestException(
-        'Payment has already been processed or is in invalid state',
+        "Payment has already been processed or is in invalid state",
       );
     }
 
@@ -162,7 +161,7 @@ export class PaymentsService {
         iframeUrl,
       };
     } catch (error) {
-      this.logger.error('Failed to process card payment', error);
+      this.logger.error("Failed to process card payment", error);
 
       payment.status = PaymentStatus.FAILED;
       payment.errorMessage = error.message;
@@ -191,16 +190,16 @@ export class PaymentsService {
     });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException("Payment not found");
     }
 
     if (payment.paymentType !== PaymentType.CASH) {
-      throw new BadRequestException('Payment type must be CASH');
+      throw new BadRequestException("Payment type must be CASH");
     }
 
     if (payment.status !== PaymentStatus.PENDING) {
       throw new BadRequestException(
-        'Payment has already been processed or is in invalid state',
+        "Payment has already been processed or is in invalid state",
       );
     }
 
@@ -269,7 +268,7 @@ export class PaymentsService {
       );
     } else if (webhookData.obj.success === false) {
       payment.status = PaymentStatus.FAILED;
-      payment.errorMessage = webhookData.obj.data?.message || 'Payment failed';
+      payment.errorMessage = webhookData.obj.data?.message || "Payment failed";
       payment.failedAt = new Date();
       payment.paymobResponse = webhookData.obj;
 
@@ -309,53 +308,53 @@ export class PaymentsService {
     } = filterDto;
 
     const queryBuilder = this.paymentRepository
-      .createQueryBuilder('payment')
-      .leftJoinAndSelect('payment.user', 'user');
+      .createQueryBuilder("payment")
+      .leftJoinAndSelect("payment.user", "user");
 
     if (status) {
-      queryBuilder.andWhere('payment.status = :status', { status });
+      queryBuilder.andWhere("payment.status = :status", { status });
     }
 
     if (paymentType) {
-      queryBuilder.andWhere('payment.paymentType = :paymentType', {
+      queryBuilder.andWhere("payment.paymentType = :paymentType", {
         paymentType,
       });
     }
 
     if (userId) {
-      queryBuilder.andWhere('payment.userId = :userId', { userId });
+      queryBuilder.andWhere("payment.userId = :userId", { userId });
     }
 
     if (startDate && endDate) {
       queryBuilder.andWhere(
-        'payment.createdAt BETWEEN :startDate AND :endDate',
+        "payment.createdAt BETWEEN :startDate AND :endDate",
         {
           startDate: new Date(startDate),
           endDate: new Date(endDate),
         },
       );
     } else if (startDate) {
-      queryBuilder.andWhere('payment.createdAt >= :startDate', {
+      queryBuilder.andWhere("payment.createdAt >= :startDate", {
         startDate: new Date(startDate),
       });
     } else if (endDate) {
-      queryBuilder.andWhere('payment.createdAt <= :endDate', {
+      queryBuilder.andWhere("payment.createdAt <= :endDate", {
         endDate: new Date(endDate),
       });
     }
 
     if (minAmount) {
-      queryBuilder.andWhere('payment.amount >= :minAmount', { minAmount });
+      queryBuilder.andWhere("payment.amount >= :minAmount", { minAmount });
     }
 
     if (maxAmount) {
-      queryBuilder.andWhere('payment.amount <= :maxAmount', { maxAmount });
+      queryBuilder.andWhere("payment.amount <= :maxAmount", { maxAmount });
     }
 
     const skip = (page - 1) * limit;
 
     const [payments, total] = await queryBuilder
-      .orderBy('payment.createdAt', 'DESC')
+      .orderBy("payment.createdAt", "DESC")
       .skip(skip)
       .take(limit)
       .getManyAndCount();
@@ -379,11 +378,11 @@ export class PaymentsService {
 
     const payment = await this.paymentRepository.findOne({
       where,
-      relations: ['user', 'transactionLogs', 'refunds'],
+      relations: ["user", "transactionLogs", "refunds"],
     });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException("Payment not found");
     }
 
     return payment;
@@ -395,7 +394,7 @@ export class PaymentsService {
     });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException("Payment not found");
     }
 
     return payment;
@@ -411,7 +410,7 @@ export class PaymentsService {
     });
 
     if (!payment) {
-      throw new NotFoundException('Payment not found');
+      throw new NotFoundException("Payment not found");
     }
 
     const previousStatus = payment.status;
@@ -450,14 +449,14 @@ export class PaymentsService {
       }),
       this.paymentRepository.count({ where: { status: PaymentStatus.FAILED } }),
       this.paymentRepository
-        .createQueryBuilder('payment')
-        .select('SUM(payment.amount)', 'total')
-        .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
+        .createQueryBuilder("payment")
+        .select("SUM(payment.amount)", "total")
+        .where("payment.status = :status", { status: PaymentStatus.SUCCESS })
         .getRawOne()
         .then((result) => Number(result?.total || 0)),
       this.paymentRepository
-        .createQueryBuilder('payment')
-        .select('SUM(payment.refundedAmount)', 'total')
+        .createQueryBuilder("payment")
+        .select("SUM(payment.refundedAmount)", "total")
         .getRawOne()
         .then((result) => Number(result?.total || 0)),
       this.paymentRepository.count({

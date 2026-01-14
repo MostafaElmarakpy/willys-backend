@@ -1,6 +1,6 @@
-import { PermissionModule } from 'src/common/enums/PermissionModule';
-import { PermissionAction } from 'src/common/enums/PermissionAction';
-import { PermissionsMap } from 'src/common/types/permission.types';
+import { PermissionAction } from "src/common/enums/PermissionAction";
+import { PermissionModule } from "src/common/enums/PermissionModule";
+import { PermissionsMap } from "src/common/types/permission.types";
 
 interface PredefinedRole {
   name: string;
@@ -18,9 +18,9 @@ const ALL_CRUD = [
 
 export const PREDEFINED_ROLES: PredefinedRole[] = [
   {
-    name: 'SUPER_ADMIN',
-    displayName: 'Super Admin',
-    description: 'Full system access with all permissions',
+    name: "SUPER_ADMIN",
+    displayName: "Super Admin",
+    description: "Full system access with all permissions",
     permissions: {
       [PermissionModule.USERS]: [...ALL_CRUD],
       [PermissionModule.CATEGORIES]: [...ALL_CRUD],
@@ -70,10 +70,10 @@ export const PREDEFINED_ROLES: PredefinedRole[] = [
     },
   },
   {
-    name: 'MANAGER',
-    displayName: 'Manager',
+    name: "MANAGER",
+    displayName: "Manager",
     description:
-      'Management access - most features except user management and roles',
+      "Management access - most features except user management and roles",
     permissions: {
       [PermissionModule.CATEGORIES]: [...ALL_CRUD],
       [PermissionModule.ITEMS]: [
@@ -118,9 +118,9 @@ export const PREDEFINED_ROLES: PredefinedRole[] = [
     },
   },
   {
-    name: 'STAFF',
-    displayName: 'Staff',
-    description: 'Basic staff access - read-only with limited actions',
+    name: "STAFF",
+    displayName: "Staff",
+    description: "Basic staff access - read-only with limited actions",
     permissions: {
       [PermissionModule.CATEGORIES]: [PermissionAction.READ],
       [PermissionModule.ITEMS]: [PermissionAction.READ],
@@ -137,9 +137,9 @@ export const PREDEFINED_ROLES: PredefinedRole[] = [
     },
   },
   {
-    name: 'CASHIER',
-    displayName: 'Cashier',
-    description: 'Point of sale access - payments and menu viewing',
+    name: "CASHIER",
+    displayName: "Cashier",
+    description: "Point of sale access - payments and menu viewing",
     permissions: {
       [PermissionModule.CATEGORIES]: [PermissionAction.READ],
       [PermissionModule.ITEMS]: [PermissionAction.READ],

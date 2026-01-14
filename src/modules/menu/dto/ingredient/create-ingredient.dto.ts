@@ -1,15 +1,15 @@
+import { Type } from "class-transformer";
 import {
-  IsNotEmpty,
-  IsOptional,
-  IsNumber,
   IsBoolean,
-  IsString,
   IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
   ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { BilingualString } from 'src/common/dto/bilingual-string.dto';
-import { QuantityType } from 'src/common/enums/QuantityType';
+} from "class-validator";
+import { BilingualString } from "src/common/dto/bilingual-string.dto";
+import { QuantityType } from "src/common/enums/QuantityType";
 
 export class CreateIngredientDto {
   @ValidateNested()

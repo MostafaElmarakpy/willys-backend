@@ -1,26 +1,26 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import {
   BadRequestException,
   ConflictException,
   NotFoundException,
-} from '@nestjs/common';
-import { UsersAdminService } from './users-admin.service';
-import { UsersService } from './users.service';
-import { User } from '../../database/entities/user.entity';
-import { UploadMediaService } from '../../services/upload-media/upload-media.service';
-import { UserRole } from '../../common/enums/UserRole';
-import { UserStatus } from '../../common/enums/UserStatus';
-import { UserProvider } from '../../common/enums/UserProvider';
-import { UserGender } from '../../common/enums/UserGender';
+} from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { UserGender } from "../../common/enums/UserGender";
+import { UserProvider } from "../../common/enums/UserProvider";
+import { UserRole } from "../../common/enums/UserRole";
+import { UserStatus } from "../../common/enums/UserStatus";
+import { User } from "../../database/entities/user.entity";
+import { UploadMediaService } from "../../services/upload-media/upload-media.service";
+import { UsersService } from "./users.service";
+import { UsersAdminService } from "./users-admin.service";
 
-jest.mock('bcrypt', () => ({
-  hash: jest.fn().mockResolvedValue('hashed-password'),
+jest.mock("bcrypt", () => ({
+  hash: jest.fn().mockResolvedValue("hashed-password"),
 }));
 
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => '550e8400-e29b-41d4-a716-446655440000'),
+jest.mock("uuid", () => ({
+  v4: jest.fn(() => "550e8400-e29b-41d4-a716-446655440000"),
   validate: jest.fn((id: string) => {
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -28,32 +28,32 @@ jest.mock('uuid', () => ({
   }),
 }));
 
-describe('UsersAdminService', () => {
+describe("UsersAdminService", () => {
   let service: UsersAdminService;
   let usersRepository: jest.Mocked<Repository<User>>;
   let usersService: jest.Mocked<UsersService>;
   let uploadMediaService: jest.Mocked<UploadMediaService>;
 
-  const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
-  const invalidId = 'invalid-id';
+  const mockUserId = "550e8400-e29b-41d4-a716-446655440000";
+  const invalidId = "invalid-id";
 
   const mockUser: Partial<User> = {
     id: mockUserId,
-    email: 'test@example.com',
-    password: 'hashed-password',
-    fullName: 'Test User',
-    phoneNumber: '1234567890',
-    phoneNumberCountryCode: 'EG',
+    email: "test@example.com",
+    password: "hashed-password",
+    fullName: "Test User",
+    phoneNumber: "1234567890",
+    phoneNumberCountryCode: "EG",
     role: UserRole.user,
     status: UserStatus.Online,
     provider: UserProvider.System,
     confirmAccount: false,
-    avatar: 'https://example.com/avatar.jpg',
-    birthday: new Date('1990-01-01'),
+    avatar: "https://example.com/avatar.jpg",
+    birthday: new Date("1990-01-01"),
     joined: new Date(),
     gender: UserGender.Male,
-    userLocale: 'ar',
-    verificationCode: '1234',
+    userLocale: "ar",
+    verificationCode: "1234",
     createdAt: new Date(),
     updatedAt: new Date(),
     lastLogin: new Date(),
@@ -63,7 +63,7 @@ describe('UsersAdminService', () => {
   const mockAdminUser: Partial<User> = {
     ...mockUser,
     role: UserRole.admin,
-    adminRoleId: 'role-123',
+    adminRoleId: "role-123",
   };
 
   beforeEach(async () => {
@@ -107,25 +107,25 @@ describe('UsersAdminService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createUserDto = {
-      fullName: 'New User',
-      email: 'newuser@example.com',
-      password: 'password123',
-      phoneNumber: '9876543210',
-      phoneNumberCountryCode: 'EG' as any,
+      fullName: "New User",
+      email: "newuser@example.com",
+      password: "password123",
+      phoneNumber: "9876543210",
+      phoneNumberCountryCode: "EG" as any,
       role: UserRole.admin,
       gender: UserGender.Male,
       status: UserStatus.Online,
-      userLocale: 'ar',
-      adminRoleId: 'role-123',
+      userLocale: "ar",
+      adminRoleId: "role-123",
     };
 
-    it('should create a new user successfully', async () => {
+    it("should create a new user successfully", async () => {
       usersRepository.findOne.mockResolvedValue(null);
       usersService.findByPhoneNumberAndCountryCode.mockResolvedValue(null);
       uploadMediaService.saveOneFile.mockResolvedValue({
-        url: 'https://example.com/avatar.jpg',
+        url: "https://example.com/avatar.jpg",
       } as any);
       usersRepository.save.mockResolvedValue(mockAdminUser as User);
 
@@ -136,7 +136,7 @@ describe('UsersAdminService', () => {
       expect(usersRepository.save).toHaveBeenCalled();
     });
 
-    it('should throw ConflictException if email already exists', async () => {
+    it("should throw ConflictException if email already exists", async () => {
       usersRepository.findOne.mockResolvedValue(mockUser as User);
 
       await expect(service.create(createUserDto, null)).rejects.toThrow(
@@ -144,7 +144,7 @@ describe('UsersAdminService', () => {
       );
     });
 
-    it('should throw ConflictException if phone number already exists', async () => {
+    it("should throw ConflictException if phone number already exists", async () => {
       usersRepository.findOne.mockResolvedValue(null);
       usersService.findByPhoneNumberAndCountryCode.mockResolvedValue(
         mockUser as User,
@@ -155,13 +155,13 @@ describe('UsersAdminService', () => {
       );
     });
 
-    it('should upload avatar if provided', async () => {
-      const mockFile = { buffer: Buffer.from('test') } as Express.Multer.File;
+    it("should upload avatar if provided", async () => {
+      const mockFile = { buffer: Buffer.from("test") } as Express.Multer.File;
 
       usersRepository.findOne.mockResolvedValue(null);
       usersService.findByPhoneNumberAndCountryCode.mockResolvedValue(null);
       uploadMediaService.saveOneFile.mockResolvedValue({
-        url: 'https://example.com/new-avatar.jpg',
+        url: "https://example.com/new-avatar.jpg",
       } as any);
       usersRepository.save.mockResolvedValue(mockAdminUser as User);
 
@@ -169,12 +169,12 @@ describe('UsersAdminService', () => {
 
       expect(uploadMediaService.saveOneFile).toHaveBeenCalledWith(
         mockFile,
-        'users',
+        "users",
         expect.any(String),
       );
     });
 
-    it('should create user without email', async () => {
+    it("should create user without email", async () => {
       const dtoWithoutEmail = { ...createUserDto, email: undefined };
 
       usersService.findByPhoneNumberAndCountryCode.mockResolvedValue(null);
@@ -190,7 +190,7 @@ describe('UsersAdminService', () => {
       expect(usersRepository.findOne).not.toHaveBeenCalled();
     });
 
-    it('should create user without phone number', async () => {
+    it("should create user without phone number", async () => {
       const dtoWithoutPhone = { ...createUserDto, phoneNumber: undefined };
 
       usersRepository.findOne.mockResolvedValue(null);
@@ -209,27 +209,27 @@ describe('UsersAdminService', () => {
     });
   });
 
-  describe('findByEmail', () => {
-    it('should return user by email', async () => {
+  describe("findByEmail", () => {
+    it("should return user by email", async () => {
       usersRepository.findOne.mockResolvedValue(mockUser as User);
 
-      const result = await service.findByEmail('test@example.com');
+      const result = await service.findByEmail("test@example.com");
 
       expect(result).toBeDefined();
-      expect(result?.email).toBe('test@example.com');
+      expect(result?.email).toBe("test@example.com");
     });
 
-    it('should return null if user not found', async () => {
+    it("should return null if user not found", async () => {
       usersRepository.findOne.mockResolvedValue(null);
 
-      const result = await service.findByEmail('nonexistent@example.com');
+      const result = await service.findByEmail("nonexistent@example.com");
 
       expect(result).toBeNull();
     });
   });
 
-  describe('findOne', () => {
-    it('should return user by valid UUID', async () => {
+  describe("findOne", () => {
+    it("should return user by valid UUID", async () => {
       usersRepository.findOne.mockResolvedValue(mockUser as User);
 
       const result = await service.findOne(mockUserId);
@@ -238,13 +238,13 @@ describe('UsersAdminService', () => {
       expect(result?.id).toBe(mockUserId);
     });
 
-    it('should throw BadRequestException for invalid UUID format', async () => {
+    it("should throw BadRequestException for invalid UUID format", async () => {
       await expect(service.findOne(invalidId)).rejects.toThrow(
         BadRequestException,
       );
     });
 
-    it('should return null if user not found', async () => {
+    it("should return null if user not found", async () => {
       usersRepository.findOne.mockResolvedValue(null);
 
       const result = await service.findOne(mockUserId);
@@ -253,8 +253,8 @@ describe('UsersAdminService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('should return paginated users with USER role', async () => {
+  describe("findAll", () => {
+    it("should return paginated users with USER role", async () => {
       usersRepository.findAndCount.mockResolvedValue([[mockUser as User], 1]);
 
       const result = await service.findAll(1, 10);
@@ -271,7 +271,7 @@ describe('UsersAdminService', () => {
       );
     });
 
-    it('should apply pagination correctly', async () => {
+    it("should apply pagination correctly", async () => {
       usersRepository.findAndCount.mockResolvedValue([[mockUser as User], 25]);
 
       const result = await service.findAll(2, 10);
@@ -285,31 +285,31 @@ describe('UsersAdminService', () => {
       expect(result.totalPages).toBe(3);
     });
 
-    it('should sort by allowed field', async () => {
+    it("should sort by allowed field", async () => {
       usersRepository.findAndCount.mockResolvedValue([[mockUser as User], 1]);
 
-      await service.findAll(1, 10, 'email', 'ASC');
+      await service.findAll(1, 10, "email", "ASC");
 
       expect(usersRepository.findAndCount).toHaveBeenCalledWith(
         expect.objectContaining({
-          order: { email: 'ASC' },
+          order: { email: "ASC" },
         }),
       );
     });
 
-    it('should default to createdAt sort for invalid field', async () => {
+    it("should default to createdAt sort for invalid field", async () => {
       usersRepository.findAndCount.mockResolvedValue([[mockUser as User], 1]);
 
-      await service.findAll(1, 10, 'invalidField', 'DESC');
+      await service.findAll(1, 10, "invalidField", "DESC");
 
       expect(usersRepository.findAndCount).toHaveBeenCalledWith(
         expect.objectContaining({
-          order: { createdAt: 'DESC' },
+          order: { createdAt: "DESC" },
         }),
       );
     });
 
-    it('should select only required fields', async () => {
+    it("should select only required fields", async () => {
       usersRepository.findAndCount.mockResolvedValue([[mockUser as User], 1]);
 
       await service.findAll(1, 10);
@@ -330,8 +330,8 @@ describe('UsersAdminService', () => {
     });
   });
 
-  describe('findAllUsersRole', () => {
-    it('should return paginated users with ADMIN role', async () => {
+  describe("findAllUsersRole", () => {
+    it("should return paginated users with ADMIN role", async () => {
       usersRepository.findAndCount.mockResolvedValue([
         [mockAdminUser as User],
         1,
@@ -348,7 +348,7 @@ describe('UsersAdminService', () => {
       );
     });
 
-    it('should apply pagination correctly', async () => {
+    it("should apply pagination correctly", async () => {
       usersRepository.findAndCount.mockResolvedValue([
         [mockAdminUser as User],
         25,
@@ -365,22 +365,22 @@ describe('UsersAdminService', () => {
       expect(result.totalPages).toBe(3);
     });
 
-    it('should sort by allowed field including role', async () => {
+    it("should sort by allowed field including role", async () => {
       usersRepository.findAndCount.mockResolvedValue([
         [mockAdminUser as User],
         1,
       ]);
 
-      await service.findAllUsersRole(1, 10, 'role', 'ASC');
+      await service.findAllUsersRole(1, 10, "role", "ASC");
 
       expect(usersRepository.findAndCount).toHaveBeenCalledWith(
         expect.objectContaining({
-          order: { role: 'ASC' },
+          order: { role: "ASC" },
         }),
       );
     });
 
-    it('should include role in select fields', async () => {
+    it("should include role in select fields", async () => {
       usersRepository.findAndCount.mockResolvedValue([
         [mockAdminUser as User],
         1,
@@ -398,14 +398,14 @@ describe('UsersAdminService', () => {
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateUserDto = {
       id: mockUserId,
-      fullName: 'Updated Name',
+      fullName: "Updated Name",
       status: UserStatus.Blocked,
     } as any;
 
-    it('should update user successfully', async () => {
+    it("should update user successfully", async () => {
       usersRepository.findOne
         .mockResolvedValueOnce(mockUser as User)
         .mockResolvedValueOnce({ ...mockUser, ...updateUserDto } as User);
@@ -418,19 +418,19 @@ describe('UsersAdminService', () => {
       expect(usersRepository.update).toHaveBeenCalledWith(
         mockUserId,
         expect.objectContaining({
-          fullName: 'Updated Name',
+          fullName: "Updated Name",
           status: UserStatus.Blocked,
         }),
       );
     });
 
-    it('should throw BadRequestException for invalid UUID format', async () => {
+    it("should throw BadRequestException for invalid UUID format", async () => {
       await expect(
         service.update(invalidId, updateUserDto, null),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw NotFoundException if user not found', async () => {
+    it("should throw NotFoundException if user not found", async () => {
       usersRepository.findOne.mockResolvedValue(null);
 
       await expect(
@@ -438,17 +438,17 @@ describe('UsersAdminService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should upload new avatar if provided', async () => {
-      const mockFile = { buffer: Buffer.from('test') } as Express.Multer.File;
+    it("should upload new avatar if provided", async () => {
+      const mockFile = { buffer: Buffer.from("test") } as Express.Multer.File;
 
       usersRepository.findOne
         .mockResolvedValueOnce(mockUser as User)
         .mockResolvedValueOnce({
           ...mockUser,
-          avatar: 'https://example.com/new-avatar.jpg',
+          avatar: "https://example.com/new-avatar.jpg",
         } as User);
       uploadMediaService.saveOneFile.mockResolvedValue({
-        url: 'https://example.com/new-avatar.jpg',
+        url: "https://example.com/new-avatar.jpg",
       } as any);
       usersRepository.update.mockResolvedValue({ affected: 1 } as any);
 
@@ -456,12 +456,12 @@ describe('UsersAdminService', () => {
 
       expect(uploadMediaService.saveOneFile).toHaveBeenCalledWith(
         mockFile,
-        'users',
+        "users",
         mockUserId,
       );
     });
 
-    it('should keep existing avatar if no file provided', async () => {
+    it("should keep existing avatar if no file provided", async () => {
       usersRepository.findOne
         .mockResolvedValueOnce(mockUser as User)
         .mockResolvedValueOnce(mockUser as User);
@@ -478,7 +478,7 @@ describe('UsersAdminService', () => {
       );
     });
 
-    it('should update user role if provided', async () => {
+    it("should update user role if provided", async () => {
       const updateWithRole = { ...updateUserDto, role: UserRole.admin };
 
       usersRepository.findOne
@@ -498,8 +498,8 @@ describe('UsersAdminService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('should soft delete user successfully', async () => {
+  describe("remove", () => {
+    it("should soft delete user successfully", async () => {
       usersRepository.findOne.mockResolvedValue(mockUser as User);
       usersRepository.softDelete.mockResolvedValue({ affected: 1 } as any);
 
@@ -508,13 +508,13 @@ describe('UsersAdminService', () => {
       expect(usersRepository.softDelete).toHaveBeenCalledWith(mockUserId);
     });
 
-    it('should throw BadRequestException for invalid UUID format', async () => {
+    it("should throw BadRequestException for invalid UUID format", async () => {
       await expect(service.remove(invalidId)).rejects.toThrow(
         BadRequestException,
       );
     });
 
-    it('should throw NotFoundException if user not found', async () => {
+    it("should throw NotFoundException if user not found", async () => {
       usersRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(mockUserId)).rejects.toThrow(

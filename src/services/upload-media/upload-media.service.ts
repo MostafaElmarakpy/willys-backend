@@ -2,12 +2,12 @@ import {
   DeleteObjectCommand,
   PutBucketCorsCommand,
   S3Client,
-} from '@aws-sdk/client-s3';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UploadMedia } from './entities/upload-media.entity';
-import { ConfigService } from 'src/config/config.service';
+} from "@aws-sdk/client-s3";
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { ConfigService } from "src/config/config.service";
+import { Repository } from "typeorm";
+import { UploadMedia } from "./entities/upload-media.entity";
 
 @Injectable()
 export class UploadMediaService {
@@ -16,12 +16,12 @@ export class UploadMediaService {
 
   constructor(
     @InjectRepository(UploadMedia)
-    private filesRepository: Repository<UploadMedia>,
+    readonly filesRepository: Repository<UploadMedia>,
     private configService: ConfigService,
   ) {
-    const accessKeyId = configService.get('s3AccessKey') as string;
-    const secretAccessKey = configService.get('s3SecretKey') as string;
-    const region = configService.get('s3Region') as string;
+    const accessKeyId = configService.get("s3AccessKey") as string;
+    const secretAccessKey = configService.get("s3SecretKey") as string;
+    const region = configService.get("s3Region") as string;
 
     this.s3 = new S3Client({
       forcePathStyle: true,
@@ -32,19 +32,22 @@ export class UploadMediaService {
       region,
     });
 
+    // Set up CORS rules (non-blocking - log errors instead of throwing)
     this.s3
       .send(
         new PutBucketCorsCommand({
-          Bucket: this.configService.get('s3BucketName') as string,
+          Bucket: this.configService.get("s3BucketName") as string,
           CORSConfiguration: {
-            CORSRules: [{ AllowedOrigins: ['*'], AllowedMethods: ['GET'] }],
+            CORSRules: [{ AllowedOrigins: ["*"], AllowedMethods: ["GET"] }],
           },
         }),
       )
+      .then(() => {
+        this.logger.log("S3 bucket CORS rules configured successfully");
+      })
       .catch((err) => {
-        throw new BadRequestException(
-          'Failed to ensure S3 bucket CORS rules',
-          err,
+        this.logger.warn(
+          `Failed to ensure S3 bucket CORS rules: ${err.message}`,
         );
       });
   }
@@ -56,7 +59,7 @@ export class UploadMediaService {
     isFileRequired: boolean = true,
   ): Promise<UploadMedia | undefined> {
     if (isFileRequired && !file) {
-      throw new Error('File is required');
+      throw new Error("File is required");
     }
 
     // Save metadata in DB
@@ -119,21 +122,21 @@ export class UploadMediaService {
   private extractS3KeyFromUrl(url: string): string | null {
     try {
       const parsedUrl = new URL(url);
-      const bucketName = this.configService.get('s3BucketName') as string;
+      const bucketName = this.configService.get("s3BucketName") as string;
 
       if (parsedUrl.hostname.startsWith(`${bucketName}.s3`)) {
         return parsedUrl.pathname.substring(1); // Remove leading slash
       }
 
       if (
-        parsedUrl.hostname.includes('s3') &&
-        parsedUrl.hostname.includes('amazonaws.com')
+        parsedUrl.hostname.includes("s3") &&
+        parsedUrl.hostname.includes("amazonaws.com")
       ) {
         const pathParts = parsedUrl.pathname
-          .split('/')
+          .split("/")
           .filter((part) => part.length > 0);
         if (pathParts.length >= 2 && pathParts[0] === bucketName) {
-          return pathParts.slice(1).join('/');
+          return pathParts.slice(1).join("/");
         }
       }
 
@@ -149,7 +152,7 @@ export class UploadMediaService {
     removeFromDb: boolean = true,
   ): Promise<boolean> {
     if (!identifier) {
-      this.logger.warn('No identifier provided for file deletion');
+      this.logger.warn("No identifier provided for file deletion");
       return false;
     }
 
@@ -157,7 +160,7 @@ export class UploadMediaService {
       let s3Key: string | null = null;
       let fileRecord: UploadMedia | null = null;
 
-      if (identifier.startsWith('http')) {
+      if (identifier.startsWith("http")) {
         s3Key = this.extractS3KeyFromUrl(identifier);
         if (!s3Key) {
           this.logger.error(`Could not extract S3 key from URL: ${identifier}`);
@@ -170,7 +173,7 @@ export class UploadMediaService {
           });
         }
       } else {
-        if (identifier.includes('/')) {
+        if (identifier.includes("/")) {
           s3Key = identifier;
 
           if (removeFromDb) {
@@ -201,7 +204,7 @@ export class UploadMediaService {
       // Delete from S3
       await this.s3.send(
         new DeleteObjectCommand({
-          Bucket: this.configService.get('s3BucketName') as string,
+          Bucket: this.configService.get("s3BucketName") as string,
           Key: s3Key,
         }),
       );
@@ -243,7 +246,7 @@ export class UploadMediaService {
     const failed: string[] = [];
 
     results.forEach((result, index) => {
-      if (result.status === 'fulfilled' && result.value) {
+      if (result.status === "fulfilled" && result.value) {
         success.push(identifiers[index]);
       } else {
         failed.push(identifiers[index]);

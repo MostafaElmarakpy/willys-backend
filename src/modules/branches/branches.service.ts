@@ -2,18 +2,17 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Branch } from '../../database/entities/branch.entity';
-import { CreateBranchDto } from './dto/create-branch.dto';
-import { UpdateBranchDto } from './dto/update-branch.dto';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Branch } from "../../database/entities/branch.entity";
+import { CreateBranchDto } from "./dto/create-branch.dto";
+import { UpdateBranchDto } from "./dto/update-branch.dto";
 
 @Injectable()
 export class BranchesService {
   constructor(
-    @InjectRepository(Branch)
-    private branchRepository: Repository<Branch>,
+    @InjectRepository(Branch) readonly branchRepository: Repository<Branch>,
   ) {}
 
   async create(createBranchDto: CreateBranchDto): Promise<Branch> {
@@ -27,7 +26,7 @@ export class BranchesService {
       return await this.branchRepository.save(branch);
     } catch (error) {
       throw new BadRequestException(
-        'Failed to create branch: ' + error.message,
+        `Failed to create branch: ${error.message}`,
       );
     }
   }
@@ -36,7 +35,7 @@ export class BranchesService {
     page: number = 1,
     limit: number = 10,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ): Promise<{
     branches: Branch[];
     total: number;
@@ -46,17 +45,17 @@ export class BranchesService {
   }> {
     const skip = (page - 1) * limit;
     const allowedSortFields = [
-      'name',
-      'createdAt',
-      'updatedAt',
-      'city',
-      'area',
+      "name",
+      "createdAt",
+      "updatedAt",
+      "city",
+      "area",
     ];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "name";
 
     const [branches, total] = await this.branchRepository.findAndCount({
-      relations: ['zones'],
+      relations: ["zones"],
       order: { [orderField]: sortOrder },
       skip,
       take: limit,
@@ -77,7 +76,7 @@ export class BranchesService {
     page: number = 1,
     limit: number = 10,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ): Promise<{
     branches: Branch[];
     total: number;
@@ -87,18 +86,18 @@ export class BranchesService {
   }> {
     const skip = (page - 1) * limit;
     const allowedSortFields = [
-      'name',
-      'createdAt',
-      'updatedAt',
-      'city',
-      'area',
+      "name",
+      "createdAt",
+      "updatedAt",
+      "city",
+      "area",
     ];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "name";
 
     const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true },
-      relations: ['zones'],
+      relations: ["zones"],
       order: { [orderField]: sortOrder },
       skip,
       take: limit,
@@ -119,7 +118,7 @@ export class BranchesService {
     page: number = 1,
     limit: number = 10,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ): Promise<{
     branches: Branch[];
     total: number;
@@ -129,18 +128,18 @@ export class BranchesService {
   }> {
     const skip = (page - 1) * limit;
     const allowedSortFields = [
-      'name',
-      'createdAt',
-      'updatedAt',
-      'city',
-      'area',
+      "name",
+      "createdAt",
+      "updatedAt",
+      "city",
+      "area",
     ];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'name';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "name";
 
     const [branches, total] = await this.branchRepository.findAndCount({
       where: { isActive: true, isOpen: true },
-      relations: ['zones'],
+      relations: ["zones"],
       order: { [orderField]: sortOrder },
       skip,
       take: limit,
@@ -160,7 +159,7 @@ export class BranchesService {
   async findOne(id: string): Promise<Branch> {
     const branch = await this.branchRepository.findOne({
       where: { id },
-      relations: ['zones'],
+      relations: ["zones"],
     });
 
     if (!branch) {
@@ -179,7 +178,7 @@ export class BranchesService {
       return await this.branchRepository.save(branch);
     } catch (error) {
       throw new BadRequestException(
-        'Failed to update branch: ' + error.message,
+        `Failed to update branch: ${error.message}`,
       );
     }
   }
@@ -189,12 +188,12 @@ export class BranchesService {
     await this.branchRepository.remove(branch);
   }
 
-  async toggleStatus(id: string, status: 'active' | 'open'): Promise<Branch> {
+  async toggleStatus(id: string, status: "active" | "open"): Promise<Branch> {
     const branch = await this.findOne(id);
 
-    if (status === 'active') {
+    if (status === "active") {
       branch.isActive = !branch.isActive;
-    } else if (status === 'open') {
+    } else if (status === "open") {
       branch.isOpen = !branch.isOpen;
     }
 

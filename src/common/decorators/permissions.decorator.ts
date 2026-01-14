@@ -1,8 +1,8 @@
-import { SetMetadata } from '@nestjs/common';
-import { PermissionModule } from '../enums/PermissionModule';
-import { PermissionAction } from '../enums/PermissionAction';
+import { SetMetadata } from "@nestjs/common";
+import { PermissionAction } from "../enums/PermissionAction";
+import { PermissionModule } from "../enums/PermissionModule";
 
-export const PERMISSIONS_KEY = 'permissions';
+export const PERMISSIONS_KEY = "permissions";
 
 export interface RequiredPermission {
   module: PermissionModule;
@@ -17,6 +17,6 @@ export const Permission = (
 export const Permissions = (...permissions: RequiredPermission[]) =>
   SetMetadata(PERMISSIONS_KEY, permissions);
 
-export const PERMISSIONS_MODE_KEY = 'permissions_mode';
+export const PERMISSIONS_MODE_KEY = "permissions_mode";
 export const RequireAllPermissions = () =>
-  SetMetadata(PERMISSIONS_MODE_KEY, 'AND');
+  SetMetadata(PERMISSIONS_MODE_KEY, "AND");

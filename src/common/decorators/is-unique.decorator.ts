@@ -1,12 +1,12 @@
-import { registerDecorator, ValidationOptions } from 'class-validator';
-import { IsUniqueConstraint } from '../validator/is-unique.constraint';
+import { registerDecorator, type ValidationOptions } from "class-validator";
+import { IsUniqueConstraint } from "../validator/is-unique.constraint";
 
 export function IsUnique(
   entityClass: any,
   column: string | string[],
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: object, propertyName: string) {
+  return (object: object, propertyName: string) => {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

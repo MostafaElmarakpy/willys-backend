@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { Injectable } from "@nestjs/common";
+import { InjectDataSource } from "@nestjs/typeorm";
 import {
-  ValidationArguments,
+  type ValidationArguments,
   ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
-import { DataSource, Not } from 'typeorm';
+  type ValidatorConstraintInterface,
+} from "class-validator";
+import { DataSource, Not } from "typeorm";
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class IsUniqueConstraint implements ValidatorConstraintInterface {
-  constructor(@InjectDataSource() private dataSource: DataSource) {}
+  constructor(@InjectDataSource() readonly dataSource: DataSource) {}
 
   async validate(value: any, args: ValidationArguments) {
     const [entityClass, column] = args.constraints;

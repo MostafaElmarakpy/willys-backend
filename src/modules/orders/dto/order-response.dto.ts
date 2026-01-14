@@ -1,16 +1,16 @@
+import { BilingualStringObject } from "src/common/dto/bilingual-string.dto";
+import { OrderStatus } from "src/common/enums/OrderStatus";
+import { OrderType } from "src/common/enums/OrderType";
 import {
   Order,
   OrderAppliedDiscount,
-} from 'src/database/entities/order.entity';
-import { OrderItem } from 'src/database/entities/order-item.entity';
-import { OrderStatusLog } from 'src/database/entities/order-status-log.entity';
-import { OrderType } from 'src/common/enums/OrderType';
-import { OrderStatus } from 'src/common/enums/OrderStatus';
-import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
+} from "src/database/entities/order.entity";
+import { OrderItem } from "src/database/entities/order-item.entity";
+import { OrderStatusLog } from "src/database/entities/order-status-log.entity";
 
 export class OrderItemResponseDto {
   id: string;
-  itemType: 'ITEM' | 'BUNDLE';
+  itemType: "ITEM" | "BUNDLE";
   originalItemId: string;
   name: BilingualStringObject;
   description?: BilingualStringObject;
@@ -26,7 +26,7 @@ export class OrderItemResponseDto {
   customizations?: Array<{
     ingredientId: string;
     name: BilingualStringObject;
-    action: 'ADD' | 'REMOVE' | 'EXTRA';
+    action: "ADD" | "REMOVE" | "EXTRA";
     price: number;
   }>;
   extras?: Array<{

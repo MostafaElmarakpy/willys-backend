@@ -1,41 +1,47 @@
-import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
+import {
+  type MigrationInterface,
+  type QueryRunner,
+  TableColumn,
+} from "typeorm";
 
-export class UpdateItemPricingAndFields20260111120600 implements MigrationInterface {
+export class UpdateItemPricingAndFields20260111120600
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add new columns for pricing, tags, extras, and ingredientsWithQuantity
     await queryRunner.addColumn(
-      'items',
+      "items",
       new TableColumn({
-        name: 'pricing',
-        type: 'jsonb',
+        name: "pricing",
+        type: "jsonb",
         isNullable: false,
         default: "'0'::jsonb",
       }),
     );
 
     await queryRunner.addColumn(
-      'items',
+      "items",
       new TableColumn({
-        name: 'tags',
-        type: 'jsonb',
+        name: "tags",
+        type: "jsonb",
         isNullable: true,
       }),
     );
 
     await queryRunner.addColumn(
-      'items',
+      "items",
       new TableColumn({
-        name: 'extras',
-        type: 'jsonb',
+        name: "extras",
+        type: "jsonb",
         isNullable: true,
       }),
     );
 
     await queryRunner.addColumn(
-      'items',
+      "items",
       new TableColumn({
-        name: 'ingredientsWithQuantity',
-        type: 'jsonb',
+        name: "ingredientsWithQuantity",
+        type: "jsonb",
         isNullable: true,
       }),
     );
@@ -48,16 +54,16 @@ export class UpdateItemPricingAndFields20260111120600 implements MigrationInterf
     `);
 
     // Drop the old price column
-    await queryRunner.dropColumn('items', 'price');
+    await queryRunner.dropColumn("items", "price");
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Re-add the price column
     await queryRunner.addColumn(
-      'items',
+      "items",
       new TableColumn({
-        name: 'price',
-        type: 'decimal',
+        name: "price",
+        type: "decimal",
         precision: 10,
         scale: 2,
         isNullable: false,
@@ -75,9 +81,9 @@ export class UpdateItemPricingAndFields20260111120600 implements MigrationInterf
     `);
 
     // Drop the new columns
-    await queryRunner.dropColumn('items', 'pricing');
-    await queryRunner.dropColumn('items', 'tags');
-    await queryRunner.dropColumn('items', 'extras');
-    await queryRunner.dropColumn('items', 'ingredientsWithQuantity');
+    await queryRunner.dropColumn("items", "pricing");
+    await queryRunner.dropColumn("items", "tags");
+    await queryRunner.dropColumn("items", "extras");
+    await queryRunner.dropColumn("items", "ingredientsWithQuantity");
   }
 }

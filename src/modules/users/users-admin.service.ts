@@ -3,24 +3,23 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
-import { UserProvider } from 'src/common/enums/UserProvider';
-import { UserRole } from 'src/common/enums/UserRole';
-import { User } from 'src/database/entities/user.entity';
-import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
-import { Repository } from 'typeorm';
-import { validate as uuidValidate } from 'uuid';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersService } from './users.service';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import * as bcrypt from "bcrypt";
+import { UserProvider } from "src/common/enums/UserProvider";
+import { UserRole } from "src/common/enums/UserRole";
+import { User } from "src/database/entities/user.entity";
+import { UploadMediaService } from "src/services/upload-media/upload-media.service";
+import { Repository } from "typeorm";
+import { validate as uuidValidate } from "uuid";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { UsersService } from "./users.service";
 
 @Injectable()
 export class UsersAdminService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    @InjectRepository(User) readonly usersRepository: Repository<User>,
     private readonly usersService: UsersService,
     private readonly uploadMediaService: UploadMediaService,
   ) {}
@@ -41,7 +40,7 @@ export class UsersAdminService {
     }
 
     if (userByEmail || userByPhoneNumber) {
-      throw new ConflictException('Email or Phone already exists');
+      throw new ConflictException("Email or Phone already exists");
     }
 
     const user = new User();
@@ -56,7 +55,7 @@ export class UsersAdminService {
 
     const uploadedAvatar = await this.uploadMediaService.saveOneFile(
       avatar,
-      'users',
+      "users",
       user.id,
     );
     user.avatar = uploadedAvatar?.url;
@@ -87,7 +86,7 @@ export class UsersAdminService {
 
   async findOne(id: string) {
     if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid ID format find user');
+      throw new BadRequestException("Invalid ID format find user");
     }
 
     return this.usersRepository.findOne({ where: { id } });
@@ -97,7 +96,7 @@ export class UsersAdminService {
     page: number = 1,
     limit: number = 10,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ): Promise<{
     users: User[];
     total: number;
@@ -108,16 +107,16 @@ export class UsersAdminService {
     const skip = (page - 1) * limit;
 
     const allowedSortFields = [
-      'id',
-      'email',
-      'fullName',
-      'phoneNumber',
-      'phoneNumberCountryCode',
-      'createdAt',
-      'updatedAt',
+      "id",
+      "email",
+      "fullName",
+      "phoneNumber",
+      "phoneNumberCountryCode",
+      "createdAt",
+      "updatedAt",
     ];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
 
     const [users, total] = await this.usersRepository.findAndCount({
       where: {
@@ -149,7 +148,7 @@ export class UsersAdminService {
     page: number = 1,
     limit: number = 10,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ): Promise<{
     users: User[];
     total: number;
@@ -160,17 +159,17 @@ export class UsersAdminService {
     const skip = (page - 1) * limit;
 
     const allowedSortFields = [
-      'id',
-      'email',
-      'fullName',
-      'phoneNumber',
-      'phoneNumberCountryCode',
-      'role',
-      'createdAt',
-      'updatedAt',
+      "id",
+      "email",
+      "fullName",
+      "phoneNumber",
+      "phoneNumberCountryCode",
+      "role",
+      "createdAt",
+      "updatedAt",
     ];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
 
     const [users, total] = await this.usersRepository.findAndCount({
       where: {
@@ -202,7 +201,7 @@ export class UsersAdminService {
 
   async update(id: string, updateUserDto: UpdateUserDto, avatar: any) {
     if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid ID format update user');
+      throw new BadRequestException("Invalid ID format update user");
     }
     const user = await this.findOne(id);
 
@@ -210,7 +209,7 @@ export class UsersAdminService {
 
     const uploadedAvatar = await this.uploadMediaService.saveOneFile(
       avatar,
-      'users',
+      "users",
       user.id,
     );
 
@@ -225,7 +224,7 @@ export class UsersAdminService {
   }
   async remove(id: string) {
     if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid ID format delete user');
+      throw new BadRequestException("Invalid ID format delete user");
     }
     const user = await this.findOne(id);
 

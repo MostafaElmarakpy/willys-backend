@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Discount } from 'src/database/entities/discount.entity';
-import { UserDiscount } from 'src/database/entities/user-discount.entity';
-import { ItemDiscount } from 'src/database/entities/item-discount.entity';
-import { DiscountUsageLog } from 'src/database/entities/discount-usage-log.entity';
-import { User } from 'src/database/entities/user.entity';
-import { Item } from 'src/database/entities/item.entity';
-import { ConfigModule } from 'src/config/config.module';
-import { DiscountsService } from './discounts.service';
-import { DiscountsAdminController } from './discounts-admin.controller';
-import { DiscountsController } from './discounts.controller';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { ConfigModule } from "src/config/config.module";
+import { Discount } from "src/database/entities/discount.entity";
+import { DiscountUsageLog } from "src/database/entities/discount-usage-log.entity";
+import { Item } from "src/database/entities/item.entity";
+import { ItemDiscount } from "src/database/entities/item-discount.entity";
+import { User } from "src/database/entities/user.entity";
+import { UserDiscount } from "src/database/entities/user-discount.entity";
+import { DiscountsController } from "./discounts.controller";
+import { DiscountsService } from "./discounts.service";
+import { DiscountsAdminController } from "./discounts-admin.controller";
 
 @Module({
   imports: [

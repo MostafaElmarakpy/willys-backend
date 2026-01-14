@@ -1,8 +1,8 @@
 import {
   registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
+  type ValidationArguments,
+  type ValidationOptions,
+} from "class-validator";
 
 export interface CoordinateValidationOptions extends ValidationOptions {
   /**
@@ -71,19 +71,19 @@ class CoordinateUtils {
   private static readonly PRECISION_MULTIPLIERS = new Map<number, number>();
 
   static getPrecisionMultiplier(precision: number): number {
-    if (!this.PRECISION_MULTIPLIERS.has(precision)) {
-      this.PRECISION_MULTIPLIERS.set(precision, Math.pow(10, precision));
+    if (!CoordinateUtils.PRECISION_MULTIPLIERS.has(precision)) {
+      CoordinateUtils.PRECISION_MULTIPLIERS.set(precision, 10 ** precision);
     }
-    return this.PRECISION_MULTIPLIERS.get(precision)!;
+    return CoordinateUtils.PRECISION_MULTIPLIERS.get(precision)!;
   }
 
   // Fast coordinate validation using bitwise operations where possible
   static isValidLatitude(lat: number): boolean {
-    return lat >= -90 && lat <= 90 && !isNaN(lat);
+    return lat >= -90 && lat <= 90 && !Number.isNaN(lat);
   }
 
   static isValidLongitude(lng: number): boolean {
-    return lng >= -180 && lng <= 180 && !isNaN(lng);
+    return lng >= -180 && lng <= 180 && !Number.isNaN(lng);
   }
 
   // Optimized point equality check
@@ -92,7 +92,7 @@ class CoordinateUtils {
     point2: { lat: number; lng: number },
     precision: number = 6,
   ): boolean {
-    const multiplier = this.getPrecisionMultiplier(precision);
+    const multiplier = CoordinateUtils.getPrecisionMultiplier(precision);
     return (
       Math.round(point1.lat * multiplier) ===
         Math.round(point2.lat * multiplier) &&
@@ -156,7 +156,7 @@ class CoordinateUtils {
       if (!index.has(key)) {
         index.set(key, []);
       }
-      index.get(key)!.push(i);
+      index.get(key)?.push(i);
     });
 
     return { index, gridSize };
@@ -172,16 +172,19 @@ class CoordinateUtils {
 
     // For large polygons, use sampling
     if (sampleSize && len > sampleSize) {
-      return this.hasSelfIntersectionSampled(coordinates, sampleSize);
+      return CoordinateUtils.hasSelfIntersectionSampled(
+        coordinates,
+        sampleSize,
+      );
     }
 
     // Use spatial indexing for medium-large polygons
     if (len > 100) {
-      return this.hasSelfIntersectionIndexed(coordinates);
+      return CoordinateUtils.hasSelfIntersectionIndexed(coordinates);
     }
 
     // Direct comparison for small polygons
-    return this.hasSelfIntersectionDirect(coordinates);
+    return CoordinateUtils.hasSelfIntersectionDirect(coordinates);
   }
 
   private static hasSelfIntersectionDirect(
@@ -195,7 +198,7 @@ class CoordinateUtils {
         if (j === i + 1 || (i === 0 && j === len - 2)) continue;
 
         if (
-          this.doLinesIntersect(
+          CoordinateUtils.doLinesIntersect(
             coordinates[i],
             coordinates[i + 1],
             coordinates[j],
@@ -213,7 +216,7 @@ class CoordinateUtils {
   private static hasSelfIntersectionIndexed(
     coordinates: { lat: number; lng: number }[],
   ): boolean {
-    const { index, gridSize } = this.createSpatialIndex(coordinates);
+    const { index, gridSize } = CoordinateUtils.createSpatialIndex(coordinates);
     const len = coordinates.length;
 
     for (let i = 0; i < len - 1; i++) {
@@ -236,7 +239,12 @@ class CoordinateUtils {
             if (i === 0 && j === len - 2) continue;
 
             if (
-              this.doLinesIntersect(p1, p2, coordinates[j], coordinates[j + 1])
+              CoordinateUtils.doLinesIntersect(
+                p1,
+                p2,
+                coordinates[j],
+                coordinates[j + 1],
+              )
             ) {
               return true;
             }
@@ -260,7 +268,7 @@ class CoordinateUtils {
         if (j === i + step || (i === 0 && j >= len - step)) continue;
 
         if (
-          this.doLinesIntersect(
+          CoordinateUtils.doLinesIntersect(
             coordinates[i],
             coordinates[i + 1],
             coordinates[j],
@@ -292,11 +300,11 @@ class CoordinateUtils {
       const coordinates: { lat: number; lng: number }[] = [];
 
       for (const coord of coordinatesData) {
-        if (coord && typeof coord === 'object') {
+        if (coord && typeof coord === "object") {
           const lat = Number(coord.lat);
           const lng = Number(coord.lng);
 
-          if (!isNaN(lat) && !isNaN(lng)) {
+          if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
             coordinates.push({ lat, lng });
           }
         }
@@ -307,7 +315,7 @@ class CoordinateUtils {
 
     // Handle FormData indexed format: coordinates[0][lat], coordinates[0][lng]
     if (
-      typeof coordinatesData === 'object' &&
+      typeof coordinatesData === "object" &&
       !Array.isArray(coordinatesData)
     ) {
       const coordinates: { lat: number; lng: number }[] = [];
@@ -317,7 +325,7 @@ class CoordinateUtils {
       Object.keys(coordinatesData).forEach((key) => {
         const match = key.match(/^(\d+)$/);
         if (match) {
-          indices.add(parseInt(match[1]));
+          indices.add(parseInt(match[1], 10));
         }
       });
 
@@ -333,7 +341,7 @@ class CoordinateUtils {
           ) {
             const lat = Number(coordData.lat);
             const lng = Number(coordData.lng);
-            if (!isNaN(lat) && !isNaN(lng)) {
+            if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
               coordinates.push({ lat, lng });
             }
           }
@@ -359,7 +367,7 @@ class CoordinateUtils {
         for (let i = 0; i < length; i++) {
           const lat = Number(coordinatesData.lat[i]);
           const lng = Number(coordinatesData.lng[i]);
-          if (!isNaN(lat) && !isNaN(lng)) {
+          if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
             coords.push({ lat, lng });
           }
         }
@@ -375,7 +383,7 @@ class CoordinateUtils {
   static parseIndexedCoordinates(
     coordinatesData: any,
   ): { lat: number; lng: number }[] {
-    return this.parseCoordinates(coordinatesData);
+    return CoordinateUtils.parseCoordinates(coordinatesData);
   }
 }
 
@@ -395,7 +403,7 @@ class TimeoutValidator {
 
   throwIfTimeout(): void {
     if (this.checkTimeout()) {
-      throw new Error('Validation timeout exceeded');
+      throw new Error("Validation timeout exceeded");
     }
   }
 }
@@ -403,9 +411,9 @@ class TimeoutValidator {
 export function IsValidCoordinates(
   validationOptions?: CoordinateValidationOptions,
 ) {
-  return function (object: object, propertyName: string) {
+  return (object: object, propertyName: string) => {
     registerDecorator({
-      name: 'isValidCoordinates',
+      name: "isValidCoordinates",
       target: object.constructor,
       propertyName,
       options: validationOptions,
@@ -531,13 +539,13 @@ export function IsValidCoordinates(
             return true;
           } catch (error) {
             // Timeout or other validation error
-            if (error instanceof Error && error.message.includes('timeout')) {
+            if (error instanceof Error && error.message.includes("timeout")) {
               console.warn(
                 `Coordinate validation timeout for ${args.property}`,
               );
               return false;
             }
-            console.error('Validation error:', error);
+            console.error("Validation error:", error);
             throw error;
           }
         },
@@ -568,19 +576,19 @@ export function IsValidCoordinates(
           messages.push(`${args.property} must be valid coordinates`);
 
           if (options.requireClosure !== false) {
-            messages.push('with closure (first point equals last point)');
+            messages.push("with closure (first point equals last point)");
           }
 
           if (options.validateLatBounds !== false) {
-            messages.push('latitude values between -90 and 90');
+            messages.push("latitude values between -90 and 90");
           }
 
           if (options.validateLngBounds !== false) {
-            messages.push('longitude values between -180 and 180');
+            messages.push("longitude values between -180 and 180");
           }
 
           if (options.checkSelfIntersection) {
-            messages.push('without self-intersections');
+            messages.push("without self-intersections");
           }
 
           if (options.minArea && options.minArea > 0) {
@@ -588,10 +596,10 @@ export function IsValidCoordinates(
           }
 
           if (options.checkDuplicatePoints) {
-            messages.push('without duplicate consecutive points');
+            messages.push("without duplicate consecutive points");
           }
 
-          return messages.join(', ');
+          return messages.join(", ");
         },
       },
     });

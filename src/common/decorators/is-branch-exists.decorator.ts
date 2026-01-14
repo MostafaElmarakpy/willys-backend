@@ -1,21 +1,20 @@
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
 import {
   registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
+  type ValidationArguments,
+  type ValidationOptions,
   ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Branch } from '../../database/entities/branch.entity';
+  type ValidatorConstraintInterface,
+} from "class-validator";
+import { Repository } from "typeorm";
+import { Branch } from "../../database/entities/branch.entity";
 
-@ValidatorConstraint({ name: 'BranchExists', async: true })
+@ValidatorConstraint({ name: "BranchExists", async: true })
 @Injectable()
 export class BranchExistsRule implements ValidatorConstraintInterface {
   constructor(
-    @InjectRepository(Branch)
-    private branchRepository: Repository<Branch>,
+    @InjectRepository(Branch) readonly branchRepository: Repository<Branch>,
   ) {}
 
   async validate(branchId: string) {
@@ -34,14 +33,14 @@ export class BranchExistsRule implements ValidatorConstraintInterface {
   }
 
   defaultMessage(_args: ValidationArguments) {
-    return 'Branch with ID $value does not exist';
+    return "Branch with ID $value does not exist";
   }
 }
 
 export function BranchExists(validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
+  return (object: object, propertyName: string) => {
     registerDecorator({
-      name: 'BranchExists',
+      name: "BranchExists",
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,

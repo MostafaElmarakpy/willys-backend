@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class RemoveVariants20260111120900 implements MigrationInterface {
-  name = 'RemoveVariants20260111120900';
+  name = "RemoveVariants20260111120900";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Drop the item_variants junction table first (foreign key dependencies)

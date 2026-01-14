@@ -1,4 +1,4 @@
-import { PaymentResponseDto } from './payment-response.dto';
+import { PaymentResponseDto } from "./payment-response.dto";
 
 export class CreatePaymentResponseDto {
   payment: PaymentResponseDto;

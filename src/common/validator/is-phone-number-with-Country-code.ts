@@ -1,17 +1,20 @@
 import {
   registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
-} from 'class-validator';
-import { parsePhoneNumberFromString, CountryCode } from 'libphonenumber-js';
+  type ValidationArguments,
+  type ValidationOptions,
+} from "class-validator";
+import {
+  type CountryCode,
+  parsePhoneNumberFromString,
+} from "libphonenumber-js";
 
 export function IsPhoneNumberWithCountryCode(
   property: string,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: object, propertyName: string) {
+  return (object: object, propertyName: string) => {
     registerDecorator({
-      name: 'IsPhoneNumberWithCountryCode',
+      name: "IsPhoneNumberWithCountryCode",
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,

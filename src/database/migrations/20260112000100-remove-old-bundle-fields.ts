@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class RemoveOldBundleFields20260112000100 implements MigrationInterface {
-  name = 'RemoveOldBundleFields20260112000100';
+  name = "RemoveOldBundleFields20260112000100";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Check if items column exists before dropping

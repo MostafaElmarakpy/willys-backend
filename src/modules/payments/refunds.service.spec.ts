@@ -1,36 +1,36 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { RefundsService } from './refunds.service';
-import { PaymobService } from './paymob.service';
-import { Refund } from 'src/database/entities/refund.entity';
-import { Payment } from 'src/database/entities/payment.entity';
-import { RefundType } from 'src/common/enums/RefundType';
-import { RefundStatus } from 'src/common/enums/RefundStatus';
-import { PaymentStatus } from 'src/common/enums/PaymentStatus';
-import { PaymentType } from 'src/common/enums/PaymentType';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { PaymentStatus } from "src/common/enums/PaymentStatus";
+import { PaymentType } from "src/common/enums/PaymentType";
+import { RefundStatus } from "src/common/enums/RefundStatus";
+import { RefundType } from "src/common/enums/RefundType";
+import { Payment } from "src/database/entities/payment.entity";
+import { Refund } from "src/database/entities/refund.entity";
+import { Repository } from "typeorm";
+import { PaymobService } from "./paymob.service";
+import { RefundsService } from "./refunds.service";
 
-describe('RefundsService', () => {
+describe("RefundsService", () => {
   let service: RefundsService;
   let refundRepository: jest.Mocked<Repository<Refund>>;
   let paymentRepository: jest.Mocked<Repository<Payment>>;
   let paymobService: jest.Mocked<PaymobService>;
 
-  const mockUserId = 'user-123';
-  const mockAdminId = 'admin-123';
-  const mockPaymentId = 'payment-123';
-  const mockRefundId = 'refund-123';
+  const mockUserId = "user-123";
+  const mockAdminId = "admin-123";
+  const mockPaymentId = "payment-123";
+  const mockRefundId = "refund-123";
 
   const mockPayment: Partial<Payment> = {
     id: mockPaymentId,
-    transactionId: 'TXN-123456',
+    transactionId: "TXN-123456",
     amount: 100,
-    currency: 'EGP',
+    currency: "EGP",
     paymentType: PaymentType.CARD,
     status: PaymentStatus.SUCCESS,
     userId: mockUserId,
-    paymobTransactionId: 'paymob-txn-123',
+    paymobTransactionId: "paymob-txn-123",
     isRefundable: true,
     refundedAmount: 0,
     createdAt: new Date(),
@@ -39,12 +39,12 @@ describe('RefundsService', () => {
 
   const mockRefund: Partial<Refund> = {
     id: mockRefundId,
-    refundId: 'REF-123456',
+    refundId: "REF-123456",
     paymentId: mockPaymentId,
     amount: 100,
     refundType: RefundType.FULL,
     status: RefundStatus.PENDING,
-    reason: 'Customer request',
+    reason: "Customer request",
     requestedById: mockUserId,
     isAutomatic: false,
     createdAt: new Date(),
@@ -92,9 +92,9 @@ describe('RefundsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('requestRefund', () => {
-    it('should create a full refund request successfully', async () => {
-      const createRefundDto = { reason: 'Customer request' };
+  describe("requestRefund", () => {
+    it("should create a full refund request successfully", async () => {
+      const createRefundDto = { reason: "Customer request" };
 
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
       refundRepository.create.mockReturnValue(mockRefund as Refund);
@@ -113,13 +113,13 @@ describe('RefundsService', () => {
           amount: 100,
           refundType: RefundType.FULL,
           status: RefundStatus.PENDING,
-          reason: 'Customer request',
+          reason: "Customer request",
         }),
       );
     });
 
-    it('should create a partial refund request', async () => {
-      const createRefundDto = { reason: 'Partial refund', amount: 50 };
+    it("should create a partial refund request", async () => {
+      const createRefundDto = { reason: "Partial refund", amount: 50 };
 
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
       refundRepository.create.mockReturnValue({
@@ -148,35 +148,35 @@ describe('RefundsService', () => {
       );
     });
 
-    it('should throw NotFoundException if payment not found', async () => {
+    it("should throw NotFoundException if payment not found", async () => {
       paymentRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.requestRefund(mockPaymentId, { reason: 'Test' }, mockUserId),
+        service.requestRefund(mockPaymentId, { reason: "Test" }, mockUserId),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if payment is not refundable', async () => {
+    it("should throw BadRequestException if payment is not refundable", async () => {
       const nonRefundablePayment = { ...mockPayment, isRefundable: false };
       paymentRepository.findOne.mockResolvedValue(
         nonRefundablePayment as Payment,
       );
 
       await expect(
-        service.requestRefund(mockPaymentId, { reason: 'Test' }, mockUserId),
+        service.requestRefund(mockPaymentId, { reason: "Test" }, mockUserId),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if payment is not successful', async () => {
+    it("should throw BadRequestException if payment is not successful", async () => {
       const pendingPayment = { ...mockPayment, status: PaymentStatus.PENDING };
       paymentRepository.findOne.mockResolvedValue(pendingPayment as Payment);
 
       await expect(
-        service.requestRefund(mockPaymentId, { reason: 'Test' }, mockUserId),
+        service.requestRefund(mockPaymentId, { reason: "Test" }, mockUserId),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if refund amount exceeds remaining', async () => {
+    it("should throw BadRequestException if refund amount exceeds remaining", async () => {
       const partiallyRefundedPayment = { ...mockPayment, refundedAmount: 80 };
       paymentRepository.findOne.mockResolvedValue(
         partiallyRefundedPayment as Payment,
@@ -185,26 +185,26 @@ describe('RefundsService', () => {
       await expect(
         service.requestRefund(
           mockPaymentId,
-          { reason: 'Test', amount: 50 },
+          { reason: "Test", amount: 50 },
           mockUserId,
         ),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if payment is already fully refunded', async () => {
+    it("should throw BadRequestException if payment is already fully refunded", async () => {
       const fullyRefundedPayment = { ...mockPayment, refundedAmount: 100 };
       paymentRepository.findOne.mockResolvedValue(
         fullyRefundedPayment as Payment,
       );
 
       await expect(
-        service.requestRefund(mockPaymentId, { reason: 'Test' }, mockUserId),
+        service.requestRefund(mockPaymentId, { reason: "Test" }, mockUserId),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('approveRefund', () => {
-    it('should approve a pending refund successfully', async () => {
+  describe("approveRefund", () => {
+    it("should approve a pending refund successfully", async () => {
       const pendingRefund = {
         ...mockRefund,
         payment: mockPayment,
@@ -226,11 +226,11 @@ describe('RefundsService', () => {
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
       paymentRepository.update.mockResolvedValue({ affected: 1 } as any);
       paymobService.processRefund.mockResolvedValue({
-        id: 'paymob-refund-123',
+        id: "paymob-refund-123",
       });
 
       const result = await service.approveRefund(mockRefundId, mockAdminId, {
-        adminNotes: 'Approved',
+        adminNotes: "Approved",
       });
 
       expect(result).toBeDefined();
@@ -242,7 +242,7 @@ describe('RefundsService', () => {
       );
     });
 
-    it('should throw NotFoundException if refund not found', async () => {
+    it("should throw NotFoundException if refund not found", async () => {
       refundRepository.findOne.mockResolvedValue(null);
 
       await expect(
@@ -250,7 +250,7 @@ describe('RefundsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if refund is not pending', async () => {
+    it("should throw BadRequestException if refund is not pending", async () => {
       const approvedRefund = { ...mockRefund, status: RefundStatus.APPROVED };
       refundRepository.findOne.mockResolvedValue(approvedRefund as Refund);
 
@@ -260,8 +260,8 @@ describe('RefundsService', () => {
     });
   });
 
-  describe('rejectRefund', () => {
-    it('should reject a pending refund successfully', async () => {
+  describe("rejectRefund", () => {
+    it("should reject a pending refund successfully", async () => {
       refundRepository.findOne.mockResolvedValue(mockRefund as Refund);
       refundRepository.save.mockResolvedValue({
         ...mockRefund,
@@ -269,7 +269,7 @@ describe('RefundsService', () => {
       } as Refund);
 
       const result = await service.rejectRefund(mockRefundId, mockAdminId, {
-        reason: 'Invalid request',
+        reason: "Invalid request",
       });
 
       expect(result).toBeDefined();
@@ -277,31 +277,31 @@ describe('RefundsService', () => {
         expect.objectContaining({
           status: RefundStatus.REJECTED,
           approvedById: mockAdminId,
-          adminNotes: 'Invalid request',
+          adminNotes: "Invalid request",
         }),
       );
     });
 
-    it('should throw NotFoundException if refund not found', async () => {
+    it("should throw NotFoundException if refund not found", async () => {
       refundRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.rejectRefund(mockRefundId, mockAdminId, { reason: 'Test' }),
+        service.rejectRefund(mockRefundId, mockAdminId, { reason: "Test" }),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if refund is not pending', async () => {
+    it("should throw BadRequestException if refund is not pending", async () => {
       const processedRefund = { ...mockRefund, status: RefundStatus.SUCCESS };
       refundRepository.findOne.mockResolvedValue(processedRefund as Refund);
 
       await expect(
-        service.rejectRefund(mockRefundId, mockAdminId, { reason: 'Test' }),
+        service.rejectRefund(mockRefundId, mockAdminId, { reason: "Test" }),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('processAutomaticRefund', () => {
-    it('should create and process an automatic full refund', async () => {
+  describe("processAutomaticRefund", () => {
+    it("should create and process an automatic full refund", async () => {
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
       refundRepository.create.mockReturnValue({
         ...mockRefund,
@@ -320,12 +320,12 @@ describe('RefundsService', () => {
       refundRepository.update.mockResolvedValue({ affected: 1 } as any);
       paymentRepository.update.mockResolvedValue({ affected: 1 } as any);
       paymobService.processRefund.mockResolvedValue({
-        id: 'paymob-refund-123',
+        id: "paymob-refund-123",
       });
 
       const result = await service.processAutomaticRefund(
         mockPaymentId,
-        'Order cancelled',
+        "Order cancelled",
       );
 
       expect(result).toBeDefined();
@@ -337,7 +337,7 @@ describe('RefundsService', () => {
       );
     });
 
-    it('should create and process an automatic partial refund', async () => {
+    it("should create and process an automatic partial refund", async () => {
       paymentRepository.findOne.mockResolvedValue(mockPayment as Payment);
       refundRepository.create.mockReturnValue({
         ...mockRefund,
@@ -361,12 +361,12 @@ describe('RefundsService', () => {
       refundRepository.update.mockResolvedValue({ affected: 1 } as any);
       paymentRepository.update.mockResolvedValue({ affected: 1 } as any);
       paymobService.processRefund.mockResolvedValue({
-        id: 'paymob-refund-123',
+        id: "paymob-refund-123",
       });
 
       const result = await service.processAutomaticRefund(
         mockPaymentId,
-        'Partial refund',
+        "Partial refund",
         50,
       );
 
@@ -379,44 +379,44 @@ describe('RefundsService', () => {
       );
     });
 
-    it('should throw NotFoundException if payment not found', async () => {
+    it("should throw NotFoundException if payment not found", async () => {
       paymentRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.processAutomaticRefund(mockPaymentId, 'Test'),
+        service.processAutomaticRefund(mockPaymentId, "Test"),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException if payment is not card type', async () => {
+    it("should throw BadRequestException if payment is not card type", async () => {
       const cashPayment = { ...mockPayment, paymentType: PaymentType.CASH };
       paymentRepository.findOne.mockResolvedValue(cashPayment as Payment);
 
       await expect(
-        service.processAutomaticRefund(mockPaymentId, 'Test'),
+        service.processAutomaticRefund(mockPaymentId, "Test"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if payment is not successful', async () => {
+    it("should throw BadRequestException if payment is not successful", async () => {
       const pendingPayment = { ...mockPayment, status: PaymentStatus.PENDING };
       paymentRepository.findOne.mockResolvedValue(pendingPayment as Payment);
 
       await expect(
-        service.processAutomaticRefund(mockPaymentId, 'Test'),
+        service.processAutomaticRefund(mockPaymentId, "Test"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw BadRequestException if refund exceeds remaining amount', async () => {
+    it("should throw BadRequestException if refund exceeds remaining amount", async () => {
       const partiallyRefunded = { ...mockPayment, refundedAmount: 80 };
       paymentRepository.findOne.mockResolvedValue(partiallyRefunded as Payment);
 
       await expect(
-        service.processAutomaticRefund(mockPaymentId, 'Test', 50),
+        service.processAutomaticRefund(mockPaymentId, "Test", 50),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('findAll', () => {
-    it('should return all refunds', async () => {
+  describe("findAll", () => {
+    it("should return all refunds", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -433,7 +433,7 @@ describe('RefundsService', () => {
       expect(result).toHaveLength(1);
     });
 
-    it('should filter by status', async () => {
+    it("should filter by status", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -448,12 +448,12 @@ describe('RefundsService', () => {
       await service.findAll({ status: RefundStatus.PENDING });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'refund.status = :status',
+        "refund.status = :status",
         { status: RefundStatus.PENDING },
       );
     });
 
-    it('should filter by paymentId', async () => {
+    it("should filter by paymentId", async () => {
       const mockQueryBuilder = {
         leftJoinAndSelect: jest.fn().mockReturnThis(),
         andWhere: jest.fn().mockReturnThis(),
@@ -468,14 +468,14 @@ describe('RefundsService', () => {
       await service.findAll({ paymentId: mockPaymentId });
 
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'refund.paymentId = :paymentId',
+        "refund.paymentId = :paymentId",
         { paymentId: mockPaymentId },
       );
     });
   });
 
-  describe('findOne', () => {
-    it('should return a refund by id', async () => {
+  describe("findOne", () => {
+    it("should return a refund by id", async () => {
       refundRepository.findOne.mockResolvedValue(mockRefund as Refund);
 
       const result = await service.findOne(mockRefundId);
@@ -484,7 +484,7 @@ describe('RefundsService', () => {
       expect(result.id).toBe(mockRefundId);
     });
 
-    it('should throw NotFoundException if refund not found', async () => {
+    it("should throw NotFoundException if refund not found", async () => {
       refundRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(mockRefundId)).rejects.toThrow(

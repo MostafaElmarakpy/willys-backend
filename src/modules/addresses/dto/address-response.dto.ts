@@ -1,6 +1,6 @@
-import { UserAddress } from 'src/database/entities/user-address.entity';
-import { AddressType } from 'src/common/enums/AddressType';
-import { BilingualStringObject } from 'src/common/dto/bilingual-string.dto';
+import { BilingualStringObject } from "src/common/dto/bilingual-string.dto";
+import { AddressType } from "src/common/enums/AddressType";
+import { UserAddress } from "src/database/entities/user-address.entity";
 
 export class AddressResponseDto {
   id: string;

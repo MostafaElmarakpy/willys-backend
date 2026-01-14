@@ -1,7 +1,9 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddTimestampsToDiscountUsageLogs20260111121500 implements MigrationInterface {
-  name = 'AddTimestampsToDiscountUsageLogs20260111121500';
+export class AddTimestampsToDiscountUsageLogs20260111121500
+  implements MigrationInterface
+{
+  name = "AddTimestampsToDiscountUsageLogs20260111121500";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add createdAt column to discount_usage_logs

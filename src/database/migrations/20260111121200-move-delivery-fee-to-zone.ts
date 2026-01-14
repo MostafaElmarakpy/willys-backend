@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class MoveDeliveryFeeToZone20260111121200 implements MigrationInterface {
-  name = 'MoveDeliveryFeeToZone20260111121200';
+  name = "MoveDeliveryFeeToZone20260111121200";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add deliveryFee column to zones table

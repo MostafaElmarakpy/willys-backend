@@ -1,5 +1,5 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { ValidationError } from 'class-validator';
+import { HttpException, HttpStatus } from "@nestjs/common";
+import { ValidationError } from "class-validator";
 
 export interface ValidationErrorDetail {
   field: string;
@@ -19,18 +19,19 @@ export class ValidationErrorFactory {
   static createValidationException(
     validationErrors: ValidationError[],
   ): HttpException {
-    const detailedErrors = this.formatValidationErrors(validationErrors);
+    const detailedErrors =
+      ValidationErrorFactory.formatValidationErrors(validationErrors);
 
     // Use the first error as the main message, or fallback to generic message
     const mainMessage =
       detailedErrors.length > 0
-        ? detailedErrors[0].field + ' ' + detailedErrors[0].error
-        : 'Validation failed';
+        ? `${detailedErrors[0].field} ${detailedErrors[0].error}`
+        : "Validation failed";
 
     const errorResponse: ValidationErrorResponse = {
       statusCode: HttpStatus.BAD_REQUEST,
       message: mainMessage,
-      error: 'Validation Error',
+      error: "Validation Error",
       errors: detailedErrors,
     };
 
@@ -39,7 +40,7 @@ export class ValidationErrorFactory {
 
   private static formatValidationErrors(
     errors: ValidationError[],
-    parentField = '',
+    parentField = "",
   ): ValidationErrorDetail[] {
     const fieldErrors: ValidationErrorDetail[] = [];
 
@@ -64,7 +65,7 @@ export class ValidationErrorFactory {
 
       // Recursively process nested errors
       if (error.children && error.children.length > 0) {
-        const nestedErrors = this.formatValidationErrors(
+        const nestedErrors = ValidationErrorFactory.formatValidationErrors(
           error.children,
           fieldName,
         );

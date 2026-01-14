@@ -1,24 +1,23 @@
 import {
-  CallHandler,
-  ExecutionContext,
+  type CallHandler,
+  type ExecutionContext,
   Inject,
   mixin,
-  NestInterceptor,
-  Type,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { S3StorageService } from './multer-config.service';
+  type NestInterceptor,
+  type Type,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { S3StorageService } from "./multer-config.service";
 
 export function EntityFileInterceptor(
   entityType: string,
-  fieldName: string = 'uploadFile',
+  fieldName: string = "uploadFile",
 ): Type<NestInterceptor> {
   class MixinInterceptor implements NestInterceptor {
     protected filesInterceptor;
 
     constructor(
-      @Inject(S3StorageService)
-      private readonly s3StorageService: S3StorageService,
+      @Inject(S3StorageService) readonly s3StorageService: S3StorageService,
     ) {
       this.filesInterceptor = new (FileInterceptor(
         fieldName,
@@ -33,11 +32,7 @@ export function EntityFileInterceptor(
       // Then validate file size
       const request = context.switchToHttp().getRequest();
       if (request.file) {
-        try {
-          this.s3StorageService.validateFileSize(request.file);
-        } catch (error) {
-          throw error;
-        }
+        this.s3StorageService.validateFileSize(request.file);
       }
 
       return result;

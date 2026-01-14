@@ -1,13 +1,13 @@
 import {
-  CallHandler,
-  ExecutionContext,
+  type CallHandler,
+  type ExecutionContext,
   Inject,
   mixin,
-  NestInterceptor,
-  Type,
-} from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { S3StorageService } from './multer-config.service';
+  type NestInterceptor,
+  type Type,
+} from "@nestjs/common";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { S3StorageService } from "./multer-config.service";
 
 export function EntityFilesInterceptor(
   entityType: string,
@@ -17,8 +17,7 @@ export function EntityFilesInterceptor(
     protected fileFieldsInterceptor;
 
     constructor(
-      @Inject(S3StorageService)
-      private readonly s3StorageService: S3StorageService,
+      @Inject(S3StorageService) readonly s3StorageService: S3StorageService,
     ) {
       this.fileFieldsInterceptor = new (FileFieldsInterceptor(
         uploadFields,
@@ -33,19 +32,15 @@ export function EntityFilesInterceptor(
       // Then validate file sizes
       const request = context.switchToHttp().getRequest();
       if (request.files) {
-        try {
-          Object.values(request.files).forEach((fileArray: any[]) => {
-            if (Array.isArray(fileArray)) {
-              fileArray.forEach((file) => {
-                this.s3StorageService.validateFileSize(file);
-              });
-            } else if (fileArray) {
-              this.s3StorageService.validateFileSize(fileArray);
-            }
-          });
-        } catch (error) {
-          throw error;
-        }
+        Object.values(request.files).forEach((fileArray: any[]) => {
+          if (Array.isArray(fileArray)) {
+            fileArray.forEach((file) => {
+              this.s3StorageService.validateFileSize(file);
+            });
+          } else if (fileArray) {
+            this.s3StorageService.validateFileSize(fileArray);
+          }
+        });
       }
 
       return result;

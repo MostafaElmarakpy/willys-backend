@@ -3,27 +3,26 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
-import { ProfileDto } from 'src/authentication/dto/profile.dto';
-import { RegisterDto } from 'src/authentication/dto/register.dto';
-import { UpdateProfileDto } from 'src/authentication/dto/updateProfile.dto';
-import { UserProvider } from 'src/common/enums/UserProvider';
-import { UserRole } from 'src/common/enums/UserRole';
-import { UserStatus } from 'src/common/enums/UserStatus';
-import { User } from 'src/database/entities/user.entity';
-import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
-import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { MailService } from 'src/common/mail/mail.service';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { InjectRepository } from "@nestjs/typeorm";
+import * as bcrypt from "bcrypt";
+import { ProfileDto } from "src/authentication/dto/profile.dto";
+import { RegisterDto } from "src/authentication/dto/register.dto";
+import { UpdateProfileDto } from "src/authentication/dto/updateProfile.dto";
+import { UserProvider } from "src/common/enums/UserProvider";
+import { UserRole } from "src/common/enums/UserRole";
+import { UserStatus } from "src/common/enums/UserStatus";
+import { MailService } from "src/common/mail/mail.service";
+import { User } from "src/database/entities/user.entity";
+import { UploadMediaService } from "src/services/upload-media/upload-media.service";
+import { Repository } from "typeorm";
+import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    @InjectRepository(User) readonly usersRepository: Repository<User>,
     private readonly uploadMediaService: UploadMediaService,
     private jwtService: JwtService,
     private mailService: MailService,
@@ -36,10 +35,10 @@ export class UsersService {
   ): Promise<ProfileDto> {
     let existingUser: User | null = null;
 
-    if (registerMethod === 'email') {
+    if (registerMethod === "email") {
       existingUser = await this.findByEmail(registerDto.email as string);
     }
-    if (registerMethod === 'phoneNumber') {
+    if (registerMethod === "phoneNumber") {
       existingUser = await this.findByPhoneNumberAndCountryCode(
         registerDto.phoneNumber as string,
         registerDto.phoneNumberCountryCode as string,
@@ -47,7 +46,7 @@ export class UsersService {
     }
 
     if (existingUser) {
-      throw new ConflictException('Email or Phone already exists');
+      throw new ConflictException("Email or Phone already exists");
     }
 
     const user = new User();
@@ -61,7 +60,7 @@ export class UsersService {
 
     const uploadedAvatar = await this.uploadMediaService.saveOneFile(
       avatar,
-      'users',
+      "users",
       user.id,
     );
     user.avatar = uploadedAvatar?.url;
@@ -81,17 +80,25 @@ export class UsersService {
 
     const verificationToken = this.jwtService.sign(
       { userId: user.id },
-      { expiresIn: '1d' },
+      { expiresIn: "1d" },
     );
 
     if (user?.email) {
       const verificationEmailURL = `${registerDto.callbackUrl}?verify-email&token=${verificationToken}`;
 
-      await this.mailService.sendMail({
-        to: user.email as string,
-        subject: 'Request Verification Your Email',
-        html: `Here is the link to verify your email. The link is valid for 20 minutes: <a href="${verificationEmailURL}">${verificationEmailURL}</a>`,
-      });
+      // Send email asynchronously without blocking registration
+      this.mailService
+        .sendMail({
+          to: user.email as string,
+          subject: "Request Verification Your Email",
+          html: `Here is the link to verify your email. The link is valid for 20 minutes: <a href="${verificationEmailURL}">${verificationEmailURL}</a>`,
+        })
+        .catch((error) => {
+          console.warn(
+            `Failed to send verification email to ${user.email}:`,
+            error.message,
+          );
+        });
     }
 
     return new ProfileDto(newUser);
@@ -101,7 +108,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { email } });
 
     if (!user || user.password !== password) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     return user;
@@ -176,7 +183,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { email } });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     user.password = newPassword;
@@ -187,7 +194,7 @@ export class UsersService {
   async verifyUserEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
     user.confirmAccount = true;
     return await this.usersRepository.save(user);
@@ -195,7 +202,7 @@ export class UsersService {
 
   async profile(userId: string) {
     const user = await this.findOne(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException("User not found");
     return new ProfileDto(user);
   }
 
@@ -206,10 +213,10 @@ export class UsersService {
   ) {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
 
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException("User not found");
 
     const uploadedAvatar = file
-      ? await this.uploadMediaService.saveOneFile(file, 'users', user.id)
+      ? await this.uploadMediaService.saveOneFile(file, "users", user.id)
       : null;
 
     await this.usersRepository.update(userId, {

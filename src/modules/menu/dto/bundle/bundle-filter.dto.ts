@@ -1,7 +1,7 @@
-import { IsOptional, IsEnum, IsString, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { BundleStatus } from 'src/common/enums/BundleStatus';
+import { Type } from "class-transformer";
+import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
+import { PaginationDto } from "src/common/dto/pagination.dto";
+import { BundleStatus } from "src/common/enums/BundleStatus";
 
 export class BundleFilterDto extends PaginationDto {
   @IsOptional()
@@ -27,11 +27,11 @@ export class BundleFilterDto extends PaginationDto {
 
   @IsOptional()
   @IsString()
-  sortBy?: string = 'createdAt';
+  sortBy?: string = "createdAt";
 
   @IsOptional()
   @IsString()
-  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+  sortOrder?: "ASC" | "DESC" = "DESC";
 
   @IsOptional()
   @Type(() => Date)

@@ -1,12 +1,12 @@
+import { extname } from "node:path";
 import {
   ChecksumMode,
   PutBucketCorsCommand,
   S3Client,
-} from '@aws-sdk/client-s3';
-import { BadRequestException, Injectable } from '@nestjs/common';
-import * as multerS3 from 'multer-s3';
-import { extname } from 'path';
-import { ConfigService } from 'src/config/config.service';
+} from "@aws-sdk/client-s3";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import * as multerS3 from "multer-s3";
+import { ConfigService } from "src/config/config.service";
 
 @Injectable()
 export class S3StorageService {
@@ -14,13 +14,13 @@ export class S3StorageService {
   private readonly bucketName: string;
 
   constructor(private configService: ConfigService) {
-    const accessKeyId = this.configService.get('s3AccessKey') as string;
-    const secretAccessKey = this.configService.get('s3SecretKey') as string;
-    const region = this.configService.get('s3Region') as string;
-    this.bucketName = this.configService.get('s3BucketName') as string;
+    const accessKeyId = this.configService.get("s3AccessKey") as string;
+    const secretAccessKey = this.configService.get("s3SecretKey") as string;
+    const region = this.configService.get("s3Region") as string;
+    this.bucketName = this.configService.get("s3BucketName") as string;
 
     if (!accessKeyId || !secretAccessKey || !region || !this.bucketName) {
-      throw new Error('S3StorageService: Missing required S3 configuration');
+      throw new Error("S3StorageService: Missing required S3 configuration");
     }
 
     this.s3 = new S3Client({
@@ -29,20 +29,21 @@ export class S3StorageService {
       region,
     });
 
+    // Set up CORS rules (non-blocking - log errors instead of throwing)
     this.s3
       .send(
         new PutBucketCorsCommand({
           Bucket: this.bucketName,
           CORSConfiguration: {
-            CORSRules: [{ AllowedOrigins: ['*'], AllowedMethods: ['GET'] }],
+            CORSRules: [{ AllowedOrigins: ["*"], AllowedMethods: ["GET"] }],
           },
         }),
       )
+      .then(() => {
+        console.log("S3 bucket CORS rules configured successfully");
+      })
       .catch((err) => {
-        throw new BadRequestException(
-          'Failed to ensure S3 bucket CORS rules',
-          err,
-        );
+        console.warn(`Failed to ensure S3 bucket CORS rules: ${err.message}`);
       });
   }
 
@@ -51,25 +52,25 @@ export class S3StorageService {
       storage: multerS3({
         s3: this.s3,
         bucket: this.bucketName,
-        acl: 'public-read',
-        key: (req, file, cb) => {
+        acl: "public-read",
+        key: (_req, file, cb) => {
           const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
           const fileName = `${entityType}/${uniqueSuffix}${extname(file.originalname)}`;
           cb(null, fileName);
         },
         ChecksumMode: ChecksumMode.ENABLED,
       }),
-      fileFilter: (req: any, file: any, cb: any) => {
+      fileFilter: (_req: any, file: any, cb: any) => {
         const fieldName = file.fieldname;
 
         try {
           const isImage =
             file.mimetype.match(/\/(jpg|jpeg|png|webp)$/) ||
-            file.mimetype === 'image/svg+xml';
+            file.mimetype === "image/svg+xml";
           const isVideo = file.mimetype.match(
             /^video\/(mp4|webm|ogg|avi|mov|wmv|flv|mkv)$/,
           );
-          const isPdf = file.mimetype === 'application/pdf';
+          const isPdf = file.mimetype === "application/pdf";
 
           if (!isImage && !isVideo && !isPdf) {
             cb(
@@ -112,24 +113,24 @@ export class S3StorageService {
 
     const isImage =
       file.mimetype.match(/\/(jpg|jpeg|png|webp)$/) ||
-      file.mimetype === 'image/svg+xml';
+      file.mimetype === "image/svg+xml";
     const isVideo = file.mimetype.match(
       /^video\/(mp4|webm|ogg|avi|mov|wmv|flv|mkv)$/,
     );
-    const isPdf = file.mimetype === 'application/pdf';
+    const isPdf = file.mimetype === "application/pdf";
 
     let maxSize: number;
     let fileType: string;
 
     if (isImage) {
       maxSize = maxSizes.image;
-      fileType = 'image';
+      fileType = "image";
     } else if (isVideo) {
       maxSize = maxSizes.video;
-      fileType = 'video';
+      fileType = "video";
     } else if (isPdf) {
       maxSize = maxSizes.pdf;
-      fileType = 'pdf';
+      fileType = "pdf";
     } else {
       throw new BadRequestException(
         `File '${file.originalname}' has an unsupported file type: ${file.mimetype}`,

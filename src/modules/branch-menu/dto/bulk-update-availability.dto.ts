@@ -1,3 +1,5 @@
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
@@ -6,28 +8,26 @@ import {
   IsUUID,
   MaxLength,
   ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+} from "class-validator";
 
 export class CategoryAvailabilityUpdate {
   @ApiProperty({
-    description: 'Category ID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: "Category ID",
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
   @IsUUID()
   categoryId: string;
 
   @ApiProperty({
-    description: 'Whether the category should be available',
+    description: "Whether the category should be available",
     example: false,
   })
   @IsBoolean()
   isAvailable: boolean;
 
   @ApiPropertyOptional({
-    description: 'Reason for the change',
-    example: 'Seasonal category not available',
+    description: "Reason for the change",
+    example: "Seasonal category not available",
   })
   @IsOptional()
   @IsString()
@@ -37,22 +37,22 @@ export class CategoryAvailabilityUpdate {
 
 export class ItemAvailabilityUpdate {
   @ApiProperty({
-    description: 'Item ID',
-    example: '123e4567-e89b-12d3-a456-426614174001',
+    description: "Item ID",
+    example: "123e4567-e89b-12d3-a456-426614174001",
   })
   @IsUUID()
   itemId: string;
 
   @ApiProperty({
-    description: 'Whether the item should be available',
+    description: "Whether the item should be available",
     example: false,
   })
   @IsBoolean()
   isAvailable: boolean;
 
   @ApiPropertyOptional({
-    description: 'Reason for the change',
-    example: 'Out of stock',
+    description: "Reason for the change",
+    example: "Out of stock",
   })
   @IsOptional()
   @IsString()
@@ -62,22 +62,22 @@ export class ItemAvailabilityUpdate {
 
 export class BundleAvailabilityUpdate {
   @ApiProperty({
-    description: 'Bundle ID',
-    example: '123e4567-e89b-12d3-a456-426614174002',
+    description: "Bundle ID",
+    example: "123e4567-e89b-12d3-a456-426614174002",
   })
   @IsUUID()
   bundleId: string;
 
   @ApiProperty({
-    description: 'Whether the bundle should be available',
+    description: "Whether the bundle should be available",
     example: false,
   })
   @IsBoolean()
   isAvailable: boolean;
 
   @ApiPropertyOptional({
-    description: 'Reason for the change',
-    example: 'Promotion ended',
+    description: "Reason for the change",
+    example: "Promotion ended",
   })
   @IsOptional()
   @IsString()
@@ -87,7 +87,7 @@ export class BundleAvailabilityUpdate {
 
 export class BulkUpdateAvailabilityDto {
   @ApiPropertyOptional({
-    description: 'Categories to update',
+    description: "Categories to update",
     type: [CategoryAvailabilityUpdate],
   })
   @IsOptional()
@@ -97,7 +97,7 @@ export class BulkUpdateAvailabilityDto {
   categories?: CategoryAvailabilityUpdate[];
 
   @ApiPropertyOptional({
-    description: 'Items to update',
+    description: "Items to update",
     type: [ItemAvailabilityUpdate],
   })
   @IsOptional()
@@ -107,7 +107,7 @@ export class BulkUpdateAvailabilityDto {
   items?: ItemAvailabilityUpdate[];
 
   @ApiPropertyOptional({
-    description: 'Bundles to update',
+    description: "Bundles to update",
     type: [BundleAvailabilityUpdate],
   })
   @IsOptional()

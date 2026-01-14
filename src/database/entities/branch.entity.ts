@@ -1,67 +1,71 @@
 import {
-  Entity,
   Column,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
+  Entity,
   Index,
-} from 'typeorm';
-import { Zone } from './zone.entity';
-import { User } from './user.entity';
-import { BaseEntity } from './base.entity';
-import { BilingualStringObject } from '../../common/dto/bilingual-string.dto';
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm";
+import { BilingualStringObject } from "../../common/dto/bilingual-string.dto";
+import { BaseEntity } from "./base.entity";
+import { User } from "./user.entity";
+import { Zone } from "./zone.entity";
 
-@Entity('branches')
+@Entity("branches")
 export class Branch extends BaseEntity {
-  @Column({ type: 'jsonb' })
+  @Column({ type: "jsonb" })
   name: BilingualStringObject;
 
-  @Column({ type: 'text' })
+  @Column({ type: "text" })
   address: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 8 })
+  @Column({ type: "decimal", precision: 10, scale: 8 })
   @Index()
   latitude: number;
 
-  @Column({ type: 'decimal', precision: 11, scale: 8 })
+  @Column({ type: "decimal", precision: 11, scale: 8 })
   @Index()
   longitude: number;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({ type: "varchar", length: 20, nullable: true })
   phone: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: "varchar", length: 255, nullable: true })
   email: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: "boolean", default: true })
   isActive: boolean;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: "boolean", default: true })
   isOpen: boolean;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: "varchar", length: 100, nullable: true })
   openingHours: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: "varchar", length: 100, nullable: true })
   closingHours: string;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: "int", nullable: true })
   estimatedDeliveryTime: number; // in minutes
 
-  @OneToMany(() => Zone, (zone) => zone.branch, { cascade: true })
+  @OneToMany(
+    () => Zone,
+    (zone) => zone.branch,
+    { cascade: true },
+  )
   zones: Zone[];
 
   @Column({ nullable: true })
   createdById?: string;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'createdById' })
+  @JoinColumn({ name: "createdById" })
   createdBy?: User;
 
   @Column({ nullable: true })
   updatedById?: string;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'updatedById' })
+  @JoinColumn({ name: "updatedById" })
   updatedBy?: User;
 }

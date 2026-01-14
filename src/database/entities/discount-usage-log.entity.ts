@@ -1,15 +1,19 @@
-import { Column, Entity, ManyToOne, JoinColumn, Index } from 'typeorm';
-import { Discount } from './discount.entity';
-import { User } from './user.entity';
-import { Item } from './item.entity';
-import { BaseEntity } from './base.entity';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import { BaseEntity } from "./base.entity";
+import { Discount } from "./discount.entity";
+import { Item } from "./item.entity";
+import { User } from "./user.entity";
 
-@Entity('discount_usage_logs')
+@Entity("discount_usage_logs")
 export class DiscountUsageLog extends BaseEntity {
-  @ManyToOne(() => Discount, (discount) => discount.usageLogs, {
-    nullable: false,
-  })
-  @JoinColumn({ name: 'discountId' })
+  @ManyToOne(
+    () => Discount,
+    (discount) => discount.usageLogs,
+    {
+      nullable: false,
+    },
+  )
+  @JoinColumn({ name: "discountId" })
   discount: Discount;
 
   @Column()
@@ -17,7 +21,7 @@ export class DiscountUsageLog extends BaseEntity {
   discountId: string;
 
   @ManyToOne(() => User, { nullable: false })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: "userId" })
   user: User;
 
   @Column()
@@ -28,16 +32,16 @@ export class DiscountUsageLog extends BaseEntity {
   orderId?: string;
 
   @ManyToOne(() => Item, { nullable: true })
-  @JoinColumn({ name: 'itemId' })
+  @JoinColumn({ name: "itemId" })
   item?: Item;
 
   @Column({ nullable: true })
   itemId?: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: "decimal", precision: 10, scale: 2 })
   discountAmount: number;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   @Index()
   usedAt: Date;
 }

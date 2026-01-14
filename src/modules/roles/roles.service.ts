@@ -2,31 +2,29 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { validate as uuidValidate } from 'uuid';
-import { Role } from 'src/database/entities/role.entity';
-import { User } from 'src/database/entities/user.entity';
-import { MODULE_PERMISSIONS } from 'src/common/types/permission.types';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
-import { PREDEFINED_ROLES } from './constants/predefined-roles';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { MODULE_PERMISSIONS } from "src/common/types/permission.types";
+import { Role } from "src/database/entities/role.entity";
+import { User } from "src/database/entities/user.entity";
+import { Repository } from "typeorm";
+import { validate as uuidValidate } from "uuid";
+import { PREDEFINED_ROLES } from "./constants/predefined-roles";
+import { CreateRoleDto } from "./dto/create-role.dto";
+import { UpdateRoleDto } from "./dto/update-role.dto";
 
 @Injectable()
 export class RolesService {
   constructor(
-    @InjectRepository(Role)
-    private readonly roleRepository: Repository<Role>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(Role) readonly roleRepository: Repository<Role>,
+    @InjectRepository(User) readonly userRepository: Repository<User>,
   ) {}
 
   async findAll(
     page: number = 1,
     limit: number = 10,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ): Promise<{
     roles: Role[];
     total: number;
@@ -37,16 +35,16 @@ export class RolesService {
     const skip = (page - 1) * limit;
 
     const allowedSortFields = [
-      'id',
-      'name',
-      'displayName',
-      'isSystemRole',
-      'isActive',
-      'createdAt',
-      'updatedAt',
+      "id",
+      "name",
+      "displayName",
+      "isSystemRole",
+      "isActive",
+      "createdAt",
+      "updatedAt",
     ];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
 
     const [roles, total] = await this.roleRepository.findAndCount({
       skip,
@@ -65,12 +63,12 @@ export class RolesService {
 
   async findOne(id: string): Promise<Role> {
     if (!uuidValidate(id)) {
-      throw new BadRequestException('Invalid ID format');
+      throw new BadRequestException("Invalid ID format");
     }
 
     const role = await this.roleRepository.findOne({ where: { id } });
     if (!role) {
-      throw new NotFoundException('Role not found');
+      throw new NotFoundException("Role not found");
     }
     return role;
   }
@@ -82,7 +80,7 @@ export class RolesService {
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
     const existingRole = await this.findByName(createRoleDto.name);
     if (existingRole) {
-      throw new BadRequestException('Role with this name already exists');
+      throw new BadRequestException("Role with this name already exists");
     }
 
     const role = this.roleRepository.create({
@@ -101,7 +99,7 @@ export class RolesService {
       updateRoleDto.name &&
       updateRoleDto.name !== role.name
     ) {
-      throw new BadRequestException('Cannot change name of system role');
+      throw new BadRequestException("Cannot change name of system role");
     }
 
     Object.assign(role, updateRoleDto);
@@ -112,7 +110,7 @@ export class RolesService {
     const role = await this.findOne(id);
 
     if (role.isSystemRole) {
-      throw new BadRequestException('Cannot delete system role');
+      throw new BadRequestException("Cannot delete system role");
     }
 
     const usersWithRole = await this.userRepository.count({
@@ -130,17 +128,17 @@ export class RolesService {
 
   async assignRoleToUser(userId: string, roleId: string): Promise<User> {
     if (!uuidValidate(userId)) {
-      throw new BadRequestException('Invalid user ID format');
+      throw new BadRequestException("Invalid user ID format");
     }
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     const role = await this.findOne(roleId);
     if (!role.isActive) {
-      throw new BadRequestException('Cannot assign inactive role');
+      throw new BadRequestException("Cannot assign inactive role");
     }
 
     user.adminRoleId = roleId;
@@ -149,12 +147,12 @@ export class RolesService {
 
   async removeRoleFromUser(userId: string): Promise<User> {
     if (!uuidValidate(userId)) {
-      throw new BadRequestException('Invalid user ID format');
+      throw new BadRequestException("Invalid user ID format");
     }
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     user.adminRoleId = undefined;

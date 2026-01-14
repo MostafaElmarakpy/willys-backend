@@ -1,34 +1,35 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { useContainer, ValidationError } from 'class-validator';
-import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
-import { AppModule } from './app.module';
-import { LocaleInterceptor } from './common/interceptor/locale.interceptor';
-import { ValidationErrorFactory } from './common/factories/validation-error.factory';
-import { ConfigService } from './config/config.service';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import * as express from 'express';
+import { ValidationPipe, VersioningType } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { useContainer, type ValidationError } from "class-validator";
+import * as express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import { I18nValidationExceptionFilter, I18nValidationPipe } from "nestjs-i18n";
+import { AppModule } from "./app.module";
+import { ValidationErrorFactory } from "./common/factories/validation-error.factory";
+import { LocaleInterceptor } from "./common/interceptor/locale.interceptor";
+import { ConfigService } from "./config/config.service";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableVersioning({
     type: VersioningType.URI,
-    defaultVersion: '1',
-    prefix: 'api/v',
+    defaultVersion: "1",
+    prefix: "api/v",
   });
 
   const configService = app.get(ConfigService);
 
-  const isProduction = process.env.NODE_ENV === 'production';
-  const trustProxy = isProduction ? 'loopback, linklocal, uniquelocal' : true;
+  const isProduction = process.env.NODE_ENV === "production";
 
-  app.set('trust proxy', trustProxy);
+  const trustProxy = isProduction ? "loopback, linklocal, uniquelocal" : 1;
 
-  app.use(express.json({ limit: '150mb' }));
-  app.use(express.urlencoded({ limit: '150mb', extended: true }));
+  app.set("trust proxy", trustProxy);
+
+  app.use(express.json({ limit: "150mb" }));
+  app.use(express.urlencoded({ limit: "150mb", extended: true }));
 
   app.use(helmet());
 
@@ -37,12 +38,12 @@ async function bootstrap() {
       windowMs: 15 * 60 * 1000,
       max: 1000,
       message: {
-        error: 'Too many requests from this IP, please try again later.',
+        error: "Too many requests from this IP, please try again later.",
         statusCode: 429,
       },
       standardHeaders: true,
       legacyHeaders: false,
-      skip: (req) => req.path === '/health',
+      skip: (req) => req.path === "/health",
     }),
   );
 
@@ -70,10 +71,10 @@ async function bootstrap() {
 
   app.enableCors({
     origin: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   });
 
-  await app.listen((configService.get('port') as number) ?? 8080);
+  await app.listen((configService.get("port") as number) ?? 8080);
 }
 bootstrap();

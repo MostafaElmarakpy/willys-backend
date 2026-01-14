@@ -1,20 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { DiscountsService } from './discounts.service';
-import { Discount } from '../../database/entities/discount.entity';
-import { UserDiscount } from '../../database/entities/user-discount.entity';
-import { ItemDiscount } from '../../database/entities/item-discount.entity';
-import { DiscountUsageLog } from '../../database/entities/discount-usage-log.entity';
-import { DiscountType } from '../../common/enums/DiscountType';
-import { DiscountTargetType } from '../../common/enums/DiscountTargetType';
-import { DiscountStatus } from '../../common/enums/DiscountStatus';
-import { CreateDiscountDto } from './dto/create-discount.dto';
-import { UpdateDiscountDto } from './dto/update-discount.dto';
-import { DiscountFilterDto } from './dto/discount-filter.dto';
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { DiscountStatus } from "../../common/enums/DiscountStatus";
+import { DiscountTargetType } from "../../common/enums/DiscountTargetType";
+import { DiscountType } from "../../common/enums/DiscountType";
+import { Discount } from "../../database/entities/discount.entity";
+import { DiscountUsageLog } from "../../database/entities/discount-usage-log.entity";
+import { ItemDiscount } from "../../database/entities/item-discount.entity";
+import { UserDiscount } from "../../database/entities/user-discount.entity";
+import { DiscountsService } from "./discounts.service";
+import { CreateDiscountDto } from "./dto/create-discount.dto";
+import { DiscountFilterDto } from "./dto/discount-filter.dto";
+import { UpdateDiscountDto } from "./dto/update-discount.dto";
 
-describe('DiscountsService', () => {
+describe("DiscountsService", () => {
   let service: DiscountsService;
   let discountRepository: jest.Mocked<Repository<Discount>>;
   let userDiscountRepository: jest.Mocked<Repository<UserDiscount>>;
@@ -22,17 +22,17 @@ describe('DiscountsService', () => {
   let usageLogRepository: jest.Mocked<Repository<DiscountUsageLog>>;
 
   // Mock data
-  const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
-  const mockAdminId = '550e8400-e29b-41d4-a716-446655440001';
-  const mockDiscountId = '550e8400-e29b-41d4-a716-446655440002';
-  const mockItemId = '550e8400-e29b-41d4-a716-446655440003';
-  const mockOrderId = '550e8400-e29b-41d4-a716-446655440004';
+  const mockUserId = "550e8400-e29b-41d4-a716-446655440000";
+  const mockAdminId = "550e8400-e29b-41d4-a716-446655440001";
+  const mockDiscountId = "550e8400-e29b-41d4-a716-446655440002";
+  const mockItemId = "550e8400-e29b-41d4-a716-446655440003";
+  const mockOrderId = "550e8400-e29b-41d4-a716-446655440004";
 
   const mockDiscount: Partial<Discount> = {
     id: mockDiscountId,
-    code: 'SAVE10',
-    name: { en: '10% Off', ar: 'خصم 10%' },
-    description: { en: 'Save 10%', ar: 'وفر 10%' },
+    code: "SAVE10",
+    name: { en: "10% Off", ar: "خصم 10%" },
+    description: { en: "Save 10%", ar: "وفر 10%" },
     type: DiscountType.PERCENTAGE,
     targetType: DiscountTargetType.USER,
     value: 10,
@@ -50,18 +50,18 @@ describe('DiscountsService', () => {
 
   const mockFixedDiscount: Partial<Discount> = {
     ...mockDiscount,
-    id: '550e8400-e29b-41d4-a716-446655440010',
-    code: 'FLAT20',
-    name: { en: '$20 Off', ar: 'خصم 20 جنيه' },
+    id: "550e8400-e29b-41d4-a716-446655440010",
+    code: "FLAT20",
+    name: { en: "$20 Off", ar: "خصم 20 جنيه" },
     type: DiscountType.FIXED_AMOUNT,
     value: 20,
   };
 
   const mockBuyXGetYDiscount: Partial<Discount> = {
     ...mockDiscount,
-    id: '550e8400-e29b-41d4-a716-446655440011',
-    code: 'B2G1',
-    name: { en: 'Buy 2 Get 1', ar: 'اشتري 2 واحصل على 1' },
+    id: "550e8400-e29b-41d4-a716-446655440011",
+    code: "B2G1",
+    name: { en: "Buy 2 Get 1", ar: "اشتري 2 واحصل على 1" },
     type: DiscountType.BUY_X_GET_Y,
     value: 0,
     buyQuantity: 2,
@@ -70,9 +70,9 @@ describe('DiscountsService', () => {
 
   const mockFreeItemDiscount: Partial<Discount> = {
     ...mockDiscount,
-    id: '550e8400-e29b-41d4-a716-446655440012',
-    code: 'FREEITEM',
-    name: { en: 'Free Item', ar: 'منتج مجاني' },
+    id: "550e8400-e29b-41d4-a716-446655440012",
+    code: "FREEITEM",
+    name: { en: "Free Item", ar: "منتج مجاني" },
     type: DiscountType.FREE_ITEM,
     value: 0,
     freeItemId: mockItemId,
@@ -80,7 +80,7 @@ describe('DiscountsService', () => {
 
   const mockItemTargetedDiscount: Partial<Discount> = {
     ...mockDiscount,
-    id: '550e8400-e29b-41d4-a716-446655440013',
+    id: "550e8400-e29b-41d4-a716-446655440013",
     targetType: DiscountTargetType.ITEM,
   };
 
@@ -160,11 +160,11 @@ describe('DiscountsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
-    it('should create a percentage discount successfully', async () => {
+  describe("create", () => {
+    it("should create a percentage discount successfully", async () => {
       const createDto: CreateDiscountDto = {
-        code: 'NEWDISCOUNT',
-        name: { en: 'New Discount', ar: 'خصم جديد' },
+        code: "NEWDISCOUNT",
+        name: { en: "New Discount", ar: "خصم جديد" },
         type: DiscountType.PERCENTAGE,
         targetType: DiscountTargetType.USER,
         value: 15,
@@ -188,10 +188,10 @@ describe('DiscountsService', () => {
       expect(result.id).toBeDefined();
     });
 
-    it('should throw BadRequestException when code already exists', async () => {
+    it("should throw BadRequestException when code already exists", async () => {
       const createDto: CreateDiscountDto = {
-        code: 'SAVE10',
-        name: { en: 'Duplicate', ar: 'مكرر' },
+        code: "SAVE10",
+        name: { en: "Duplicate", ar: "مكرر" },
         type: DiscountType.PERCENTAGE,
         targetType: DiscountTargetType.USER,
         value: 10,
@@ -205,9 +205,9 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should throw BadRequestException when percentage value is over 100', async () => {
+    it("should throw BadRequestException when percentage value is over 100", async () => {
       const createDto: CreateDiscountDto = {
-        name: { en: 'Invalid', ar: 'غير صالح' },
+        name: { en: "Invalid", ar: "غير صالح" },
         type: DiscountType.PERCENTAGE,
         targetType: DiscountTargetType.USER,
         value: 150,
@@ -219,9 +219,9 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should throw BadRequestException when percentage value is negative', async () => {
+    it("should throw BadRequestException when percentage value is negative", async () => {
       const createDto: CreateDiscountDto = {
-        name: { en: 'Invalid', ar: 'غير صالح' },
+        name: { en: "Invalid", ar: "غير صالح" },
         type: DiscountType.PERCENTAGE,
         targetType: DiscountTargetType.USER,
         value: -10,
@@ -233,9 +233,9 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should throw BadRequestException when fixed amount is negative', async () => {
+    it("should throw BadRequestException when fixed amount is negative", async () => {
       const createDto: CreateDiscountDto = {
-        name: { en: 'Invalid', ar: 'غير صالح' },
+        name: { en: "Invalid", ar: "غير صالح" },
         type: DiscountType.FIXED_AMOUNT,
         targetType: DiscountTargetType.USER,
         value: -20,
@@ -247,9 +247,9 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should throw BadRequestException when BUY_X_GET_Y missing quantities', async () => {
+    it("should throw BadRequestException when BUY_X_GET_Y missing quantities", async () => {
       const createDto: CreateDiscountDto = {
-        name: { en: 'Invalid', ar: 'غير صالح' },
+        name: { en: "Invalid", ar: "غير صالح" },
         type: DiscountType.BUY_X_GET_Y,
         targetType: DiscountTargetType.USER,
         value: 0,
@@ -261,9 +261,9 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should throw BadRequestException when FREE_ITEM missing freeItemId', async () => {
+    it("should throw BadRequestException when FREE_ITEM missing freeItemId", async () => {
       const createDto: CreateDiscountDto = {
-        name: { en: 'Invalid', ar: 'غير صالح' },
+        name: { en: "Invalid", ar: "غير صالح" },
         type: DiscountType.FREE_ITEM,
         targetType: DiscountTargetType.USER,
         value: 0,
@@ -275,9 +275,9 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should throw BadRequestException when endDate is before startDate', async () => {
+    it("should throw BadRequestException when endDate is before startDate", async () => {
       const createDto: CreateDiscountDto = {
-        name: { en: 'Invalid', ar: 'غير صالح' },
+        name: { en: "Invalid", ar: "غير صالح" },
         type: DiscountType.PERCENTAGE,
         targetType: DiscountTargetType.USER,
         value: 10,
@@ -290,9 +290,9 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should create discount without code', async () => {
+    it("should create discount without code", async () => {
       const createDto: CreateDiscountDto = {
-        name: { en: 'No Code', ar: 'بدون كود' },
+        name: { en: "No Code", ar: "بدون كود" },
         type: DiscountType.PERCENTAGE,
         targetType: DiscountTargetType.USER,
         value: 10,
@@ -312,15 +312,15 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('should return paginated discounts', async () => {
+  describe("findAll", () => {
+    it("should return paginated discounts", async () => {
       const mockDiscounts = [mockDiscount];
       discountRepository.query
         .mockResolvedValueOnce(mockDiscounts)
-        .mockResolvedValueOnce([{ total: '1' }])
-        .mockResolvedValueOnce([{ active_count: '1' }])
-        .mockResolvedValueOnce([{ inactive_count: '0' }])
-        .mockResolvedValueOnce([{ percentage_count: '1' }]);
+        .mockResolvedValueOnce([{ total: "1" }])
+        .mockResolvedValueOnce([{ active_count: "1" }])
+        .mockResolvedValueOnce([{ inactive_count: "0" }])
+        .mockResolvedValueOnce([{ percentage_count: "1" }]);
 
       const filterDto: DiscountFilterDto = { page: 1, limit: 10 };
       const result = await service.findAll(filterDto);
@@ -332,34 +332,34 @@ describe('DiscountsService', () => {
       expect(result.activeCount).toBe(1);
     });
 
-    it('should apply search filter', async () => {
+    it("should apply search filter", async () => {
       discountRepository.query
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: '0' }])
-        .mockResolvedValueOnce([{ active_count: '0' }])
-        .mockResolvedValueOnce([{ inactive_count: '0' }])
-        .mockResolvedValueOnce([{ percentage_count: '0' }]);
+        .mockResolvedValueOnce([{ total: "0" }])
+        .mockResolvedValueOnce([{ active_count: "0" }])
+        .mockResolvedValueOnce([{ inactive_count: "0" }])
+        .mockResolvedValueOnce([{ percentage_count: "0" }]);
 
       const filterDto: DiscountFilterDto = {
-        search: 'SAVE',
+        search: "SAVE",
         page: 1,
         limit: 10,
       };
       await service.findAll(filterDto);
 
       expect(discountRepository.query).toHaveBeenCalledWith(
-        expect.stringContaining('ILIKE'),
-        expect.arrayContaining(['%SAVE%']),
+        expect.stringContaining("ILIKE"),
+        expect.arrayContaining(["%SAVE%"]),
       );
     });
 
-    it('should apply status filter', async () => {
+    it("should apply status filter", async () => {
       discountRepository.query
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: '0' }])
-        .mockResolvedValueOnce([{ active_count: '0' }])
-        .mockResolvedValueOnce([{ inactive_count: '0' }])
-        .mockResolvedValueOnce([{ percentage_count: '0' }]);
+        .mockResolvedValueOnce([{ total: "0" }])
+        .mockResolvedValueOnce([{ active_count: "0" }])
+        .mockResolvedValueOnce([{ inactive_count: "0" }])
+        .mockResolvedValueOnce([{ percentage_count: "0" }]);
 
       const filterDto: DiscountFilterDto = {
         status: DiscountStatus.ACTIVE,
@@ -369,18 +369,18 @@ describe('DiscountsService', () => {
       await service.findAll(filterDto);
 
       expect(discountRepository.query).toHaveBeenCalledWith(
-        expect.stringContaining('d.status ='),
+        expect.stringContaining("d.status ="),
         expect.arrayContaining([DiscountStatus.ACTIVE]),
       );
     });
 
-    it('should apply type filter', async () => {
+    it("should apply type filter", async () => {
       discountRepository.query
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: '0' }])
-        .mockResolvedValueOnce([{ active_count: '0' }])
-        .mockResolvedValueOnce([{ inactive_count: '0' }])
-        .mockResolvedValueOnce([{ percentage_count: '0' }]);
+        .mockResolvedValueOnce([{ total: "0" }])
+        .mockResolvedValueOnce([{ active_count: "0" }])
+        .mockResolvedValueOnce([{ inactive_count: "0" }])
+        .mockResolvedValueOnce([{ percentage_count: "0" }]);
 
       const filterDto: DiscountFilterDto = {
         type: DiscountType.PERCENTAGE,
@@ -390,21 +390,21 @@ describe('DiscountsService', () => {
       await service.findAll(filterDto);
 
       expect(discountRepository.query).toHaveBeenCalledWith(
-        expect.stringContaining('d.type ='),
+        expect.stringContaining("d.type ="),
         expect.arrayContaining([DiscountType.PERCENTAGE]),
       );
     });
 
-    it('should apply date range filter', async () => {
+    it("should apply date range filter", async () => {
       discountRepository.query
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: '0' }])
-        .mockResolvedValueOnce([{ active_count: '0' }])
-        .mockResolvedValueOnce([{ inactive_count: '0' }])
-        .mockResolvedValueOnce([{ percentage_count: '0' }]);
+        .mockResolvedValueOnce([{ total: "0" }])
+        .mockResolvedValueOnce([{ active_count: "0" }])
+        .mockResolvedValueOnce([{ inactive_count: "0" }])
+        .mockResolvedValueOnce([{ percentage_count: "0" }]);
 
-      const startDate = '2026-01-01';
-      const endDate = '2026-12-31';
+      const startDate = "2026-01-01";
+      const endDate = "2026-12-31";
       const filterDto: DiscountFilterDto = {
         startDate,
         endDate,
@@ -414,18 +414,18 @@ describe('DiscountsService', () => {
       await service.findAll(filterDto);
 
       expect(discountRepository.query).toHaveBeenCalledWith(
-        expect.stringContaining('BETWEEN'),
+        expect.stringContaining("BETWEEN"),
         expect.arrayContaining([startDate, endDate]),
       );
     });
 
-    it('should apply value range filter', async () => {
+    it("should apply value range filter", async () => {
       discountRepository.query
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([{ total: '0' }])
-        .mockResolvedValueOnce([{ active_count: '0' }])
-        .mockResolvedValueOnce([{ inactive_count: '0' }])
-        .mockResolvedValueOnce([{ percentage_count: '0' }]);
+        .mockResolvedValueOnce([{ total: "0" }])
+        .mockResolvedValueOnce([{ active_count: "0" }])
+        .mockResolvedValueOnce([{ inactive_count: "0" }])
+        .mockResolvedValueOnce([{ percentage_count: "0" }]);
 
       const filterDto: DiscountFilterDto = {
         minValue: 5,
@@ -436,14 +436,14 @@ describe('DiscountsService', () => {
       await service.findAll(filterDto);
 
       expect(discountRepository.query).toHaveBeenCalledWith(
-        expect.stringContaining('d.value BETWEEN'),
+        expect.stringContaining("d.value BETWEEN"),
         expect.arrayContaining([5, 20]),
       );
     });
   });
 
-  describe('findOne', () => {
-    it('should return a discount when found', async () => {
+  describe("findOne", () => {
+    it("should return a discount when found", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
 
       const result = await service.findOne(mockDiscountId);
@@ -451,42 +451,42 @@ describe('DiscountsService', () => {
       expect(result).toEqual(mockDiscount);
       expect(discountRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockDiscountId, deletedAt: expect.anything() },
-        relations: ['freeItem', 'createdByUser', 'updatedByUser'],
+        relations: ["freeItem", "createdByUser", "updatedByUser"],
       });
     });
 
-    it('should throw NotFoundException when discount not found', async () => {
+    it("should throw NotFoundException when discount not found", async () => {
       discountRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent')).rejects.toThrow(
+      await expect(service.findOne("non-existent")).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
-  describe('findByCode', () => {
-    it('should return a discount when found by code', async () => {
+  describe("findByCode", () => {
+    it("should return a discount when found by code", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
 
-      const result = await service.findByCode('SAVE10');
+      const result = await service.findByCode("SAVE10");
 
       expect(result).toEqual(mockDiscount);
       expect(discountRepository.findOne).toHaveBeenCalledWith({
-        where: { code: 'SAVE10', deletedAt: expect.anything() },
-        relations: ['freeItem'],
+        where: { code: "SAVE10", deletedAt: expect.anything() },
+        relations: ["freeItem"],
       });
     });
 
-    it('should return null when discount not found', async () => {
+    it("should return null when discount not found", async () => {
       discountRepository.findOne.mockResolvedValue(null);
 
-      const result = await service.findByCode('INVALID');
+      const result = await service.findByCode("INVALID");
 
       expect(result).toBeNull();
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     beforeEach(() => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       discountRepository.save.mockImplementation((discount) =>
@@ -494,7 +494,7 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should update a discount successfully', async () => {
+    it("should update a discount successfully", async () => {
       const updateDto: UpdateDiscountDto = { value: 20 };
 
       const result = await service.update(
@@ -507,7 +507,7 @@ describe('DiscountsService', () => {
       expect(result.updatedBy).toBe(mockAdminId);
     });
 
-    it('should throw BadRequestException when trying to change targetType', async () => {
+    it("should throw BadRequestException when trying to change targetType", async () => {
       const updateDto: UpdateDiscountDto = {
         targetType: DiscountTargetType.ITEM,
       };
@@ -517,18 +517,18 @@ describe('DiscountsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw NotFoundException when discount not found', async () => {
+    it("should throw NotFoundException when discount not found", async () => {
       discountRepository.findOne.mockResolvedValue(null);
       const updateDto: UpdateDiscountDto = { value: 20 };
 
       await expect(
-        service.update('non-existent', updateDto, mockAdminId),
+        service.update("non-existent", updateDto, mockAdminId),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('remove', () => {
-    it('should soft delete a discount', async () => {
+  describe("remove", () => {
+    it("should soft delete a discount", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       discountRepository.softDelete.mockResolvedValue({ affected: 1 } as any);
 
@@ -539,45 +539,45 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should throw NotFoundException when discount not found', async () => {
+    it("should throw NotFoundException when discount not found", async () => {
       discountRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.remove('non-existent')).rejects.toThrow(
+      await expect(service.remove("non-existent")).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
-  describe('duplicate', () => {
-    it('should create a copy of an existing discount', async () => {
+  describe("duplicate", () => {
+    it("should create a copy of an existing discount", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       discountRepository.create.mockImplementation((data) => data as Discount);
       discountRepository.save.mockImplementation((discount) =>
-        Promise.resolve({ ...discount, id: 'new-id' } as Discount),
+        Promise.resolve({ ...discount, id: "new-id" } as Discount),
       );
 
       const result = await service.duplicate(mockDiscountId, mockAdminId);
 
       expect(discountRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          code: 'SAVE10_COPY',
-          name: { ar: 'خصم 10% - نسخة', en: '10% Off - Copy' },
+          code: "SAVE10_COPY",
+          name: { ar: "خصم 10% - نسخة", en: "10% Off - Copy" },
           status: DiscountStatus.SCHEDULED,
           isActive: false,
           createdBy: mockAdminId,
         }),
       );
-      expect(result.id).toBe('new-id');
+      expect(result.id).toBe("new-id");
     });
 
-    it('should handle discount without code', async () => {
+    it("should handle discount without code", async () => {
       const discountWithoutCode = { ...mockDiscount, code: undefined };
       discountRepository.findOne.mockResolvedValue(
         discountWithoutCode as Discount,
       );
       discountRepository.create.mockImplementation((data) => data as Discount);
       discountRepository.save.mockImplementation((discount) =>
-        Promise.resolve({ ...discount, id: 'new-id' } as Discount),
+        Promise.resolve({ ...discount, id: "new-id" } as Discount),
       );
 
       await service.duplicate(mockDiscountId, mockAdminId);
@@ -590,12 +590,12 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('assignToUsers', () => {
-    it('should assign USER-targeted discount to users', async () => {
+  describe("assignToUsers", () => {
+    it("should assign USER-targeted discount to users", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       userDiscountRepository.save.mockResolvedValue([] as any);
 
-      const userIds = [mockUserId, 'user-2'];
+      const userIds = [mockUserId, "user-2"];
       await service.assignToUsers(mockDiscountId, userIds, mockAdminId);
 
       expect(userDiscountRepository.save).toHaveBeenCalledWith([
@@ -606,7 +606,7 @@ describe('DiscountsService', () => {
           usageCount: 0,
         },
         {
-          userId: 'user-2',
+          userId: "user-2",
           discountId: mockDiscountId,
           assignedBy: mockAdminId,
           usageCount: 0,
@@ -614,7 +614,7 @@ describe('DiscountsService', () => {
       ]);
     });
 
-    it('should throw BadRequestException for ITEM-targeted discount', async () => {
+    it("should throw BadRequestException for ITEM-targeted discount", async () => {
       discountRepository.findOne.mockResolvedValue(
         mockItemTargetedDiscount as Discount,
       );
@@ -625,14 +625,14 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('assignToItems', () => {
-    it('should assign ITEM-targeted discount to items', async () => {
+  describe("assignToItems", () => {
+    it("should assign ITEM-targeted discount to items", async () => {
       discountRepository.findOne.mockResolvedValue(
         mockItemTargetedDiscount as Discount,
       );
       itemDiscountRepository.save.mockResolvedValue([] as any);
 
-      const itemIds = [mockItemId, 'item-2'];
+      const itemIds = [mockItemId, "item-2"];
       await service.assignToItems(
         mockItemTargetedDiscount.id!,
         itemIds,
@@ -646,14 +646,14 @@ describe('DiscountsService', () => {
           assignedBy: mockAdminId,
         },
         {
-          itemId: 'item-2',
+          itemId: "item-2",
           discountId: mockItemTargetedDiscount.id,
           assignedBy: mockAdminId,
         },
       ]);
     });
 
-    it('should throw BadRequestException for USER-targeted discount', async () => {
+    it("should throw BadRequestException for USER-targeted discount", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
 
       await expect(
@@ -662,8 +662,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('removeUserAssignment', () => {
-    it('should remove user assignment', async () => {
+  describe("removeUserAssignment", () => {
+    it("should remove user assignment", async () => {
       userDiscountRepository.delete.mockResolvedValue({ affected: 1 } as any);
 
       await service.removeUserAssignment(mockDiscountId, mockUserId);
@@ -675,8 +675,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('removeItemAssignment', () => {
-    it('should remove item assignment', async () => {
+  describe("removeItemAssignment", () => {
+    it("should remove item assignment", async () => {
       itemDiscountRepository.delete.mockResolvedValue({ affected: 1 } as any);
 
       await service.removeItemAssignment(mockDiscountId, mockItemId);
@@ -688,8 +688,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('getUserDiscounts', () => {
-    it('should return active discounts assigned to user', async () => {
+  describe("getUserDiscounts", () => {
+    it("should return active discounts assigned to user", async () => {
       userDiscountRepository.find.mockResolvedValue([
         { ...mockUserDiscount, discount: mockDiscount as Discount },
       ] as UserDiscount[]);
@@ -700,7 +700,7 @@ describe('DiscountsService', () => {
       expect(result[0]).toEqual(mockDiscount);
     });
 
-    it('should filter out inactive discounts', async () => {
+    it("should filter out inactive discounts", async () => {
       const inactiveDiscount = {
         ...mockDiscount,
         isActive: false,
@@ -715,7 +715,7 @@ describe('DiscountsService', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should filter out expired discounts', async () => {
+    it("should filter out expired discounts", async () => {
       const expiredDiscount = {
         ...mockDiscount,
         endDate: new Date(Date.now() - 86400000), // Yesterday
@@ -730,8 +730,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('getItemDiscounts', () => {
-    it('should return active discounts assigned to item', async () => {
+  describe("getItemDiscounts", () => {
+    it("should return active discounts assigned to item", async () => {
       itemDiscountRepository.find.mockResolvedValue([
         {
           ...mockItemDiscount,
@@ -745,12 +745,12 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('getAssignedUsers', () => {
-    it('should return users assigned to discount', async () => {
+  describe("getAssignedUsers", () => {
+    it("should return users assigned to discount", async () => {
       const mockUser = {
         id: mockUserId,
-        fullName: 'John Doe',
-        email: 'john@example.com',
+        fullName: "John Doe",
+        email: "john@example.com",
       };
       userDiscountRepository.find.mockResolvedValue([
         {
@@ -766,8 +766,8 @@ describe('DiscountsService', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         id: mockUserId,
-        fullName: 'John Doe',
-        email: 'john@example.com',
+        fullName: "John Doe",
+        email: "john@example.com",
         usageCount: 2,
         lastUsedAt: expect.any(Date),
         assignedAt: expect.any(Date),
@@ -775,11 +775,11 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('getAssignedItems', () => {
-    it('should return items assigned to discount', async () => {
+  describe("getAssignedItems", () => {
+    it("should return items assigned to discount", async () => {
       const mockItem = {
         id: mockItemId,
-        name: { en: 'Burger', ar: 'برجر' },
+        name: { en: "Burger", ar: "برجر" },
       };
       itemDiscountRepository.find.mockResolvedValue([
         { ...mockItemDiscount, item: mockItem },
@@ -790,18 +790,18 @@ describe('DiscountsService', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         id: mockItemId,
-        name: { en: 'Burger', ar: 'برجر' },
+        name: { en: "Burger", ar: "برجر" },
         assignedAt: expect.any(Date),
       });
     });
   });
 
-  describe('canUseDiscount', () => {
+  describe("canUseDiscount", () => {
     beforeEach(() => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
     });
 
-    it('should return canUse: true for valid user discount', async () => {
+    it("should return canUse: true for valid user discount", async () => {
       userDiscountRepository.findOne.mockResolvedValue(
         mockUserDiscount as UserDiscount,
       );
@@ -811,7 +811,7 @@ describe('DiscountsService', () => {
       expect(result.canUse).toBe(true);
     });
 
-    it('should return canUse: false when discount is inactive', async () => {
+    it("should return canUse: false when discount is inactive", async () => {
       discountRepository.findOne.mockResolvedValue({
         ...mockDiscount,
         isActive: false,
@@ -820,10 +820,10 @@ describe('DiscountsService', () => {
       const result = await service.canUseDiscount(mockDiscountId, mockUserId);
 
       expect(result.canUse).toBe(false);
-      expect(result.reason).toContain('not active');
+      expect(result.reason).toContain("not active");
     });
 
-    it('should return canUse: false when discount status is not ACTIVE', async () => {
+    it("should return canUse: false when discount status is not ACTIVE", async () => {
       discountRepository.findOne.mockResolvedValue({
         ...mockDiscount,
         status: DiscountStatus.SCHEDULED,
@@ -834,7 +834,7 @@ describe('DiscountsService', () => {
       expect(result.canUse).toBe(false);
     });
 
-    it('should return canUse: false when discount has expired', async () => {
+    it("should return canUse: false when discount has expired", async () => {
       discountRepository.findOne.mockResolvedValue({
         ...mockDiscount,
         endDate: new Date(Date.now() - 86400000),
@@ -845,7 +845,7 @@ describe('DiscountsService', () => {
       expect(result.canUse).toBe(false);
     });
 
-    it('should return canUse: false when discount start date is in the future', async () => {
+    it("should return canUse: false when discount start date is in the future", async () => {
       discountRepository.findOne.mockResolvedValue({
         ...mockDiscount,
         startDate: new Date(Date.now() + 86400000),
@@ -856,7 +856,7 @@ describe('DiscountsService', () => {
       expect(result.canUse).toBe(false);
     });
 
-    it('should return canUse: false when global usage limit reached', async () => {
+    it("should return canUse: false when global usage limit reached", async () => {
       discountRepository.findOne.mockResolvedValue({
         ...mockDiscount,
         maxUsageTotal: 100,
@@ -866,19 +866,19 @@ describe('DiscountsService', () => {
       const result = await service.canUseDiscount(mockDiscountId, mockUserId);
 
       expect(result.canUse).toBe(false);
-      expect(result.reason).toContain('usage limit reached');
+      expect(result.reason).toContain("usage limit reached");
     });
 
-    it('should return canUse: false when user is not assigned to discount', async () => {
+    it("should return canUse: false when user is not assigned to discount", async () => {
       userDiscountRepository.findOne.mockResolvedValue(null);
 
       const result = await service.canUseDiscount(mockDiscountId, mockUserId);
 
       expect(result.canUse).toBe(false);
-      expect(result.reason).toContain('not assigned');
+      expect(result.reason).toContain("not assigned");
     });
 
-    it('should return canUse: false when user has reached their usage limit', async () => {
+    it("should return canUse: false when user has reached their usage limit", async () => {
       userDiscountRepository.findOne.mockResolvedValue({
         ...mockUserDiscount,
         usageCount: 3,
@@ -887,10 +887,10 @@ describe('DiscountsService', () => {
       const result = await service.canUseDiscount(mockDiscountId, mockUserId);
 
       expect(result.canUse).toBe(false);
-      expect(result.reason).toContain('reached their usage limit');
+      expect(result.reason).toContain("reached their usage limit");
     });
 
-    it('should check item assignment for ITEM-targeted discount', async () => {
+    it("should check item assignment for ITEM-targeted discount", async () => {
       discountRepository.findOne.mockResolvedValue(
         mockItemTargetedDiscount as Discount,
       );
@@ -907,7 +907,7 @@ describe('DiscountsService', () => {
       expect(result.canUse).toBe(true);
     });
 
-    it('should return canUse: false when item not assigned to ITEM discount', async () => {
+    it("should return canUse: false when item not assigned to ITEM discount", async () => {
       discountRepository.findOne.mockResolvedValue(
         mockItemTargetedDiscount as Discount,
       );
@@ -920,11 +920,11 @@ describe('DiscountsService', () => {
       );
 
       expect(result.canUse).toBe(false);
-      expect(result.reason).toContain('not assigned to this item');
+      expect(result.reason).toContain("not assigned to this item");
     });
   });
 
-  describe('recordUsage', () => {
+  describe("recordUsage", () => {
     beforeEach(() => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       discountRepository.save.mockResolvedValue(mockDiscount as Discount);
@@ -933,7 +933,7 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should record discount usage', async () => {
+    it("should record discount usage", async () => {
       userDiscountRepository.findOne.mockResolvedValue(
         mockUserDiscount as UserDiscount,
       );
@@ -959,7 +959,7 @@ describe('DiscountsService', () => {
       expect(discountRepository.save).toHaveBeenCalled();
     });
 
-    it('should increment discount currentUsageCount', async () => {
+    it("should increment discount currentUsageCount", async () => {
       const freshDiscount = { ...mockDiscount, currentUsageCount: 0 };
       discountRepository.findOne.mockResolvedValue(freshDiscount as Discount);
       userDiscountRepository.findOne.mockResolvedValue(
@@ -978,7 +978,7 @@ describe('DiscountsService', () => {
       );
     });
 
-    it('should update userDiscount for USER-targeted discount', async () => {
+    it("should update userDiscount for USER-targeted discount", async () => {
       userDiscountRepository.findOne.mockResolvedValue({
         ...mockUserDiscount,
         usageCount: 0,
@@ -998,12 +998,12 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('getUsageStats', () => {
-    it('should return usage statistics', async () => {
+  describe("getUsageStats", () => {
+    it("should return usage statistics", async () => {
       usageLogRepository.find.mockResolvedValue([
         { ...mockUsageLog, userId: mockUserId, discountAmount: 10 },
         { ...mockUsageLog, userId: mockUserId, discountAmount: 15 },
-        { ...mockUsageLog, userId: 'user-2', discountAmount: 20 },
+        { ...mockUsageLog, userId: "user-2", discountAmount: 20 },
       ] as DiscountUsageLog[]);
 
       const result = await service.getUsageStats(mockDiscountId);
@@ -1017,7 +1017,7 @@ describe('DiscountsService', () => {
       });
     });
 
-    it('should handle zero usages', async () => {
+    it("should handle zero usages", async () => {
       usageLogRepository.find.mockResolvedValue([]);
 
       const result = await service.getUsageStats(mockDiscountId);
@@ -1032,8 +1032,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('calculateDiscountAmount', () => {
-    it('should calculate PERCENTAGE discount', () => {
+  describe("calculateDiscountAmount", () => {
+    it("should calculate PERCENTAGE discount", () => {
       const percentageDiscount = {
         ...mockDiscount,
         type: DiscountType.PERCENTAGE,
@@ -1047,7 +1047,7 @@ describe('DiscountsService', () => {
       expect(result).toBe(10); // 10% of 100
     });
 
-    it('should calculate FIXED_AMOUNT discount', () => {
+    it("should calculate FIXED_AMOUNT discount", () => {
       const result = service.calculateDiscountAmount(
         mockFixedDiscount as Discount,
         100,
@@ -1056,7 +1056,7 @@ describe('DiscountsService', () => {
       expect(result).toBe(20);
     });
 
-    it('should calculate BUY_X_GET_Y discount with sufficient quantity', () => {
+    it("should calculate BUY_X_GET_Y discount with sufficient quantity", () => {
       const result = service.calculateDiscountAmount(
         mockBuyXGetYDiscount as Discount,
         50, // unit price
@@ -1066,7 +1066,7 @@ describe('DiscountsService', () => {
       expect(result).toBe(100); // 2 free items * 50
     });
 
-    it('should return 0 for BUY_X_GET_Y with insufficient quantity', () => {
+    it("should return 0 for BUY_X_GET_Y with insufficient quantity", () => {
       const result = service.calculateDiscountAmount(
         mockBuyXGetYDiscount as Discount,
         50,
@@ -1076,7 +1076,7 @@ describe('DiscountsService', () => {
       expect(result).toBe(0);
     });
 
-    it('should return 0 for FREE_ITEM discount', () => {
+    it("should return 0 for FREE_ITEM discount", () => {
       const result = service.calculateDiscountAmount(
         mockFreeItemDiscount as Discount,
         100,
@@ -1085,10 +1085,10 @@ describe('DiscountsService', () => {
       expect(result).toBe(0);
     });
 
-    it('should return 0 for unknown discount type', () => {
+    it("should return 0 for unknown discount type", () => {
       const unknownDiscount = {
         ...mockDiscount,
-        type: 'UNKNOWN' as DiscountType,
+        type: "UNKNOWN" as DiscountType,
       };
 
       const result = service.calculateDiscountAmount(
@@ -1099,7 +1099,7 @@ describe('DiscountsService', () => {
       expect(result).toBe(0);
     });
 
-    it('should handle percentage with decimal values', () => {
+    it("should handle percentage with decimal values", () => {
       const percentageDiscount = {
         ...mockDiscount,
         value: 15.5,
@@ -1113,7 +1113,7 @@ describe('DiscountsService', () => {
       expect(result).toBe(31); // 15.5% of 200
     });
 
-    it('should handle BUY_X_GET_Y with multiple sets', () => {
+    it("should handle BUY_X_GET_Y with multiple sets", () => {
       const result = service.calculateDiscountAmount(
         mockBuyXGetYDiscount as Discount,
         30, // unit price
@@ -1124,8 +1124,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('activateDiscount', () => {
-    it('should activate a discount', async () => {
+  describe("activateDiscount", () => {
+    it("should activate a discount", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       discountRepository.save.mockImplementation((discount) =>
         Promise.resolve(discount as Discount),
@@ -1142,8 +1142,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('deactivateDiscount', () => {
-    it('should deactivate a discount', async () => {
+  describe("deactivateDiscount", () => {
+    it("should deactivate a discount", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       discountRepository.save.mockImplementation((discount) =>
         Promise.resolve(discount as Discount),
@@ -1160,8 +1160,8 @@ describe('DiscountsService', () => {
     });
   });
 
-  describe('expireDiscount', () => {
-    it('should expire a discount', async () => {
+  describe("expireDiscount", () => {
+    it("should expire a discount", async () => {
       discountRepository.findOne.mockResolvedValue(mockDiscount as Discount);
       discountRepository.save.mockImplementation((discount) =>
         Promise.resolve(discount as Discount),

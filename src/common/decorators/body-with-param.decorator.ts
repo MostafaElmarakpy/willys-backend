@@ -1,8 +1,8 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, type ExecutionContext } from "@nestjs/common";
 
 export enum transformToTypeTypes {
-  int = 'int',
-  string = 'string',
+  int = "int",
+  string = "string",
 }
 
 export interface IAddParamsToBodyArgs {
@@ -16,7 +16,8 @@ export const BodyWithParam = createParamDecorator(
 
     let value = req.params[args.paramName];
 
-    if (args.transformTo === transformToTypeTypes.int) value = parseInt(value);
+    if (args.transformTo === transformToTypeTypes.int)
+      value = parseInt(value, 10);
     if (args.transformTo === transformToTypeTypes.string)
       value = value.toString();
 

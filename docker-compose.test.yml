@@ -1,0 +1,19 @@
+services:
+  postgres-test:
+    image: postgis/postgis:17-3.4
+    container_name: willys-test-db
+    environment:
+      POSTGRES_USER: willys_test
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: willys_test
+    ports:
+      - "5434:5432"
+    tmpfs:
+      - /var/lib/postgresql/data  # RAM disk for speed
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U willys_test -d willys_test"]
+      start_period: 20s
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: on-failure

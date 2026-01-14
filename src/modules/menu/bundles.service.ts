@@ -1,24 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { Bundle } from 'src/database/entities/bundle.entity';
-import { BundleComponent } from 'src/database/entities/bundle-component.entity';
-import { BundleComponentItem } from 'src/database/entities/bundle-component-item.entity';
-import { CreateBundleDto } from './dto/bundle/create-bundle.dto';
-import { UpdateBundleDto } from './dto/bundle/update-bundle.dto';
-import { BundleFilterDto } from './dto/bundle/bundle-filter.dto';
-import { BundleStatus } from 'src/common/enums/BundleStatus';
-import { UploadMediaService } from 'src/services/upload-media/upload-media.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { BundleStatus } from "src/common/enums/BundleStatus";
+import { Bundle } from "src/database/entities/bundle.entity";
+import { BundleComponent } from "src/database/entities/bundle-component.entity";
+import { BundleComponentItem } from "src/database/entities/bundle-component-item.entity";
+import { UploadMediaService } from "src/services/upload-media/upload-media.service";
+import { IsNull, type Repository } from "typeorm";
+import { BundleFilterDto } from "./dto/bundle/bundle-filter.dto";
+import { CreateBundleDto } from "./dto/bundle/create-bundle.dto";
+import { UpdateBundleDto } from "./dto/bundle/update-bundle.dto";
 
 @Injectable()
 export class BundlesService {
   constructor(
-    @InjectRepository(Bundle)
-    private readonly bundleRepository: Repository<Bundle>,
+    @InjectRepository(Bundle) readonly bundleRepository: Repository<Bundle>,
     @InjectRepository(BundleComponent)
-    private readonly bundleComponentRepository: Repository<BundleComponent>,
+    readonly bundleComponentRepository: Repository<BundleComponent>,
     @InjectRepository(BundleComponentItem)
-    private readonly bundleComponentItemRepository: Repository<BundleComponentItem>,
+    readonly bundleComponentItemRepository: Repository<BundleComponentItem>,
     private readonly uploadMediaService: UploadMediaService,
   ) {}
 
@@ -37,11 +36,11 @@ export class BundlesService {
       tags: tags || undefined,
     });
 
-    if (files && files['image']) {
+    if (files?.image) {
       bundle.image = (
         await this.uploadMediaService.saveOneFile(
           files?.image,
-          'properties',
+          "properties",
           bundle.id,
         )
       )?.url;
@@ -111,23 +110,23 @@ export class BundlesService {
       categoriesIds,
       minPrice,
       maxPrice,
-      sortBy = 'createdAt',
-      sortOrder = 'DESC',
+      sortBy = "createdAt",
+      sortOrder = "DESC",
       fromDate,
       toDate,
     } = filterDto;
 
     const validSortFields = [
-      'name',
-      'price',
-      'createdAt',
-      'updatedAt',
-      'status',
+      "name",
+      "price",
+      "createdAt",
+      "updatedAt",
+      "status",
     ];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
 
-    let whereConditions: string[] = ['b."deletedAt" IS NULL'];
-    let parameters: any[] = [];
+    const whereConditions: string[] = ['b."deletedAt" IS NULL'];
+    const parameters: any[] = [];
     let paramIndex = 1;
 
     if (search) {
@@ -189,11 +188,11 @@ export class BundlesService {
 
     const whereClause =
       whereConditions.length > 0
-        ? `WHERE ${whereConditions.join(' AND ')}`
-        : '';
+        ? `WHERE ${whereConditions.join(" AND ")}`
+        : "";
 
-    let orderByClause = '';
-    if (sortField === 'name') {
+    let orderByClause = "";
+    if (sortField === "name") {
       orderByClause = `ORDER BY b.name ->> 'en' ${sortOrder}`;
     } else {
       orderByClause = `ORDER BY b."${sortField}" ${sortOrder}`;
@@ -239,7 +238,7 @@ export class BundlesService {
       this.bundleRepository.query(countQuery, countParameters),
     ]);
 
-    const total = parseInt(countResult[0].total);
+    const total = parseInt(countResult[0].total, 10);
 
     return {
       bundles,
@@ -254,17 +253,17 @@ export class BundlesService {
     const bundle = await this.bundleRepository.findOne({
       where: { id, deletedAt: IsNull() },
       relations: [
-        'category',
-        'components',
-        'components.category',
-        'components.defaultItem',
-        'components.items',
-        'components.items.item',
+        "category",
+        "components",
+        "components.category",
+        "components.defaultItem",
+        "components.items",
+        "components.items.item",
       ],
     });
 
     if (!bundle) {
-      throw new NotFoundException('Bundle not found');
+      throw new NotFoundException("Bundle not found");
     }
 
     return bundle;
@@ -290,11 +289,11 @@ export class BundlesService {
       bundle.tags = tags;
     }
 
-    if (files && files['image']) {
+    if (files?.image) {
       bundle.image = (
         await this.uploadMediaService.saveOneFile(
           files?.image,
-          'properties',
+          "properties",
           bundle.id,
         )
       )?.url;
@@ -374,7 +373,7 @@ export class BundlesService {
   async findByCategory(categoryId: string): Promise<Bundle[]> {
     return await this.bundleRepository.find({
       where: { categoryId, deletedAt: IsNull() },
-      relations: ['category'],
+      relations: ["category"],
     });
   }
 

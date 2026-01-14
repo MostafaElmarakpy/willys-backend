@@ -1,23 +1,23 @@
+import { Transform, Type } from "class-transformer";
 import {
-  IsNotEmpty,
-  IsOptional,
-  IsNumber,
-  IsString,
   IsArray,
-  ValidateNested,
   IsIn,
-} from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
 
 export function transformPricing({ value }: { value: any }) {
   // If it's already an object with type field, keep it as is
-  if (typeof value === 'object' && value !== null && value.type) {
+  if (typeof value === "object" && value !== null && value.type) {
     return value;
   }
 
   // If it's a string or number, just return it as is
   // The service layer will handle the conversion
-  if (typeof value === 'string' || typeof value === 'number') {
+  if (typeof value === "string" || typeof value === "number") {
     return value;
   }
 
@@ -69,8 +69,8 @@ export class PricingObject {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn(['number', 'object'])
-  type: 'number' | 'object';
+  @IsIn(["number", "object"])
+  type: "number" | "object";
 }
 
 export class Pricing {

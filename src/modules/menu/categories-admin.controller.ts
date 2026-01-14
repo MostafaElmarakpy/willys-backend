@@ -7,32 +7,32 @@ import {
   Patch,
   Post,
   Query,
+  Request,
   UseGuards,
   Version,
-  Request,
-} from '@nestjs/common';
-import { Permission } from 'src/common/decorators/permissions.decorator';
-import { PermissionModule } from 'src/common/enums/PermissionModule';
-import { PermissionAction } from 'src/common/enums/PermissionAction';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
+} from "@nestjs/common";
+import { Permission } from "src/common/decorators/permissions.decorator";
+import { PermissionAction } from "src/common/enums/PermissionAction";
+import { PermissionModule } from "src/common/enums/PermissionModule";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { PermissionsGuard } from "src/common/guards/permissions.guard";
 import {
-  createSuccessResponse,
   createCreatedResponse,
-} from 'src/common/utils/api-response-wrapper';
-import { CreateCategoryDto } from './dto/category/create-category.dto';
-import { UpdateCategoryDto } from './dto/category/update-category.dto';
-import { CategoriesService } from './categories.service';
-import { CategoryFilterDto } from './dto/category/category-filter.dto';
-import { ReorderCategoriesDto } from './dto/category/reorder-categories.dto';
+  createSuccessResponse,
+} from "src/common/utils/api-response-wrapper";
+import { CategoriesService } from "./categories.service";
+import { CategoryFilterDto } from "./dto/category/category-filter.dto";
+import { CreateCategoryDto } from "./dto/category/create-category.dto";
+import { ReorderCategoriesDto } from "./dto/category/reorder-categories.dto";
+import { UpdateCategoryDto } from "./dto/category/update-category.dto";
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-@Controller('admin/menu/categories')
+@Controller("admin/menu/categories")
 export class CategoriesAdminController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  @Version('1')
+  @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.READ)
   async findAll(@Query() query: CategoryFilterDto) {
     const {
@@ -41,7 +41,7 @@ export class CategoriesAdminController {
       search,
       isActive,
       sortBy,
-      sortOrder = 'ASC',
+      sortOrder = "ASC",
     } = query;
     const categories = await this.categoriesService.findAll(
       page,
@@ -53,12 +53,12 @@ export class CategoriesAdminController {
     );
     return createSuccessResponse(
       categories,
-      'Categories retrieved successfully',
+      "Categories retrieved successfully",
     );
   }
 
   @Post()
-  @Version('1')
+  @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.CREATE)
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
@@ -68,41 +68,41 @@ export class CategoriesAdminController {
       createCategoryDto,
       req.user.id,
     );
-    return createCreatedResponse(category, 'Category created successfully');
+    return createCreatedResponse(category, "Category created successfully");
   }
 
-  @Patch('reorder')
-  @Version('1')
+  @Patch("reorder")
+  @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.UPDATE)
   async reorder(@Body() reorderDto: ReorderCategoriesDto) {
     const result = await this.categoriesService.reorderCategories(reorderDto);
-    return createSuccessResponse(result, 'Categories reordered successfully');
+    return createSuccessResponse(result, "Categories reordered successfully");
   }
 
-  @Get('active')
-  @Version('1')
+  @Get("active")
+  @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.READ)
   async findActiveCategories() {
     const categories = await this.categoriesService.findActiveCategories();
     return createSuccessResponse(
       categories,
-      'Active categories retrieved successfully',
+      "Active categories retrieved successfully",
     );
   }
 
-  @Get(':id')
-  @Version('1')
+  @Get(":id")
+  @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.READ)
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param("id") id: string) {
     const category = await this.categoriesService.findOne(id);
-    return createSuccessResponse(category, 'Category retrieved successfully');
+    return createSuccessResponse(category, "Category retrieved successfully");
   }
 
-  @Patch(':id')
-  @Version('1')
+  @Patch(":id")
+  @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.UPDATE)
   async update(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
     @Request() req: any,
   ) {
@@ -111,14 +111,14 @@ export class CategoriesAdminController {
       updateCategoryDto,
       req.user.id,
     );
-    return createSuccessResponse(category, 'Category updated successfully');
+    return createSuccessResponse(category, "Category updated successfully");
   }
 
-  @Delete(':id')
-  @Version('1')
+  @Delete(":id")
+  @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.DELETE)
-  async remove(@Param('id') id: string) {
+  async remove(@Param("id") id: string) {
     await this.categoriesService.remove(id);
-    return createSuccessResponse(null, 'Category deleted successfully');
+    return createSuccessResponse(null, "Category deleted successfully");
   }
 }

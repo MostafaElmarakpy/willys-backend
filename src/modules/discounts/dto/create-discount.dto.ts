@@ -1,23 +1,23 @@
+import { Type } from "class-transformer";
 import {
+  IsBoolean,
+  IsDateString,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsBoolean,
-  IsDateString,
-  Min,
-  Max,
-  IsInt,
-  ValidateIf,
   IsUUID,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { ValidateNested } from 'class-validator';
-import { BilingualString } from 'src/common/dto/bilingual-string.dto';
-import { DiscountType } from 'src/common/enums/DiscountType';
-import { DiscountStatus } from 'src/common/enums/DiscountStatus';
-import { DiscountTargetType } from 'src/common/enums/DiscountTargetType';
+  Max,
+  Min,
+  ValidateIf,
+  ValidateNested,
+} from "class-validator";
+import { BilingualString } from "src/common/dto/bilingual-string.dto";
+import { DiscountStatus } from "src/common/enums/DiscountStatus";
+import { DiscountTargetType } from "src/common/enums/DiscountTargetType";
+import { DiscountType } from "src/common/enums/DiscountType";
 
 export class CreateDiscountDto {
   @IsOptional()

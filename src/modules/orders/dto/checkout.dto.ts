@@ -1,12 +1,12 @@
 import {
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsEnum,
   IsUUID,
   MaxLength,
-} from 'class-validator';
-import { PaymentType } from 'src/common/enums/PaymentType';
+} from "class-validator";
+import { PaymentType } from "src/common/enums/PaymentType";
 
 export class CheckoutDto {
   @IsNotEmpty()

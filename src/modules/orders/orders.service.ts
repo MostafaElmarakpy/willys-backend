@@ -1,21 +1,21 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, Between, IsNull } from 'typeorm';
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { OrderStatus } from "src/common/enums/OrderStatus";
+import { OrderType } from "src/common/enums/OrderType";
+import { Cart } from "src/database/entities/cart.entity";
 import {
+  type DeliveryAddressSnapshot,
   Order,
-  DeliveryAddressSnapshot,
-} from 'src/database/entities/order.entity';
-import { OrderItem } from 'src/database/entities/order-item.entity';
-import { OrderStatusLog } from 'src/database/entities/order-status-log.entity';
-import { Cart } from 'src/database/entities/cart.entity';
-import { UserAddress } from 'src/database/entities/user-address.entity';
-import { OrderStatus } from 'src/common/enums/OrderStatus';
-import { OrderType } from 'src/common/enums/OrderType';
-import { OrderFilterDto } from './dto/order-filter.dto';
+} from "src/database/entities/order.entity";
+import { OrderItem } from "src/database/entities/order-item.entity";
+import { OrderStatusLog } from "src/database/entities/order-status-log.entity";
+import { UserAddress } from "src/database/entities/user-address.entity";
+import { Between, DataSource, IsNull, type Repository } from "typeorm";
+import { OrderFilterDto } from "./dto/order-filter.dto";
 
 @Injectable()
 export class OrdersService {
@@ -53,20 +53,19 @@ export class OrdersService {
   ];
 
   constructor(
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
+    @InjectRepository(Order) readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
-    private readonly orderItemRepository: Repository<OrderItem>,
+    readonly orderItemRepository: Repository<OrderItem>,
     @InjectRepository(OrderStatusLog)
-    private readonly statusLogRepository: Repository<OrderStatusLog>,
+    readonly statusLogRepository: Repository<OrderStatusLog>,
     @InjectRepository(UserAddress)
-    private readonly addressRepository: Repository<UserAddress>,
+    readonly addressRepository: Repository<UserAddress>,
     private readonly dataSource: DataSource,
   ) {}
 
   async generateOrderNumber(): Promise<string> {
     const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
 
     // Get count of orders today
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
@@ -78,7 +77,7 @@ export class OrdersService {
       },
     });
 
-    const sequence = String(count + 1).padStart(4, '0');
+    const sequence = String(count + 1).padStart(4, "0");
     return `WLY-${dateStr}-${sequence}`;
   }
 
@@ -139,7 +138,7 @@ export class OrdersService {
         appliedDiscounts: cart.appliedDiscounts?.map((d) => ({
           discountId: d.discountId,
           code: d.code,
-          name: { en: d.code || 'Discount', ar: d.code || 'خصم' },
+          name: { en: d.code || "Discount", ar: d.code || "خصم" },
           type: d.type,
           amount: d.amount,
         })),
@@ -163,7 +162,7 @@ export class OrdersService {
           orderId: order.id,
           itemType: cartItem.itemType,
           originalItemId: cartItem.itemId || cartItem.bundleId,
-          name: itemData?.name || { en: 'Unknown', ar: 'غير معروف' },
+          name: itemData?.name || { en: "Unknown", ar: "غير معروف" },
           description: itemData?.description,
           image: itemData?.image,
           quantity: cartItem.quantity,
@@ -177,7 +176,7 @@ export class OrdersService {
           appliedDiscount: cartItem.appliedDiscountId
             ? {
                 discountId: cartItem.appliedDiscountId,
-                type: 'PERCENTAGE' as any,
+                type: "PERCENTAGE" as any,
                 amount: Number(cartItem.discountAmount),
               }
             : undefined,
@@ -191,7 +190,7 @@ export class OrdersService {
         orderId: order.id,
         previousStatus: OrderStatus.PENDING,
         newStatus: OrderStatus.PENDING,
-        notes: 'Order created',
+        notes: "Order created",
         occurredAt: new Date(),
       });
 
@@ -211,14 +210,14 @@ export class OrdersService {
   async findOne(id: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['items', 'statusLogs', 'branch', 'user'],
+      relations: ["items", "statusLogs", "branch", "user"],
       order: {
-        statusLogs: { occurredAt: 'ASC' },
+        statusLogs: { occurredAt: "ASC" },
       },
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException("Order not found");
     }
 
     return order;
@@ -227,11 +226,11 @@ export class OrdersService {
   async findByOrderNumber(orderNumber: string): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { orderNumber, deletedAt: IsNull() },
-      relations: ['items', 'statusLogs', 'branch'],
+      relations: ["items", "statusLogs", "branch"],
     });
 
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException("Order not found");
     }
 
     return order;
@@ -253,33 +252,33 @@ export class OrdersService {
     } = filterDto;
 
     const queryBuilder = this.orderRepository
-      .createQueryBuilder('order')
-      .leftJoinAndSelect('order.items', 'items')
-      .leftJoinAndSelect('order.branch', 'branch')
-      .where('order.userId = :userId', { userId })
-      .andWhere('order.deletedAt IS NULL');
+      .createQueryBuilder("order")
+      .leftJoinAndSelect("order.items", "items")
+      .leftJoinAndSelect("order.branch", "branch")
+      .where("order.userId = :userId", { userId })
+      .andWhere("order.deletedAt IS NULL");
 
     if (status) {
-      queryBuilder.andWhere('order.status = :status', { status });
+      queryBuilder.andWhere("order.status = :status", { status });
     }
 
     if (orderType) {
-      queryBuilder.andWhere('order.orderType = :orderType', { orderType });
+      queryBuilder.andWhere("order.orderType = :orderType", { orderType });
     }
 
     if (startDate) {
-      queryBuilder.andWhere('order.createdAt >= :startDate', {
+      queryBuilder.andWhere("order.createdAt >= :startDate", {
         startDate: new Date(startDate),
       });
     }
 
     if (endDate) {
-      queryBuilder.andWhere('order.createdAt <= :endDate', {
+      queryBuilder.andWhere("order.createdAt <= :endDate", {
         endDate: new Date(endDate),
       });
     }
 
-    queryBuilder.orderBy(`order.${sortBy || 'createdAt'}`, sortOrder || 'DESC');
+    queryBuilder.orderBy(`order.${sortBy || "createdAt"}`, sortOrder || "DESC");
     const pageNum = page || 1;
     const limitNum = limit || 10;
     queryBuilder.skip((pageNum - 1) * limitNum).take(limitNum);
@@ -306,44 +305,44 @@ export class OrdersService {
     } = filterDto;
 
     const queryBuilder = this.orderRepository
-      .createQueryBuilder('order')
-      .leftJoinAndSelect('order.items', 'items')
-      .leftJoinAndSelect('order.branch', 'branch')
-      .leftJoinAndSelect('order.user', 'user')
-      .where('order.deletedAt IS NULL');
+      .createQueryBuilder("order")
+      .leftJoinAndSelect("order.items", "items")
+      .leftJoinAndSelect("order.branch", "branch")
+      .leftJoinAndSelect("order.user", "user")
+      .where("order.deletedAt IS NULL");
 
     if (status) {
-      queryBuilder.andWhere('order.status = :status', { status });
+      queryBuilder.andWhere("order.status = :status", { status });
     }
 
     if (orderType) {
-      queryBuilder.andWhere('order.orderType = :orderType', { orderType });
+      queryBuilder.andWhere("order.orderType = :orderType", { orderType });
     }
 
     if (branchId) {
-      queryBuilder.andWhere('order.branchId = :branchId', { branchId });
+      queryBuilder.andWhere("order.branchId = :branchId", { branchId });
     }
 
     if (startDate) {
-      queryBuilder.andWhere('order.createdAt >= :startDate', {
+      queryBuilder.andWhere("order.createdAt >= :startDate", {
         startDate: new Date(startDate),
       });
     }
 
     if (endDate) {
-      queryBuilder.andWhere('order.createdAt <= :endDate', {
+      queryBuilder.andWhere("order.createdAt <= :endDate", {
         endDate: new Date(endDate),
       });
     }
 
     if (search) {
       queryBuilder.andWhere(
-        '(order.orderNumber ILIKE :search OR user.email ILIKE :search)',
+        "(order.orderNumber ILIKE :search OR user.email ILIKE :search)",
         { search: `%${search}%` },
       );
     }
 
-    queryBuilder.orderBy(`order.${sortBy || 'createdAt'}`, sortOrder || 'DESC');
+    queryBuilder.orderBy(`order.${sortBy || "createdAt"}`, sortOrder || "DESC");
     const pageNum = page || 1;
     const limitNum = limit || 10;
     queryBuilder.skip((pageNum - 1) * limitNum).take(limitNum);
@@ -429,12 +428,12 @@ export class OrdersService {
     // Check if user can cancel
     if (!isAdmin) {
       if (order.userId !== userId) {
-        throw new BadRequestException('You can only cancel your own orders');
+        throw new BadRequestException("You can only cancel your own orders");
       }
 
       if (!this.userCancellableStatuses.includes(order.status)) {
         throw new BadRequestException(
-          'This order can no longer be cancelled. Please contact support.',
+          "This order can no longer be cancelled. Please contact support.",
         );
       }
     }
@@ -445,7 +444,7 @@ export class OrdersService {
       order.status === OrderStatus.CANCELLED ||
       order.status === OrderStatus.REFUNDED
     ) {
-      throw new BadRequestException('This order cannot be cancelled');
+      throw new BadRequestException("This order cannot be cancelled");
     }
 
     order.cancellationReason = reason;
@@ -479,18 +478,18 @@ export class OrdersService {
     averageOrderValue: number;
   }> {
     const queryBuilder = this.orderRepository
-      .createQueryBuilder('order')
-      .where('order.deletedAt IS NULL');
+      .createQueryBuilder("order")
+      .where("order.deletedAt IS NULL");
 
     if (branchId) {
-      queryBuilder.andWhere('order.branchId = :branchId', { branchId });
+      queryBuilder.andWhere("order.branchId = :branchId", { branchId });
     }
 
     const totalOrders = await queryBuilder.getCount();
 
     const pendingOrders = await queryBuilder
       .clone()
-      .andWhere('order.status IN (:...statuses)', {
+      .andWhere("order.status IN (:...statuses)", {
         statuses: [
           OrderStatus.PENDING,
           OrderStatus.CONFIRMED,
@@ -503,18 +502,18 @@ export class OrdersService {
 
     const completedOrders = await queryBuilder
       .clone()
-      .andWhere('order.status = :status', { status: OrderStatus.COMPLETED })
+      .andWhere("order.status = :status", { status: OrderStatus.COMPLETED })
       .getCount();
 
     const cancelledOrders = await queryBuilder
       .clone()
-      .andWhere('order.status = :status', { status: OrderStatus.CANCELLED })
+      .andWhere("order.status = :status", { status: OrderStatus.CANCELLED })
       .getCount();
 
     const revenueResult = await queryBuilder
       .clone()
-      .andWhere('order.status = :status', { status: OrderStatus.COMPLETED })
-      .select('SUM(order.total)', 'total')
+      .andWhere("order.status = :status", { status: OrderStatus.COMPLETED })
+      .select("SUM(order.total)", "total")
       .getRawOne();
 
     const totalRevenue = Number(revenueResult?.total) || 0;

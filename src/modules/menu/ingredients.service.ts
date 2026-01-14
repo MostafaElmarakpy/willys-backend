@@ -1,20 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
-import { Ingredient } from 'src/database/entities/ingredient.entity';
-import { IngredientCategory } from 'src/database/entities/ingredient-category.entity';
-import { CreateIngredientDto } from './dto/ingredient/create-ingredient.dto';
-import { UpdateIngredientDto } from './dto/ingredient/update-ingredient.dto';
-import { CreateIngredientCategoryDto } from './dto/ingredient/create-ingredient-category.dto';
-import { UpdateIngredientCategoryDto } from './dto/ingredient/update-ingredient-category.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Ingredient } from "src/database/entities/ingredient.entity";
+import { IngredientCategory } from "src/database/entities/ingredient-category.entity";
+import { IsNull, type Repository } from "typeorm";
+import { CreateIngredientDto } from "./dto/ingredient/create-ingredient.dto";
+import { CreateIngredientCategoryDto } from "./dto/ingredient/create-ingredient-category.dto";
+import { UpdateIngredientDto } from "./dto/ingredient/update-ingredient.dto";
+import { UpdateIngredientCategoryDto } from "./dto/ingredient/update-ingredient-category.dto";
 
 @Injectable()
 export class IngredientsService {
   constructor(
     @InjectRepository(Ingredient)
-    private readonly ingredientRepository: Repository<Ingredient>,
+    readonly ingredientRepository: Repository<Ingredient>,
     @InjectRepository(IngredientCategory)
-    private readonly ingredientCategoryRepository: Repository<IngredientCategory>,
+    readonly ingredientCategoryRepository: Repository<IngredientCategory>,
   ) {}
 
   async createCategory(
@@ -33,16 +33,16 @@ export class IngredientsService {
     limit: number = 10,
     search?: string,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ) {
-    const allowedSortFields = ['name', 'sortOrder', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ["name", "sortOrder", "createdAt", "updatedAt"];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'sortOrder';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "sortOrder";
 
     const queryBuilder = this.ingredientCategoryRepository
-      .createQueryBuilder('category')
-      .where('category.deletedAt IS NULL')
-      .leftJoinAndSelect('category.ingredients', 'ingredients');
+      .createQueryBuilder("category")
+      .where("category.deletedAt IS NULL")
+      .leftJoinAndSelect("category.ingredients", "ingredients");
 
     if (search) {
       queryBuilder.where(
@@ -52,7 +52,7 @@ export class IngredientsService {
     }
 
     // Handle dynamic ordering
-    if (orderField === 'name') {
+    if (orderField === "name") {
       queryBuilder.orderBy("category.name ->> 'en'", sortOrder);
     } else {
       queryBuilder.orderBy(`category.${orderField}`, sortOrder);
@@ -75,7 +75,7 @@ export class IngredientsService {
   async findOneCategory(id: string): Promise<IngredientCategory> {
     const category = await this.ingredientCategoryRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['ingredients'],
+      relations: ["ingredients"],
     });
 
     if (!category) {
@@ -128,15 +128,15 @@ export class IngredientsService {
     search?: string,
     categoryId?: string,
     sortBy?: string,
-    sortOrder: 'ASC' | 'DESC' = 'DESC',
+    sortOrder: "ASC" | "DESC" = "DESC",
   ) {
-    const allowedSortFields = ['name', 'price', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ["name", "price", "createdAt", "updatedAt"];
     const orderField =
-      sortBy && allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      sortBy && allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
 
     const queryBuilder = this.ingredientRepository
-      .createQueryBuilder('ingredient')
-      .leftJoinAndSelect('ingredient.category', 'category');
+      .createQueryBuilder("ingredient")
+      .leftJoinAndSelect("ingredient.category", "category");
 
     if (search) {
       queryBuilder.where(
@@ -146,13 +146,13 @@ export class IngredientsService {
     }
 
     if (categoryId) {
-      queryBuilder.andWhere('ingredient.categoryId = :categoryId', {
+      queryBuilder.andWhere("ingredient.categoryId = :categoryId", {
         categoryId,
       });
     }
 
     // Handle dynamic ordering
-    if (orderField === 'name') {
+    if (orderField === "name") {
       queryBuilder.orderBy("ingredient.name ->> 'en'", sortOrder);
     } else {
       queryBuilder.orderBy(`ingredient.${orderField}`, sortOrder);
@@ -175,7 +175,7 @@ export class IngredientsService {
   async findOneIngredient(id: string): Promise<Ingredient> {
     const ingredient = await this.ingredientRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['category'],
+      relations: ["category"],
     });
 
     if (!ingredient) {
@@ -207,22 +207,22 @@ export class IngredientsService {
   async findActiveCategories(): Promise<IngredientCategory[]> {
     return await this.ingredientCategoryRepository.find({
       where: { isActive: true, deletedAt: IsNull() },
-      order: { sortOrder: 'ASC', createdAt: 'DESC' },
+      order: { sortOrder: "ASC", createdAt: "DESC" },
     });
   }
 
   async findIngredientsByCategory(categoryId: string): Promise<Ingredient[]> {
     return await this.ingredientRepository.find({
       where: { categoryId, isActive: true },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
   }
 
   async findDefaultExtras(): Promise<Ingredient[]> {
     return await this.ingredientRepository.find({
       where: { isDefaultExtra: true, isActive: true, deletedAt: IsNull() },
-      relations: ['category'],
-      order: { name: { en: 'ASC' } },
+      relations: ["category"],
+      order: { name: { en: "ASC" } },
     });
   }
 }

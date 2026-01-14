@@ -1,4 +1,4 @@
 export enum RefundType {
-  FULL = 'FULL',
-  PARTIAL = 'PARTIAL',
+  FULL = "FULL",
+  PARTIAL = "PARTIAL",
 }

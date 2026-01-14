@@ -1,11 +1,11 @@
 import {
-  CanActivate,
-  ExecutionContext,
+  type CanActivate,
+  type ExecutionContext,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { Request } from 'express';
-import { UsersService } from 'src/modules/users/users.service';
+} from "@nestjs/common";
+import { Request } from "express";
+import { UsersService } from "src/modules/users/users.service";
 
 @Injectable()
 export class JwtAuthOrGuestGuard implements CanActivate {
@@ -25,24 +25,24 @@ export class JwtAuthOrGuestGuard implements CanActivate {
 
     try {
       if (!token) {
-        throw new UnauthorizedException('Token not found');
+        throw new UnauthorizedException("Token not found");
       }
 
       const user = await this.usersService.validateUserToken(token);
 
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        throw new UnauthorizedException("User not found");
       }
 
-      request['user'] = user;
+      request.user = user;
       return true;
     } catch (_error) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException("Invalid token");
     }
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    const [type, token] = request.headers.authorization?.split(" ") ?? [];
+    return type === "Bearer" ? token : undefined;
   }
 }

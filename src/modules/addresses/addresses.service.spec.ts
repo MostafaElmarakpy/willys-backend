@@ -1,33 +1,33 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { AddressesService } from './addresses.service';
-import { UserAddress } from 'src/database/entities/user-address.entity';
-import { OrderRoutingService } from '../branches/order-routing.service';
-import { AddressType } from 'src/common/enums/AddressType';
+import { NotFoundException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import { AddressType } from "src/common/enums/AddressType";
+import { UserAddress } from "src/database/entities/user-address.entity";
+import { Repository } from "typeorm";
+import { OrderRoutingService } from "../branches/order-routing.service";
+import { AddressesService } from "./addresses.service";
 
-describe('AddressesService', () => {
+describe("AddressesService", () => {
   let service: AddressesService;
   let addressRepository: jest.Mocked<Repository<UserAddress>>;
   let orderRoutingService: jest.Mocked<OrderRoutingService>;
 
-  const mockUserId = 'user-123';
-  const mockAddressId = 'address-123';
+  const mockUserId = "user-123";
+  const mockAddressId = "address-123";
 
   const mockAddress: Partial<UserAddress> = {
     id: mockAddressId,
     userId: mockUserId,
-    label: { en: 'Home', ar: 'المنزل' },
+    label: { en: "Home", ar: "المنزل" },
     type: AddressType.HOME,
-    addressLine1: '123 Main Street',
-    city: 'Cairo',
-    area: 'Maadi',
+    addressLine1: "123 Main Street",
+    city: "Cairo",
+    area: "Maadi",
     latitude: 30.0444,
     longitude: 31.2357,
     isDefault: true,
     isActive: true,
-    cachedBranchId: 'branch-123',
+    cachedBranchId: "branch-123",
     cachedDeliveryFee: 15,
     lastValidatedAt: new Date(),
     createdAt: new Date(),
@@ -37,12 +37,12 @@ describe('AddressesService', () => {
   const mockRoutingResult = {
     canDeliver: true,
     assignedBranch: {
-      id: 'branch-123',
-      name: { en: 'Main Branch', ar: 'الفرع الرئيسي' },
+      id: "branch-123",
+      name: { en: "Main Branch", ar: "الفرع الرئيسي" },
     },
     deliveryFee: 15,
     estimatedDeliveryTime: 30,
-    message: 'Delivery available',
+    message: "Delivery available",
     alternativeBranches: [],
   };
 
@@ -80,12 +80,12 @@ describe('AddressesService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
-    it('should create a new address successfully', async () => {
+  describe("create", () => {
+    it("should create a new address successfully", async () => {
       const createAddressDto = {
-        label: { en: 'Home', ar: 'المنزل' },
+        label: { en: "Home", ar: "المنزل" },
         type: AddressType.HOME,
-        addressLine1: '123 Main Street',
+        addressLine1: "123 Main Street",
         latitude: 30.0444,
         longitude: 31.2357,
       };
@@ -109,17 +109,17 @@ describe('AddressesService', () => {
           userId: mockUserId,
           isDefault: true,
           isActive: true,
-          cachedBranchId: 'branch-123',
+          cachedBranchId: "branch-123",
           cachedDeliveryFee: 15,
         }),
       );
     });
 
-    it('should set first address as default automatically', async () => {
+    it("should set first address as default automatically", async () => {
       const createAddressDto = {
-        label: { en: 'Home', ar: 'المنزل' },
+        label: { en: "Home", ar: "المنزل" },
         type: AddressType.HOME,
-        addressLine1: '123 Main Street',
+        addressLine1: "123 Main Street",
         latitude: 30.0444,
         longitude: 31.2357,
         isDefault: false,
@@ -141,11 +141,11 @@ describe('AddressesService', () => {
       );
     });
 
-    it('should clear other defaults when creating default address', async () => {
+    it("should clear other defaults when creating default address", async () => {
       const createAddressDto = {
-        label: { en: 'Work', ar: 'العمل' },
+        label: { en: "Work", ar: "العمل" },
         type: AddressType.WORK,
-        addressLine1: '456 Office Street',
+        addressLine1: "456 Office Street",
         latitude: 30.0555,
         longitude: 31.2456,
         isDefault: true,
@@ -167,11 +167,11 @@ describe('AddressesService', () => {
       );
     });
 
-    it('should cache branch info from routing result', async () => {
+    it("should cache branch info from routing result", async () => {
       const createAddressDto = {
-        label: { en: 'Home', ar: 'المنزل' },
+        label: { en: "Home", ar: "المنزل" },
         type: AddressType.HOME,
-        addressLine1: '123 Main Street',
+        addressLine1: "123 Main Street",
         latitude: 30.0444,
         longitude: 31.2357,
       };
@@ -179,7 +179,7 @@ describe('AddressesService', () => {
       addressRepository.count.mockResolvedValue(0);
       orderRoutingService.routeOrder.mockResolvedValue({
         ...mockRoutingResult,
-        assignedBranch: { id: 'branch-456' },
+        assignedBranch: { id: "branch-456" },
         deliveryFee: 20,
       } as any);
       addressRepository.create.mockReturnValue(mockAddress as UserAddress);
@@ -189,15 +189,15 @@ describe('AddressesService', () => {
 
       expect(addressRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          cachedBranchId: 'branch-456',
+          cachedBranchId: "branch-456",
           cachedDeliveryFee: 20,
         }),
       );
     });
   });
 
-  describe('findAll', () => {
-    it('should return all active addresses for user', async () => {
+  describe("findAll", () => {
+    it("should return all active addresses for user", async () => {
       addressRepository.find.mockResolvedValue([mockAddress as UserAddress]);
 
       const result = await service.findAll(mockUserId);
@@ -209,11 +209,11 @@ describe('AddressesService', () => {
           isActive: true,
           deletedAt: expect.anything(),
         },
-        order: { isDefault: 'DESC', createdAt: 'DESC' },
+        order: { isDefault: "DESC", createdAt: "DESC" },
       });
     });
 
-    it('should return empty array if no addresses', async () => {
+    it("should return empty array if no addresses", async () => {
       addressRepository.find.mockResolvedValue([]);
 
       const result = await service.findAll(mockUserId);
@@ -222,8 +222,8 @@ describe('AddressesService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return an address by id', async () => {
+  describe("findOne", () => {
+    it("should return an address by id", async () => {
       addressRepository.findOne.mockResolvedValue(mockAddress as UserAddress);
 
       const result = await service.findOne(mockUserId, mockAddressId);
@@ -232,7 +232,7 @@ describe('AddressesService', () => {
       expect(result.id).toBe(mockAddressId);
     });
 
-    it('should throw NotFoundException if address not found', async () => {
+    it("should throw NotFoundException if address not found", async () => {
       addressRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne(mockUserId, mockAddressId)).rejects.toThrow(
@@ -241,11 +241,11 @@ describe('AddressesService', () => {
     });
   });
 
-  describe('update', () => {
-    it('should update an address successfully', async () => {
+  describe("update", () => {
+    it("should update an address successfully", async () => {
       const updateAddressDto = {
-        label: { en: 'Updated Home', ar: 'المنزل المحدث' },
-        addressLine1: '789 New Street',
+        label: { en: "Updated Home", ar: "المنزل المحدث" },
+        addressLine1: "789 New Street",
       };
 
       addressRepository.findOne.mockResolvedValue(mockAddress as UserAddress);
@@ -260,10 +260,10 @@ describe('AddressesService', () => {
         updateAddressDto,
       );
 
-      expect(result.label.en).toBe('Updated Home');
+      expect(result.label.en).toBe("Updated Home");
     });
 
-    it('should clear other defaults when setting as default', async () => {
+    it("should clear other defaults when setting as default", async () => {
       const updateAddressDto = { isDefault: true };
 
       addressRepository.findOne.mockResolvedValue({
@@ -284,7 +284,7 @@ describe('AddressesService', () => {
       );
     });
 
-    it('should revalidate delivery zone when location changes', async () => {
+    it("should revalidate delivery zone when location changes", async () => {
       const updateAddressDto = {
         latitude: 30.0555,
         longitude: 31.2456,
@@ -293,13 +293,13 @@ describe('AddressesService', () => {
       addressRepository.findOne.mockResolvedValue(mockAddress as UserAddress);
       orderRoutingService.routeOrder.mockResolvedValue({
         ...mockRoutingResult,
-        assignedBranch: { id: 'branch-456' },
+        assignedBranch: { id: "branch-456" },
         deliveryFee: 25,
       } as any);
       addressRepository.save.mockResolvedValue({
         ...mockAddress,
         ...updateAddressDto,
-        cachedBranchId: 'branch-456',
+        cachedBranchId: "branch-456",
         cachedDeliveryFee: 25,
       } as UserAddress);
 
@@ -313,10 +313,10 @@ describe('AddressesService', () => {
         latitude: 30.0555,
         longitude: 31.2456,
       });
-      expect(result.cachedBranchId).toBe('branch-456');
+      expect(result.cachedBranchId).toBe("branch-456");
     });
 
-    it('should use existing coordinates if only one is updated', async () => {
+    it("should use existing coordinates if only one is updated", async () => {
       const updateAddressDto = { latitude: 30.0666 };
 
       addressRepository.findOne.mockResolvedValue(mockAddress as UserAddress);
@@ -333,19 +333,19 @@ describe('AddressesService', () => {
       });
     });
 
-    it('should throw NotFoundException if address not found', async () => {
+    it("should throw NotFoundException if address not found", async () => {
       addressRepository.findOne.mockResolvedValue(null);
 
       await expect(
         service.update(mockUserId, mockAddressId, {
-          label: { en: 'Test', ar: 'اختبار' },
+          label: { en: "Test", ar: "اختبار" },
         }),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('remove', () => {
-    it('should soft delete an address', async () => {
+  describe("remove", () => {
+    it("should soft delete an address", async () => {
       const nonDefaultAddress = { ...mockAddress, isDefault: false };
       addressRepository.findOne.mockResolvedValue(
         nonDefaultAddress as UserAddress,
@@ -357,11 +357,11 @@ describe('AddressesService', () => {
       expect(addressRepository.softDelete).toHaveBeenCalledWith(mockAddressId);
     });
 
-    it('should set another address as default when deleting default', async () => {
+    it("should set another address as default when deleting default", async () => {
       const defaultAddress = { ...mockAddress, isDefault: true };
       const otherAddress = {
         ...mockAddress,
-        id: 'address-456',
+        id: "address-456",
         isDefault: false,
       };
 
@@ -378,13 +378,13 @@ describe('AddressesService', () => {
 
       expect(addressRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'address-456',
+          id: "address-456",
           isDefault: true,
         }),
       );
     });
 
-    it('should not set new default if no other addresses exist', async () => {
+    it("should not set new default if no other addresses exist", async () => {
       const defaultAddress = { ...mockAddress, isDefault: true };
 
       addressRepository.findOne
@@ -397,7 +397,7 @@ describe('AddressesService', () => {
       expect(addressRepository.save).not.toHaveBeenCalled();
     });
 
-    it('should throw NotFoundException if address not found', async () => {
+    it("should throw NotFoundException if address not found", async () => {
       addressRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove(mockUserId, mockAddressId)).rejects.toThrow(
@@ -406,8 +406,8 @@ describe('AddressesService', () => {
     });
   });
 
-  describe('setDefault', () => {
-    it('should set an address as default', async () => {
+  describe("setDefault", () => {
+    it("should set an address as default", async () => {
       const nonDefaultAddress = { ...mockAddress, isDefault: false };
 
       addressRepository.findOne.mockResolvedValue(
@@ -428,7 +428,7 @@ describe('AddressesService', () => {
       );
     });
 
-    it('should throw NotFoundException if address not found', async () => {
+    it("should throw NotFoundException if address not found", async () => {
       addressRepository.findOne.mockResolvedValue(null);
 
       await expect(
@@ -437,8 +437,8 @@ describe('AddressesService', () => {
     });
   });
 
-  describe('validateAddress', () => {
-    it('should return deliverable result for valid address', async () => {
+  describe("validateAddress", () => {
+    it("should return deliverable result for valid address", async () => {
       orderRoutingService.routeOrder.mockResolvedValue(
         mockRoutingResult as any,
       );
@@ -446,40 +446,40 @@ describe('AddressesService', () => {
       const result = await service.validateAddress(30.0444, 31.2357);
 
       expect(result.isDeliverable).toBe(true);
-      expect(result.branchId).toBe('branch-123');
-      expect(result.branchName).toBe('Main Branch');
+      expect(result.branchId).toBe("branch-123");
+      expect(result.branchName).toBe("Main Branch");
       expect(result.deliveryFee).toBe(15);
       expect(result.estimatedDeliveryTime).toBe(30);
     });
 
-    it('should return non-deliverable result for out-of-zone address', async () => {
+    it("should return non-deliverable result for out-of-zone address", async () => {
       orderRoutingService.routeOrder.mockResolvedValue({
         canDeliver: false,
-        message: 'Outside delivery zone',
+        message: "Outside delivery zone",
         alternativeBranches: [],
       } as any);
 
       const result = await service.validateAddress(0, 0);
 
       expect(result.isDeliverable).toBe(false);
-      expect(result.message).toBe('Outside delivery zone');
+      expect(result.message).toBe("Outside delivery zone");
       expect(result.branchId).toBeUndefined();
     });
 
-    it('should handle string branch name', async () => {
+    it("should handle string branch name", async () => {
       orderRoutingService.routeOrder.mockResolvedValue({
         ...mockRoutingResult,
-        assignedBranch: { id: 'branch-123', name: 'Simple Branch Name' },
+        assignedBranch: { id: "branch-123", name: "Simple Branch Name" },
       } as any);
 
       const result = await service.validateAddress(30.0444, 31.2357);
 
-      expect(result.branchName).toBe('Simple Branch Name');
+      expect(result.branchName).toBe("Simple Branch Name");
     });
   });
 
-  describe('getDefaultAddress', () => {
-    it('should return the default address', async () => {
+  describe("getDefaultAddress", () => {
+    it("should return the default address", async () => {
       addressRepository.findOne.mockResolvedValue(mockAddress as UserAddress);
 
       const result = await service.getDefaultAddress(mockUserId);
@@ -496,7 +496,7 @@ describe('AddressesService', () => {
       });
     });
 
-    it('should return null if no default address', async () => {
+    it("should return null if no default address", async () => {
       addressRepository.findOne.mockResolvedValue(null);
 
       const result = await service.getDefaultAddress(mockUserId);
@@ -505,11 +505,11 @@ describe('AddressesService', () => {
     });
   });
 
-  describe('revalidateAddress', () => {
-    it('should revalidate and update cached branch info', async () => {
+  describe("revalidateAddress", () => {
+    it("should revalidate and update cached branch info", async () => {
       const newRoutingResult = {
         ...mockRoutingResult,
-        assignedBranch: { id: 'branch-789' },
+        assignedBranch: { id: "branch-789" },
         deliveryFee: 30,
       };
 
@@ -517,7 +517,7 @@ describe('AddressesService', () => {
       orderRoutingService.routeOrder.mockResolvedValue(newRoutingResult as any);
       addressRepository.save.mockResolvedValue({
         ...mockAddress,
-        cachedBranchId: 'branch-789',
+        cachedBranchId: "branch-789",
         cachedDeliveryFee: 30,
       } as UserAddress);
 
@@ -527,11 +527,11 @@ describe('AddressesService', () => {
         latitude: Number(mockAddress.latitude),
         longitude: Number(mockAddress.longitude),
       });
-      expect(result.cachedBranchId).toBe('branch-789');
+      expect(result.cachedBranchId).toBe("branch-789");
       expect(result.cachedDeliveryFee).toBe(30);
     });
 
-    it('should update lastValidatedAt timestamp', async () => {
+    it("should update lastValidatedAt timestamp", async () => {
       addressRepository.findOne.mockResolvedValue(mockAddress as UserAddress);
       orderRoutingService.routeOrder.mockResolvedValue(
         mockRoutingResult as any,
@@ -549,7 +549,7 @@ describe('AddressesService', () => {
       );
     });
 
-    it('should throw NotFoundException if address not found', async () => {
+    it("should throw NotFoundException if address not found", async () => {
       addressRepository.findOne.mockResolvedValue(null);
 
       await expect(

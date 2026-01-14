@@ -9,29 +9,29 @@ import {
   Request,
   UseGuards,
   Version,
-} from '@nestjs/common';
-import { Permission } from 'src/common/decorators/permissions.decorator';
-import { PermissionModule } from 'src/common/enums/PermissionModule';
-import { PermissionAction } from 'src/common/enums/PermissionAction';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
-import { createSuccessResponse } from 'src/common/utils/api-response-wrapper';
-import { BranchMenuService } from './branch-menu.service';
-import { BulkUpdateAvailabilityDto } from './dto/bulk-update-availability.dto';
-import { SetAvailabilityDto } from './dto/set-availability.dto';
+} from "@nestjs/common";
+import { Permission } from "src/common/decorators/permissions.decorator";
+import { PermissionAction } from "src/common/enums/PermissionAction";
+import { PermissionModule } from "src/common/enums/PermissionModule";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { PermissionsGuard } from "src/common/guards/permissions.guard";
+import { createSuccessResponse } from "src/common/utils/api-response-wrapper";
+import { BranchMenuService } from "./branch-menu.service";
+import { BulkUpdateAvailabilityDto } from "./dto/bulk-update-availability.dto";
+import { SetAvailabilityDto } from "./dto/set-availability.dto";
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
-@Controller('admin/branches/:branchId/menu')
+@Controller("admin/branches/:branchId/menu")
 export class BranchMenuAdminController {
   constructor(private readonly branchMenuService: BranchMenuService) {}
 
   /**
    * Get all overrides for a branch (categories, items, bundles)
    */
-  @Get('overrides')
-  @Version('1')
+  @Get("overrides")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.READ)
-  async getBranchOverrides(@Param('branchId') branchId: string) {
+  async getBranchOverrides(@Param("branchId") branchId: string) {
     const [categories, items, bundles] = await Promise.all([
       this.branchMenuService.getBranchCategoryOverrides(branchId),
       this.branchMenuService.getBranchItemOverrides(branchId),
@@ -44,19 +44,19 @@ export class BranchMenuAdminController {
         items,
         bundles,
       },
-      'Branch menu overrides retrieved successfully',
+      "Branch menu overrides retrieved successfully",
     );
   }
 
   /**
    * Set category availability for a branch
    */
-  @Put('categories/:categoryId/availability')
-  @Version('1')
+  @Put("categories/:categoryId/availability")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.UPDATE)
   async setCategoryAvailability(
-    @Param('branchId') branchId: string,
-    @Param('categoryId') categoryId: string,
+    @Param("branchId") branchId: string,
+    @Param("categoryId") categoryId: string,
     @Body() dto: SetAvailabilityDto,
     @Request() req: any,
   ) {
@@ -70,19 +70,19 @@ export class BranchMenuAdminController {
 
     return createSuccessResponse(
       override,
-      'Category availability updated successfully',
+      "Category availability updated successfully",
     );
   }
 
   /**
    * Set item availability for a branch
    */
-  @Put('items/:itemId/availability')
-  @Version('1')
+  @Put("items/:itemId/availability")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.UPDATE)
   async setItemAvailability(
-    @Param('branchId') branchId: string,
-    @Param('itemId') itemId: string,
+    @Param("branchId") branchId: string,
+    @Param("itemId") itemId: string,
     @Body() dto: SetAvailabilityDto,
     @Request() req: any,
   ) {
@@ -96,19 +96,19 @@ export class BranchMenuAdminController {
 
     return createSuccessResponse(
       override,
-      'Item availability updated successfully',
+      "Item availability updated successfully",
     );
   }
 
   /**
    * Set bundle availability for a branch
    */
-  @Put('bundles/:bundleId/availability')
-  @Version('1')
+  @Put("bundles/:bundleId/availability")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.UPDATE)
   async setBundleAvailability(
-    @Param('branchId') branchId: string,
-    @Param('bundleId') bundleId: string,
+    @Param("branchId") branchId: string,
+    @Param("bundleId") bundleId: string,
     @Body() dto: SetAvailabilityDto,
     @Request() req: any,
   ) {
@@ -122,18 +122,18 @@ export class BranchMenuAdminController {
 
     return createSuccessResponse(
       override,
-      'Bundle availability updated successfully',
+      "Bundle availability updated successfully",
     );
   }
 
   /**
    * Bulk update availability for categories, items, and bundles
    */
-  @Patch('bulk-update')
-  @Version('1')
+  @Patch("bulk-update")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.BULK_UPDATE)
   async bulkUpdateAvailability(
-    @Param('branchId') branchId: string,
+    @Param("branchId") branchId: string,
     @Body() dto: BulkUpdateAvailabilityDto,
     @Request() req: any,
   ) {
@@ -145,55 +145,55 @@ export class BranchMenuAdminController {
 
     return createSuccessResponse(
       result,
-      'Bulk availability update completed successfully',
+      "Bulk availability update completed successfully",
     );
   }
 
   /**
    * Remove category override (revert to core menu)
    */
-  @Delete('categories/:categoryId/availability')
-  @Version('1')
+  @Delete("categories/:categoryId/availability")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.DELETE)
   async removeCategoryOverride(
-    @Param('branchId') branchId: string,
-    @Param('categoryId') categoryId: string,
+    @Param("branchId") branchId: string,
+    @Param("categoryId") categoryId: string,
   ) {
     await this.branchMenuService.removeCategoryOverride(branchId, categoryId);
 
     return createSuccessResponse(
       null,
-      'Category override removed successfully',
+      "Category override removed successfully",
     );
   }
 
   /**
    * Remove item override (revert to core menu)
    */
-  @Delete('items/:itemId/availability')
-  @Version('1')
+  @Delete("items/:itemId/availability")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.DELETE)
   async removeItemOverride(
-    @Param('branchId') branchId: string,
-    @Param('itemId') itemId: string,
+    @Param("branchId") branchId: string,
+    @Param("itemId") itemId: string,
   ) {
     await this.branchMenuService.removeItemOverride(branchId, itemId);
 
-    return createSuccessResponse(null, 'Item override removed successfully');
+    return createSuccessResponse(null, "Item override removed successfully");
   }
 
   /**
    * Remove bundle override (revert to core menu)
    */
-  @Delete('bundles/:bundleId/availability')
-  @Version('1')
+  @Delete("bundles/:bundleId/availability")
+  @Version("1")
   @Permission(PermissionModule.BRANCH_MENU, PermissionAction.DELETE)
   async removeBundleOverride(
-    @Param('branchId') branchId: string,
-    @Param('bundleId') bundleId: string,
+    @Param("branchId") branchId: string,
+    @Param("bundleId") bundleId: string,
   ) {
     await this.branchMenuService.removeBundleOverride(branchId, bundleId);
 
-    return createSuccessResponse(null, 'Bundle override removed successfully');
+    return createSuccessResponse(null, "Bundle override removed successfully");
   }
 }
