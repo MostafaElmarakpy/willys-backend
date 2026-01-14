@@ -1,4 +1,5 @@
 import { User } from "../../src/database/entities/user.entity";
+import { createSuperAdminRole } from "../factories/role.factory";
 import { createAdmin, createCustomer } from "../factories/user.factory";
 
 export interface TestUsers {
@@ -12,6 +13,9 @@ export interface TestUsers {
  * Create a set of predefined test users
  */
 export async function createTestUsers(): Promise<TestUsers> {
+  // Create SUPER_ADMIN role
+  const superAdminRole = await createSuperAdminRole();
+
   // Create a default customer
   const customer = await createCustomer({
     fullName: "John Doe",
@@ -22,7 +26,7 @@ export async function createTestUsers(): Promise<TestUsers> {
     confirmAccount: true,
   });
 
-  // Create an admin user
+  // Create an admin user with SUPER_ADMIN role
   const admin = await createAdmin({
     fullName: "Admin User",
     email: "admin@test.com",
@@ -30,6 +34,7 @@ export async function createTestUsers(): Promise<TestUsers> {
     phoneNumberCountryCode: "+20",
     password: "Admin@1234",
     confirmAccount: true,
+    adminRole: superAdminRole,
   });
 
   // Create additional customers for multi-user tests
@@ -77,6 +82,9 @@ export async function createDefaultCustomer(): Promise<User> {
  * Create a single test admin with default credentials
  */
 export async function createDefaultAdmin(): Promise<User> {
+  // Create or get SUPER_ADMIN role
+  const superAdminRole = await createSuperAdminRole();
+
   return createAdmin({
     fullName: "Test Admin",
     email: `admin-${Date.now()}@test.com`,
@@ -84,5 +92,6 @@ export async function createDefaultAdmin(): Promise<User> {
     phoneNumberCountryCode: "+20",
     password: "Admin@1234",
     confirmAccount: true,
+    adminRole: superAdminRole,
   });
 }

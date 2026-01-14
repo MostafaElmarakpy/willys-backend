@@ -3,6 +3,7 @@ import * as bcrypt from "bcrypt";
 import { UserProvider } from "../../src/common/enums/UserProvider";
 import { UserRole } from "../../src/common/enums/UserRole";
 import { UserStatus } from "../../src/common/enums/UserStatus";
+import { Role } from "../../src/database/entities/role.entity";
 import { User } from "../../src/database/entities/user.entity";
 import { getRepository } from "../setup/test-app";
 
@@ -17,6 +18,7 @@ export interface CreateUserOptions {
   status?: UserStatus;
   userLocale?: string;
   provider?: UserProvider;
+  adminRole?: Role;
 }
 
 /**
@@ -62,6 +64,12 @@ export async function createUser(
     ...userData,
     password: hashedPassword,
   });
+
+  // Assign admin role if provided
+  if (options.adminRole) {
+    user.adminRole = options.adminRole;
+    user.adminRoleId = options.adminRole.id;
+  }
 
   return userRepo.save(user);
 }

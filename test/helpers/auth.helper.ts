@@ -183,7 +183,7 @@ export async function refreshToken(
     .post("/auth/refresh")
     .set("api-version", "1")
     .send({ refresh_token: refreshToken })
-    .expect(200);
+    .expect(201);
 
   return response.body.data.token;
 }
@@ -199,7 +199,7 @@ export async function logoutUser(
     .post("/auth/logout")
     .set("api-version", "1")
     .set("Authorization", `Bearer ${accessToken}`)
-    .expect(200);
+    .expect(201);
 }
 
 /**

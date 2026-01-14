@@ -54,7 +54,10 @@ describe("Admin User Management (E2E)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.users).toBeInstanceOf(Array);
+      expect(response.body.data.total).toBeDefined();
+      expect(response.body.data.page).toBe(1);
+      expect(response.body.data.limit).toBe(10);
     });
 
     it("should list only management users", async () => {
@@ -68,14 +71,16 @@ describe("Admin User Management (E2E)", () => {
 
       const response = await authenticatedGet(
         app,
-        "/admin/users",
+        "/admin/users/management",
         tokens.access_token,
         {
-          role: UserRole.admin,
+          page: 1,
+          limit: 10,
         },
       );
 
       expect(response.status).toBe(200);
+      expect(response.body.data.users).toBeInstanceOf(Array);
     });
   });
 
@@ -87,15 +92,21 @@ describe("Admin User Management (E2E)", () => {
         password: "Admin@1234",
       });
 
+      const uniqueEmail = `newadmin-${Date.now()}@test.com`;
+      const uniquePhone = `${Math.floor(Math.random() * 10000000000)}`;
+
       const response = await authenticatedPost(
         app,
         "/admin/users",
         tokens.access_token,
         {
           fullName: "New Admin",
-          email: "newadmin@test.com",
+          email: uniqueEmail,
           password: "Admin@1234",
           role: UserRole.admin,
+          userLocale: "en",
+          phoneNumber: uniquePhone,
+          phoneNumberCountryCode: "+20",
         },
       );
 
