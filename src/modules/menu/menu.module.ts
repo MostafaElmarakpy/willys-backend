@@ -17,6 +17,7 @@ import { IngredientsService } from "./ingredients.service";
 import { IngredientsAdminController } from "./ingredients-admin.controller";
 import { ItemsService } from "./items.service";
 import { ItemsAdminController } from "./items-admin.controller";
+import { MenuPublicController } from "./menu-public.controller";
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ItemsAdminController } from "./items-admin.controller";
     ItemsAdminController,
     BundlesAdminController,
     IngredientsAdminController,
+    MenuPublicController,
   ],
   providers: [
     CategoriesService,

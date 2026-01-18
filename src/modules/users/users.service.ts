@@ -94,10 +94,13 @@ export class UsersService {
           html: `Here is the link to verify your email. The link is valid for 20 minutes: <a href="${verificationEmailURL}">${verificationEmailURL}</a>`,
         })
         .catch((error) => {
-          console.warn(
-            `Failed to send verification email to ${user.email}:`,
-            error.message,
-          );
+          // Suppress email warnings in test environment
+          if (process.env.NODE_ENV !== "test") {
+            console.warn(
+              `Failed to send verification email to ${user.email}:`,
+              error.message,
+            );
+          }
         });
     }
 

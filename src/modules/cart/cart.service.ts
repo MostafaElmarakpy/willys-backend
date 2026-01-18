@@ -9,6 +9,7 @@ import { Branch } from "src/database/entities/branch.entity";
 import { Bundle } from "src/database/entities/bundle.entity";
 import { AppliedDiscount, Cart } from "src/database/entities/cart.entity";
 import { CartItem } from "src/database/entities/cart-item.entity";
+import { Ingredient } from "src/database/entities/ingredient.entity";
 import { Item } from "src/database/entities/item.entity";
 import { UserAddress } from "src/database/entities/user-address.entity";
 import { DataSource, IsNull, type Repository } from "typeorm";
@@ -29,6 +30,8 @@ export class CartService {
     @InjectRepository(UserAddress)
     readonly addressRepository: Repository<UserAddress>,
     @InjectRepository(Branch) readonly branchRepository: Repository<Branch>,
+    @InjectRepository(Ingredient)
+    readonly ingredientRepository: Repository<Ingredient>,
     private readonly discountsService: DiscountsService,
     private readonly orderRoutingService: OrderRoutingService,
     private readonly branchMenuService: BranchMenuService,
@@ -64,6 +67,19 @@ export class CartService {
 
   async addItem(userId: string, dto: AddToCartDto): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId);
+
+    // Set branch if provided
+    if (dto.branchId && dto.branchId !== cart.branchId) {
+      const branch = await this.branchRepository.findOne({
+        where: { id: dto.branchId, deletedAt: IsNull() },
+      });
+      if (!branch) {
+        throw new NotFoundException("Branch not found");
+      }
+      cart.branchId = dto.branchId;
+      cart.branch = branch;
+      await this.cartRepository.save(cart);
+    }
 
     // Validate item or bundle exists
     let itemData: Item | null = null;
@@ -117,10 +133,29 @@ export class CartService {
       unitPrice = Number(bundleData.price);
     }
 
+    // Process extras - fetch ingredient details if not provided
+    if (dto.extras && dto.extras.length > 0) {
+      for (const extra of dto.extras) {
+        if (!extra.name || extra.unitPrice === undefined) {
+          const ingredient = await this.ingredientRepository.findOne({
+            where: { id: extra.ingredientId, deletedAt: IsNull() },
+          });
+          if (!ingredient) {
+            throw new NotFoundException(
+              `Ingredient ${extra.ingredientId} not found`,
+            );
+          }
+          extra.name = ingredient.name;
+          // Default extra price to 0 if not set
+          extra.unitPrice = 0;
+        }
+      }
+    }
+
     // Add extras price
     const extrasTotal =
       dto.extras?.reduce(
-        (sum, extra) => sum + extra.unitPrice * extra.quantity,
+        (sum, extra) => sum + (extra.unitPrice || 0) * extra.quantity,
         0,
       ) || 0;
 
@@ -173,7 +208,9 @@ export class CartService {
         customizations: dto.customizations,
         extras: dto.extras?.map((extra) => ({
           ...extra,
-          totalPrice: extra.unitPrice * extra.quantity,
+          name: extra.name!,
+          unitPrice: extra.unitPrice || 0,
+          totalPrice: (extra.unitPrice || 0) * extra.quantity,
         })),
         specialInstructions: dto.specialInstructions,
         discountAmount: 0,
@@ -217,7 +254,9 @@ export class CartService {
     if (dto.extras !== undefined) {
       cartItem.extras = dto.extras.map((extra) => ({
         ...extra,
-        totalPrice: extra.unitPrice * extra.quantity,
+        name: extra.name!,
+        unitPrice: extra.unitPrice || 0,
+        totalPrice: (extra.unitPrice || 0) * extra.quantity,
       }));
     }
 

@@ -2,10 +2,6 @@ import { ArrayMinSize, IsArray, IsNotEmpty, IsUUID } from "class-validator";
 
 export class AssignDiscountToUsersDto {
   @IsNotEmpty()
-  @IsUUID()
-  discountId: string;
-
-  @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)
   @IsUUID("4", { each: true })
@@ -13,10 +9,6 @@ export class AssignDiscountToUsersDto {
 }
 
 export class AssignDiscountToItemsDto {
-  @IsNotEmpty()
-  @IsUUID()
-  discountId: string;
-
   @IsNotEmpty()
   @IsArray()
   @ArrayMinSize(1)

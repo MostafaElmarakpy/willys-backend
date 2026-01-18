@@ -212,7 +212,7 @@ export class BranchesService {
         cos(radians(longitude) - radians($2)) + sin(radians($1)) * 
         sin(radians(latitude)))) AS distance
       FROM branches 
-      WHERE is_active = true
+      WHERE "isActive" = true AND "deletedAt" IS NULL
       HAVING distance < $3
       ORDER BY distance
     `;

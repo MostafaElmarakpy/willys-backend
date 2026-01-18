@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -157,6 +158,7 @@ export class CartController {
   }
 
   @Post("validate")
+  @HttpCode(200)
   async validateCart(@User("id") userId: string) {
     const result = await this.cartService.validateCart(userId);
     return createSuccessResponse(result, "Cart validation completed");

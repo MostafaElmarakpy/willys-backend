@@ -4,6 +4,7 @@ import { Branch } from "src/database/entities/branch.entity";
 import { Bundle } from "src/database/entities/bundle.entity";
 import { Cart } from "src/database/entities/cart.entity";
 import { CartItem } from "src/database/entities/cart-item.entity";
+import { Ingredient } from "src/database/entities/ingredient.entity";
 import { Item } from "src/database/entities/item.entity";
 import { UserAddress } from "src/database/entities/user-address.entity";
 import { BranchMenuModule } from "../branch-menu/branch-menu.module";
@@ -21,6 +22,7 @@ import { CartService } from "./cart.service";
       Bundle,
       UserAddress,
       Branch,
+      Ingredient,
     ]),
     DiscountsModule,
     BranchesModule,

@@ -75,10 +75,10 @@ export class ItemsService {
       ingredientsWithQuantity: ingredients || [],
     });
 
-    if (files.image) {
+    if (files?.image) {
       item.image = (
         await this.uploadMediaService.saveOneFile(
-          files?.image,
+          files.image,
           "properties",
           item.id,
         )
@@ -317,10 +317,10 @@ export class ItemsService {
       item.ingredientsWithQuantity = ingredients;
     }
 
-    if (files.image) {
+    if (files?.image) {
       item.image = (
         await this.uploadMediaService.saveOneFile(
-          files?.image,
+          files.image,
           "properties",
           item.id,
         )

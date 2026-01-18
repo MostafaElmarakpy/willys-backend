@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Post,
@@ -140,6 +141,7 @@ export class OrdersController {
   }
 
   @Post(":id/cancel")
+  @HttpCode(200)
   async cancelOrder(
     @User("id") userId: string,
     @Param("id", ParseUUIDPipe) id: string,

@@ -57,20 +57,20 @@ export class CartItemExtraDto {
   @IsUUID()
   ingredientId: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => BilingualString)
-  name: BilingualStringObject;
+  name?: BilingualStringObject;
 
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
   quantity: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  unitPrice: number;
+  unitPrice?: number;
 }
 
 export class AddToCartDto {
@@ -89,6 +89,10 @@ export class AddToCartDto {
   @Min(1)
   @Max(99)
   quantity: number;
+
+  @IsOptional()
+  @IsUUID()
+  branchId?: string;
 
   @IsOptional()
   @ValidateNested()

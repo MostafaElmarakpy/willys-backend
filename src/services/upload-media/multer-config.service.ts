@@ -19,6 +19,15 @@ export class S3StorageService {
     const region = this.configService.get("s3Region") as string;
     this.bucketName = this.configService.get("s3BucketName") as string;
 
+    // Skip S3 initialization in test environment
+    const isTestEnv = process.env.NODE_ENV === "test";
+
+    if (isTestEnv) {
+      // Create a minimal S3 client for test environment (won't be used)
+      this.s3 = {} as S3Client;
+      return;
+    }
+
     if (!accessKeyId || !secretAccessKey || !region || !this.bucketName) {
       throw new Error("S3StorageService: Missing required S3 configuration");
     }

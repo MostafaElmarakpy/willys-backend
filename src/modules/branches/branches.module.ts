@@ -5,13 +5,14 @@ import { Branch } from "../../database/entities/branch.entity";
 import { Zone } from "../../database/entities/zone.entity";
 import { BranchesController } from "./branches.controller";
 import { BranchesService } from "./branches.service";
+import { BranchesPublicController } from "./branches-public.controller";
 import { OrderRoutingService } from "./order-routing.service";
 import { ZonesController } from "./zones.controller";
 import { ZonesService } from "./zones.service";
 
 @Module({
   imports: [TypeOrmModule.forFeature([Branch, Zone])],
-  controllers: [BranchesController, ZonesController],
+  controllers: [BranchesController, BranchesPublicController, ZonesController],
   providers: [
     BranchesService,
     ZonesService,

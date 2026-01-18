@@ -16,10 +16,10 @@ export class CreateIngredientDto {
   @Type(() => BilingualString)
   name: BilingualString;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Type(() => Number)
-  quantity: number;
+  quantity?: number = 1;
 
   @IsOptional()
   @IsEnum(QuantityType)
@@ -29,10 +29,10 @@ export class CreateIngredientDto {
   @IsBoolean()
   isOptional?: boolean = false;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Type(() => Number)
-  stockPercentage: number;
+  stockPercentage?: number = 100;
 
   @IsNotEmpty()
   @IsString()
@@ -45,4 +45,9 @@ export class CreateIngredientDto {
   @IsOptional()
   @IsBoolean()
   isDefaultExtra?: boolean = false;
+
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Type(() => Number)
+  price?: number;
 }
