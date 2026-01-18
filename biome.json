@@ -24,7 +24,8 @@
       "!**/.env.local",
       "!**/.env.*.local",
       "!**/tsconfig*.json",
-      "!**/*.tsbuildinfo"
+      "!**/*.tsbuildinfo",
+      "!**/i18n.generated.ts"
     ]
   },
   "formatter": {
