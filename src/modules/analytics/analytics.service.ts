@@ -202,7 +202,7 @@ export class AnalyticsService {
       FROM category_revenue
       GROUP BY "categoryId", category
       ORDER BY revenue DESC
-      LIMIT $${paramsWithStatus.length * 2 + 1} OFFSET $${paramsWithStatus.length * 2 + 2}
+      LIMIT $${paramsWithStatus.length + 1} OFFSET $${paramsWithStatus.length + 2}
     `;
 
     // Count query
@@ -229,12 +229,9 @@ export class AnalyticsService {
       SELECT COUNT(DISTINCT id) as total FROM category_revenue
     `;
 
-    // Duplicate params for both UNION parts
-    const duplicatedParams = [...paramsWithStatus, ...paramsWithStatus];
-
     const [countResult, dataResult] = await Promise.all([
-      this.dataSource.query(countQuery, duplicatedParams),
-      this.dataSource.query(dataQuery, [...duplicatedParams, limit, offset]),
+      this.dataSource.query(countQuery, paramsWithStatus),
+      this.dataSource.query(dataQuery, [...paramsWithStatus, limit, offset]),
     ]);
 
     const total = parseInt(countResult[0]?.total || "0", 10);

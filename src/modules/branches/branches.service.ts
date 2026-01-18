@@ -207,13 +207,15 @@ export class BranchesService {
   ): Promise<Branch[]> {
     // Using Haversine formula to find nearby branches
     const query = `
-      SELECT *, 
-        (6371 * acos(cos(radians($1)) * cos(radians(latitude)) * 
-        cos(radians(longitude) - radians($2)) + sin(radians($1)) * 
-        sin(radians(latitude)))) AS distance
-      FROM branches 
-      WHERE "isActive" = true AND "deletedAt" IS NULL
-      HAVING distance < $3
+      SELECT * FROM (
+        SELECT *, 
+          (6371 * acos(cos(radians($1)) * cos(radians(latitude)) * 
+          cos(radians(longitude) - radians($2)) + sin(radians($1)) * 
+          sin(radians(latitude)))) AS distance
+        FROM branches 
+        WHERE "isActive" = true AND "deletedAt" IS NULL
+      ) AS branches_with_distance
+      WHERE distance < $3
       ORDER BY distance
     `;
 
