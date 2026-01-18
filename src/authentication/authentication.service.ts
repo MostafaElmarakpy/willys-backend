@@ -1,6 +1,7 @@
 import * as crypto from "node:crypto";
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -190,17 +191,20 @@ export class AuthenticationService {
         registerDto.email as string,
       );
       if (existingUser) {
-        throw new BadRequestException("Email already in use");
+        throw new ConflictException("Email already in use");
       }
     }
 
-    if (registerDto.phoneNumber)
+    if (registerDto.phoneNumber) {
       existingUser = await this.userService.findByPhoneNumber(
         registerDto.phoneNumber,
       );
-    if (existingUser) {
-      throw new BadRequestException("Phone number already in use");
-    } else if (!registerDto.registerMethod) {
+      if (existingUser) {
+        throw new ConflictException("Phone number already in use");
+      }
+    }
+
+    if (!registerDto.registerMethod) {
       throw new BadRequestException("Invalid registration method");
     }
 

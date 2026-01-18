@@ -30,13 +30,19 @@ export function generateUserData(
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
 
+  // Generate a valid Egyptian mobile number (starts with 10, 11, 12, or 15)
+  const egyptPrefixes = ["10", "11", "12", "15"];
+  const randomPrefix =
+    egyptPrefixes[Math.floor(Math.random() * egyptPrefixes.length)];
+  const validEgyptPhone = `${randomPrefix}${faker.string.numeric(8)}`;
+
   return {
     fullName: options.fullName || `${firstName} ${lastName}`,
     email:
       options.email ||
       faker.internet.email({ firstName, lastName }).toLowerCase(),
-    phoneNumber: options.phoneNumber || faker.string.numeric(10),
-    phoneNumberCountryCode: options.phoneNumberCountryCode || "+20",
+    phoneNumber: options.phoneNumber || validEgyptPhone,
+    phoneNumberCountryCode: options.phoneNumberCountryCode || "EG",
     password: options.password || "Test@1234",
     role: options.role || UserRole.user,
     confirmAccount:

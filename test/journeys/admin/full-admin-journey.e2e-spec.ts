@@ -1,4 +1,6 @@
 import { INestApplication } from "@nestjs/common";
+import { DiscountTargetType } from "../../../src/common/enums/DiscountTargetType";
+import { DiscountType } from "../../../src/common/enums/DiscountType";
 import { ItemStatus } from "../../../src/common/enums/ItemStatus";
 import { OrderStatus } from "../../../src/common/enums/OrderStatus";
 import { User } from "../../../src/database/entities/user.entity";
@@ -46,7 +48,7 @@ describe("Full Admin Journey (E2E)", () => {
     // Step 2: Create new branch
     const branchResponse = await authenticatedPost(
       app,
-      "/branches",
+      "/admin/branches",
       tokens.access_token,
       {
         name: { en: "Main Branch", ar: "الفرع الرئيسي" },
@@ -64,9 +66,10 @@ describe("Full Admin Journey (E2E)", () => {
     // Step 3: Create delivery zone for branch
     const zoneResponse = await authenticatedPost(
       app,
-      `/branches/${branchId}/zones`,
+      "/admin/zones",
       tokens.access_token,
       {
+        branchId,
         name: { en: "Zone 1", ar: "منطقة 1" },
         polygon: {
           type: "Polygon",
@@ -81,7 +84,6 @@ describe("Full Admin Journey (E2E)", () => {
           ],
         },
         deliveryFee: 25,
-        minimumOrder: 100,
       },
     );
 
@@ -90,7 +92,7 @@ describe("Full Admin Journey (E2E)", () => {
     // Step 4: Create menu category
     const categoryResponse = await authenticatedPost(
       app,
-      "/menu/categories",
+      "/admin/menu/categories",
       tokens.access_token,
       {
         name: { en: "Main Dishes", ar: "الأطباق الرئيسية" },
@@ -103,7 +105,7 @@ describe("Full Admin Journey (E2E)", () => {
     // Step 5: Create menu items
     const itemResponse = await authenticatedPost(
       app,
-      "/menu/items",
+      "/admin/menu/items",
       tokens.access_token,
       {
         name: { en: "Burger", ar: "برجر" },
@@ -124,8 +126,10 @@ describe("Full Admin Journey (E2E)", () => {
       {
         code: "WELCOME10",
         name: { en: "10% Off", ar: "خصم 10%" },
-        type: "percentage",
+        type: DiscountType.PERCENTAGE,
+        targetType: DiscountTargetType.USER,
         value: 10,
+        startDate: new Date().toISOString(),
         status: "active",
       },
     );

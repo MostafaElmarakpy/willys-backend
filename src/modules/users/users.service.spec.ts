@@ -135,6 +135,7 @@ describe("UsersService", () => {
       uploadMediaService.saveOneFile.mockResolvedValue(undefined);
       usersRepository.save.mockResolvedValue(mockUser as User);
       jwtService.sign.mockReturnValue("verification-token");
+      mailService.sendMail.mockResolvedValue(undefined);
 
       const result = await service.register("phoneNumber", registerDto, null);
 
@@ -351,6 +352,7 @@ describe("UsersService", () => {
       expect(result?.id).toBe(mockUserId);
       expect(usersRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockUserId },
+        relations: ["adminRole"],
       });
     });
 

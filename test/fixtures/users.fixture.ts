@@ -10,6 +10,18 @@ export interface TestUsers {
 }
 
 /**
+ * Generate a valid Egyptian phone number
+ */
+function generateEgyptPhone(): string {
+  const prefixes = ["10", "11", "12", "15"];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const suffix = Math.floor(Math.random() * 100000000)
+    .toString()
+    .padStart(8, "0");
+  return `${prefix}${suffix}`;
+}
+
+/**
  * Create a set of predefined test users
  */
 export async function createTestUsers(): Promise<TestUsers> {
@@ -20,8 +32,8 @@ export async function createTestUsers(): Promise<TestUsers> {
   const customer = await createCustomer({
     fullName: "John Doe",
     email: "customer@test.com",
-    phoneNumber: "1234567890",
-    phoneNumberCountryCode: "+20",
+    phoneNumber: generateEgyptPhone(),
+    phoneNumberCountryCode: "EG",
     password: "Test@1234",
     confirmAccount: true,
   });
@@ -30,8 +42,8 @@ export async function createTestUsers(): Promise<TestUsers> {
   const admin = await createAdmin({
     fullName: "Admin User",
     email: "admin@test.com",
-    phoneNumber: "0987654321",
-    phoneNumberCountryCode: "+20",
+    phoneNumber: generateEgyptPhone(),
+    phoneNumberCountryCode: "EG",
     password: "Admin@1234",
     confirmAccount: true,
     adminRole: superAdminRole,
@@ -41,8 +53,8 @@ export async function createTestUsers(): Promise<TestUsers> {
   const customer2 = await createCustomer({
     fullName: "Jane Smith",
     email: "customer2@test.com",
-    phoneNumber: "1111111111",
-    phoneNumberCountryCode: "+20",
+    phoneNumber: generateEgyptPhone(),
+    phoneNumberCountryCode: "EG",
     password: "Test@1234",
     confirmAccount: true,
   });
@@ -50,8 +62,8 @@ export async function createTestUsers(): Promise<TestUsers> {
   const customer3 = await createCustomer({
     fullName: "Bob Wilson",
     email: "customer3@test.com",
-    phoneNumber: "2222222222",
-    phoneNumberCountryCode: "+20",
+    phoneNumber: generateEgyptPhone(),
+    phoneNumberCountryCode: "EG",
     password: "Test@1234",
     confirmAccount: true,
   });
@@ -71,8 +83,8 @@ export async function createDefaultCustomer(): Promise<User> {
   return createCustomer({
     fullName: "Test Customer",
     email: `test-${Date.now()}@test.com`,
-    phoneNumber: `${Math.floor(Math.random() * 10000000000)}`,
-    phoneNumberCountryCode: "+20",
+    phoneNumber: generateEgyptPhone(),
+    phoneNumberCountryCode: "EG",
     password: "Test@1234",
     confirmAccount: true,
   });
@@ -88,8 +100,8 @@ export async function createDefaultAdmin(): Promise<User> {
   return createAdmin({
     fullName: "Test Admin",
     email: `admin-${Date.now()}@test.com`,
-    phoneNumber: `${Math.floor(Math.random() * 10000000000)}`,
-    phoneNumberCountryCode: "+20",
+    phoneNumber: generateEgyptPhone(),
+    phoneNumberCountryCode: "EG",
     password: "Admin@1234",
     confirmAccount: true,
     adminRole: superAdminRole,

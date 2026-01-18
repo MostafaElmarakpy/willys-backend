@@ -1,19 +1,15 @@
 import { faker } from "@faker-js/faker";
+import { BilingualStringObject } from "../../src/common/dto/bilingual-string.dto";
+import { AddressType } from "../../src/common/enums/AddressType";
 import { User } from "../../src/database/entities/user.entity";
 import { UserAddress } from "../../src/database/entities/user-address.entity";
 import { getRepository } from "../setup/test-app";
-
-export enum AddressType {
-  HOME = "home",
-  WORK = "work",
-  OTHER = "other",
-}
 
 export interface CreateAddressOptions {
   userId?: string;
   user?: User;
   type?: AddressType;
-  label?: string;
+  label?: BilingualStringObject;
   streetAddress?: string;
   building?: string;
   floor?: string;
@@ -39,15 +35,18 @@ export function generateAddressData(
   const longitude =
     options.longitude || faker.location.longitude({ min: 31.1, max: 31.5 });
 
+  const typeLabel = options.type || AddressType.HOME;
+  const defaultLabel: BilingualStringObject = {
+    en: `${typeLabel} Address`,
+    ar: `عنوان ${typeLabel === AddressType.HOME ? "المنزل" : typeLabel === AddressType.WORK ? "العمل" : "آخر"}`,
+  };
+
   return {
-    type: options.type || AddressType.HOME,
-    label: options.label || `${options.type || AddressType.HOME} Address`,
-    streetAddress: options.streetAddress || faker.location.streetAddress(),
-    building:
+    type: typeLabel,
+    label: options.label || defaultLabel,
+    addressLine1: options.streetAddress || faker.location.streetAddress(),
+    addressLine2:
       options.building || faker.number.int({ min: 1, max: 200 }).toString(),
-    floor: options.floor || faker.number.int({ min: 1, max: 20 }).toString(),
-    apartment:
-      options.apartment || faker.number.int({ min: 1, max: 50 }).toString(),
     city: options.city || "Cairo",
     area: options.area || faker.location.city(),
     latitude,
@@ -86,7 +85,7 @@ export async function createHomeAddress(
   return createAddress(user, {
     ...options,
     type: AddressType.HOME,
-    label: "Home",
+    label: { en: "Home", ar: "المنزل" },
   });
 }
 
@@ -100,7 +99,7 @@ export async function createWorkAddress(
   return createAddress(user, {
     ...options,
     type: AddressType.WORK,
-    label: "Work",
+    label: { en: "Work", ar: "العمل" },
   });
 }
 

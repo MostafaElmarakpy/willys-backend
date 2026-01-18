@@ -66,7 +66,7 @@ describe("Full Customer Journey (E2E)", () => {
     const address = await createHomeAddress(dbUser!, {
       latitude: 30.0444,
       longitude: 31.2357,
-      label: "Home",
+      label: { en: "Home", ar: "المنزل" },
     });
 
     expect(address).toBeDefined();

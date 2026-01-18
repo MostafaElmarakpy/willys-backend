@@ -108,7 +108,7 @@ export async function loginUser(
 
   // Add phoneNumberCountryCode if it's a phone login
   if (loginMethod === "phone") {
-    payload.phoneNumberCountryCode = "+20"; // default country code
+    payload.phoneNumberCountryCode = "EG"; // default country code (Egypt)
   }
 
   const response = await request(app.getHttpServer())

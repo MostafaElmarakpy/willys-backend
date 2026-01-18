@@ -167,7 +167,10 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<User | null> {
-    return await this.usersRepository.findOne({ where: { id } });
+    return await this.usersRepository.findOne({
+      where: { id },
+      relations: ["adminRole"],
+    });
   }
 
   async updateLastLogin(id: string): Promise<User | null> {

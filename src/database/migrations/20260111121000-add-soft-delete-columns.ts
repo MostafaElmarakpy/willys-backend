@@ -64,40 +64,16 @@ export class AddSoftDeleteColumns20260111121000 implements MigrationInterface {
       ADD COLUMN "deletedAt" TIMESTAMP NULL
     `);
 
-    // Convert user_discounts to use BaseEntity structure (add id column, make userId/discountId regular columns)
+    // Add deletedAt column to user_discounts table
     await queryRunner.query(`
-      ALTER TABLE "user_discounts"
-      ADD COLUMN "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-      ADD COLUMN "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-      ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+      ALTER TABLE "user_discounts" 
       ADD COLUMN "deletedAt" TIMESTAMP NULL
     `);
 
-    // Drop old primary key constraint and create new one with id
-    await queryRunner.query(`
-      ALTER TABLE "user_discounts" DROP CONSTRAINT "PK_user_discounts"
-    `);
-
-    await queryRunner.query(`
-      ALTER TABLE "user_discounts" ADD CONSTRAINT "PK_user_discounts" PRIMARY KEY ("id")
-    `);
-
-    // Convert item_discounts to use BaseEntity structure (add id column, make itemId/discountId regular columns)
+    // Add deletedAt column to item_discounts table
     await queryRunner.query(`
       ALTER TABLE "item_discounts" 
-      ADD COLUMN "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-      ADD COLUMN "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
-      ADD COLUMN "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
       ADD COLUMN "deletedAt" TIMESTAMP NULL
-    `);
-
-    // Drop old primary key constraint and create new one with id
-    await queryRunner.query(`
-      ALTER TABLE "item_discounts" DROP CONSTRAINT "PK_item_discounts"
-    `);
-
-    await queryRunner.query(`
-      ALTER TABLE "item_discounts" ADD CONSTRAINT "PK_item_discounts" PRIMARY KEY ("id")
     `);
 
     // Create indexes on deletedAt columns for better query performance
@@ -185,37 +161,13 @@ export class AddSoftDeleteColumns20260111121000 implements MigrationInterface {
       `ALTER TABLE "discount_usage_logs" DROP COLUMN "deletedAt"`,
     );
 
-    // Revert junction tables back to composite primary keys
-    await queryRunner.query(`
-      ALTER TABLE "user_discounts" DROP CONSTRAINT "PK_user_discounts"
-    `);
+    // Drop deletedAt from junction tables
+    await queryRunner.query(
+      `ALTER TABLE "user_discounts" DROP COLUMN "deletedAt"`,
+    );
 
-    await queryRunner.query(`
-      ALTER TABLE "user_discounts" ADD CONSTRAINT "PK_user_discounts" PRIMARY KEY ("userId", "discountId")
-    `);
-
-    await queryRunner.query(`
-      ALTER TABLE "user_discounts" 
-      DROP COLUMN "deletedAt",
-      DROP COLUMN "updatedAt",
-      DROP COLUMN "createdAt",
-      DROP COLUMN "id"
-    `);
-
-    await queryRunner.query(`
-      ALTER TABLE "item_discounts" DROP CONSTRAINT "PK_item_discounts"
-    `);
-
-    await queryRunner.query(`
-      ALTER TABLE "item_discounts" ADD CONSTRAINT "PK_item_discounts" PRIMARY KEY ("itemId", "discountId")
-    `);
-
-    await queryRunner.query(`
-      ALTER TABLE "item_discounts" 
-      DROP COLUMN "deletedAt",
-      DROP COLUMN "updatedAt",
-      DROP COLUMN "createdAt",
-      DROP COLUMN "id"
-    `);
+    await queryRunner.query(
+      `ALTER TABLE "item_discounts" DROP COLUMN "deletedAt"`,
+    );
   }
 }

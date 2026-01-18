@@ -43,7 +43,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        "/menu/categories",
+        "/admin/menu/categories",
         tokens.access_token,
         {
           name: { en: "Appetizers", ar: "المقبلات" },
@@ -67,7 +67,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPatch(
         app,
-        `/menu/categories/${category.id}`,
+        `/admin/menu/categories/${category.id}`,
         tokens.access_token,
         {
           name: { en: "Updated Name", ar: "اسم محدث" },
@@ -89,7 +89,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedDelete(
         app,
-        `/menu/categories/${category.id}`,
+        `/admin/menu/categories/${category.id}`,
         tokens.access_token,
       );
 
@@ -109,7 +109,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        "/menu/items",
+        "/admin/menu/items",
         tokens.access_token,
         {
           name: { en: "Test Item", ar: "عنصر اختبار" },
@@ -134,7 +134,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        "/menu/items",
+        "/admin/menu/items",
         tokens.access_token,
         {
           name: { en: "Sized Item", ar: "عنصر بأحجام" },
@@ -170,7 +170,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPatch(
         app,
-        `/menu/items/${item.id}`,
+        `/admin/menu/items/${item.id}`,
         tokens.access_token,
         {
           name: { en: "Updated Item", ar: "عنصر محدث" },
@@ -192,7 +192,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPatch(
         app,
-        `/menu/items/${item.id}`,
+        `/admin/menu/items/${item.id}`,
         tokens.access_token,
         {
           status: ItemStatus.ARCHIVED,
@@ -215,7 +215,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        "/menu/ingredient-categories",
+        "/admin/menu/ingredients/categories",
         tokens.access_token,
         {
           name: { en: "Toppings", ar: "الإضافات" },
@@ -236,7 +236,7 @@ describe("Admin Menu Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        "/menu/ingredients",
+        "/admin/menu/ingredients",
         tokens.access_token,
         {
           name: { en: "Cheese", ar: "جبنة" },

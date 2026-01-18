@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { BilingualStringObject } from "../../src/common/dto/bilingual-string.dto";
 import { BundleStatus } from "../../src/common/enums/BundleStatus";
 import { ItemStatus } from "../../src/common/enums/ItemStatus";
+import { QuantityType } from "../../src/common/enums/QuantityType";
 import { Bundle } from "../../src/database/entities/bundle.entity";
 import { BundleComponent } from "../../src/database/entities/bundle-component.entity";
 import { BundleComponentItem } from "../../src/database/entities/bundle-component-item.entity";
@@ -45,9 +46,12 @@ export interface CreateBundleOptions {
 
 export interface CreateIngredientOptions {
   name?: BilingualStringObject;
-  description?: BilingualStringObject;
-  price?: number;
+  quantity?: number;
+  quantityType?: string;
+  isOptional?: boolean;
+  stockPercentage?: number;
   isActive?: boolean;
+  isDefaultExtra?: boolean;
   categoryId?: string;
   category?: IngredientCategory;
 }
@@ -211,11 +215,15 @@ export function generateIngredientData(
       en: ingredientName,
       ar: ingredientName,
     },
-    description: options.description,
-    price:
-      options.price ||
-      faker.number.float({ min: 5, max: 30, fractionDigits: 2 }),
+    quantity:
+      options.quantity ||
+      faker.number.float({ min: 1, max: 5, fractionDigits: 2 }),
+    quantityType: QuantityType.PIECE,
+    isOptional: options.isOptional !== undefined ? options.isOptional : false,
+    stockPercentage: options.stockPercentage || 100,
     isActive: options.isActive !== undefined ? options.isActive : true,
+    isDefaultExtra:
+      options.isDefaultExtra !== undefined ? options.isDefaultExtra : false,
     category: options.category || ingredientCategory,
     categoryId: options.categoryId || ingredientCategory.id,
   };
@@ -323,21 +331,25 @@ export async function createBundleWithComponents(
 ): Promise<Bundle> {
   const bundle = await createBundle(category, createdBy, options);
 
+  if (items.length === 0) {
+    return bundle;
+  }
+
   const bundleComponentRepo = getRepository<BundleComponent>(BundleComponent);
   const bundleComponentItemRepo =
     getRepository<BundleComponentItem>(BundleComponentItem);
+
+  const defaultItem = items[0];
 
   // Create a component with the items
   const component = bundleComponentRepo.create({
     bundle,
     bundleId: bundle.id,
-    name: {
-      en: "Main Item",
-      ar: "الصنف الرئيسي",
-    },
-    selectionType: "single",
-    minSelection: 1,
-    maxSelection: 1,
+    category,
+    categoryId: category.id,
+    defaultItem,
+    defaultItemId: defaultItem.id,
+    quantity: 1,
     sortOrder: 0,
   });
 
@@ -350,7 +362,8 @@ export async function createBundleWithComponents(
       componentId: savedComponent.id,
       item,
       itemId: item.id,
-      priceAdjustment: 0,
+      extraCost: 0,
+      sortOrder: 0,
     });
     await bundleComponentItemRepo.save(componentItem);
   }

@@ -20,6 +20,7 @@ import { LocaleSubscriber } from "./common/subscribers/locale.subscriber";
 import { YcI18nService } from "./common/yc-i18n/yc-i18n.service";
 import { DatabaseModule } from "./database/database.module";
 import { AddressesModule } from "./modules/addresses/addresses.module";
+import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { BranchMenuModule } from "./modules/branch-menu/branch-menu.module";
 import { BranchesModule } from "./modules/branches/branches.module";
 import { CartModule } from "./modules/cart/cart.module";
@@ -81,6 +82,7 @@ import { UploadMediaModule } from "./services/upload-media/upload-media.module";
     PaymentsModule,
     RolesModule,
     AddressesModule,
+    AnalyticsModule,
     CartModule,
     OrdersModule,
   ],

@@ -93,7 +93,12 @@ describe("Admin User Management (E2E)", () => {
       });
 
       const uniqueEmail = `newadmin-${Date.now()}@test.com`;
-      const uniquePhone = `${Math.floor(Math.random() * 10000000000)}`;
+      // Generate valid Egyptian phone number (starts with 10, 11, 12, or 15)
+      const prefixes = ["10", "11", "12", "15"];
+      const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+      const uniquePhone = `${prefix}${Math.floor(Math.random() * 100000000)
+        .toString()
+        .padStart(8, "0")}`;
 
       const response = await authenticatedPost(
         app,
@@ -106,7 +111,7 @@ describe("Admin User Management (E2E)", () => {
           role: UserRole.admin,
           userLocale: "en",
           phoneNumber: uniquePhone,
-          phoneNumberCountryCode: "+20",
+          phoneNumberCountryCode: "EG",
         },
       );
 

@@ -49,8 +49,8 @@ describe("Customer Registration & Authentication (E2E)", () => {
     it("should register a new user with phone number", async () => {
       const userData = {
         fullName: "Jane Smith",
-        phoneNumber: "1234567890",
-        phoneNumberCountryCode: "+20",
+        phoneNumber: "1012345678",
+        phoneNumberCountryCode: "EG",
         password: "Test@1234",
         userLocale: "en",
       };
@@ -139,8 +139,8 @@ describe("Customer Registration & Authentication (E2E)", () => {
       // First register
       const userData = {
         fullName: "Login Test",
-        phoneNumber: "9876543210",
-        phoneNumberCountryCode: "+20",
+        phoneNumber: "1098765432",
+        phoneNumberCountryCode: "EG",
         password: "Test@1234",
         userLocale: "en",
       };
@@ -148,7 +148,7 @@ describe("Customer Registration & Authentication (E2E)", () => {
 
       // Then login with phone
       const { user, tokens } = await loginUser(app, {
-        identifier: "+209876543210",
+        identifier: "1098765432",
         password: userData.password,
       });
 

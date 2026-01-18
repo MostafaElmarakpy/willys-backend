@@ -52,6 +52,7 @@ export class Ingredient extends BaseEntity {
   category: IngredientCategory;
 
   @Column()
+  @Index()
   categoryId: string;
 
   @ManyToOne(() => User, { nullable: false })

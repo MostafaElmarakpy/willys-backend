@@ -1,5 +1,6 @@
 import { INestApplication } from "@nestjs/common";
 import { DiscountStatus } from "../../../src/common/enums/DiscountStatus";
+import { DiscountTargetType } from "../../../src/common/enums/DiscountTargetType";
 import { DiscountType } from "../../../src/common/enums/DiscountType";
 import { createPercentageDiscount } from "../../factories/discount.factory";
 import { createTestMenu } from "../../fixtures/menu.fixture";
@@ -51,6 +52,7 @@ describe("Admin Discount Management (E2E)", () => {
           code: "SAVE20",
           name: { en: "20% Off", ar: "خصم 20%" },
           type: DiscountType.PERCENTAGE,
+          targetType: DiscountTargetType.USER,
           value: 20,
           startDate: new Date().toISOString(),
           endDate: new Date(
@@ -79,8 +81,10 @@ describe("Admin Discount Management (E2E)", () => {
           code: "SAVE50",
           name: { en: "50 EGP Off", ar: "خصم 50 جنيه" },
           type: DiscountType.FIXED_AMOUNT,
+          targetType: DiscountTargetType.USER,
           value: 50,
-          minimumPurchaseAmount: 200,
+          minimumPurchase: 200,
+          startDate: new Date().toISOString(),
           status: DiscountStatus.ACTIVE,
         },
       );
@@ -103,8 +107,11 @@ describe("Admin Discount Management (E2E)", () => {
           code: "BOGO",
           name: { en: "Buy 1 Get 1", ar: "اشتري واحد واحصل على الثاني" },
           type: DiscountType.BUY_X_GET_Y,
+          targetType: DiscountTargetType.ITEM,
           buyQuantity: 1,
           getQuantity: 1,
+          value: 0,
+          startDate: new Date().toISOString(),
           status: DiscountStatus.ACTIVE,
         },
       );
@@ -194,7 +201,7 @@ describe("Admin Discount Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        `/admin/discounts/${discount.id}/users`,
+        `/admin/discounts/${discount.id}/assign-users`,
         tokens.access_token,
         {
           userIds: [customer.id],
@@ -216,7 +223,7 @@ describe("Admin Discount Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        `/admin/discounts/${discount.id}/items`,
+        `/admin/discounts/${discount.id}/assign-items`,
         tokens.access_token,
         {
           itemIds: [menu.items.burger.id],
@@ -259,7 +266,7 @@ describe("Admin Discount Management (E2E)", () => {
 
       const response = await authenticatedGet(
         app,
-        `/admin/discounts/${discount.id}/stats`,
+        `/admin/discounts/${discount.id}/usage-stats`,
         tokens.access_token,
       );
 

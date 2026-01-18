@@ -1,6 +1,5 @@
 import { OrderStatus } from "../../src/common/enums/OrderStatus";
 import { OrderType } from "../../src/common/enums/OrderType";
-import { PaymentMethod } from "../../src/common/enums/PaymentMethod";
 import { Branch } from "../../src/database/entities/branch.entity";
 import { Cart } from "../../src/database/entities/cart.entity";
 import { CartItem } from "../../src/database/entities/cart-item.entity";
@@ -19,7 +18,6 @@ export interface CreateOrderOptions {
   zone?: Zone;
   scheduledPickupTime?: Date;
   status?: OrderStatus;
-  paymentMethod?: PaymentMethod;
   subtotal?: number;
   discountAmount?: number;
   deliveryFee?: number;
@@ -78,22 +76,21 @@ export async function createOrderFromCart(
     tax: options.tax || cart.tax || 0,
     total: options.total || cart.total,
     currency: "EGP",
-    paymentMethod: options.paymentMethod || PaymentMethod.CASH,
-    estimatedDeliveryTime: new Date(Date.now() + 45 * 60 * 1000), // 45 minutes
+    estimatedDeliveryTime: 45, // 45 minutes
   });
 
   const savedOrder = await orderRepo.save(order);
 
   // Create order items from cart items
   for (const cartItem of cartItems) {
+    const itemName = cartItem.item?.name ||
+      cartItem.bundle?.name || { en: "Item", ar: "عنصر" };
     const orderItem = orderItemRepo.create({
       order: savedOrder,
       orderId: savedOrder.id,
       itemType: cartItem.itemType,
-      item: cartItem.item,
-      itemId: cartItem.itemId,
-      bundle: cartItem.bundle,
-      bundleId: cartItem.bundleId,
+      originalItemId: cartItem.itemId || cartItem.bundleId || "",
+      name: itemName,
       quantity: cartItem.quantity,
       unitPrice: cartItem.unitPrice,
       totalPrice: cartItem.totalPrice,
@@ -101,8 +98,7 @@ export async function createOrderFromCart(
       customizations: cartItem.customizations,
       extras: cartItem.extras,
       specialInstructions: cartItem.specialInstructions,
-      discountAmount: cartItem.discountAmount,
-      appliedDiscountId: cartItem.appliedDiscountId,
+      discountAmount: cartItem.discountAmount || 0,
     });
 
     await orderItemRepo.save(orderItem);
@@ -143,8 +139,7 @@ export async function createOrder(
     tax: options.tax || 0,
     total: options.total || 120,
     currency: "EGP",
-    paymentMethod: options.paymentMethod || PaymentMethod.CASH,
-    estimatedDeliveryTime: new Date(Date.now() + 45 * 60 * 1000),
+    estimatedDeliveryTime: 45, // 45 minutes
   });
 
   const savedOrder = await orderRepo.save(order);
@@ -167,17 +162,19 @@ export async function createOrderStatusLog(
   status: OrderStatus,
   changedBy?: User,
   notes?: string,
+  previousStatus?: OrderStatus,
 ): Promise<OrderStatusLog> {
   const orderStatusLogRepo = getRepository<OrderStatusLog>(OrderStatusLog);
 
   const log = orderStatusLogRepo.create({
     order,
     orderId: order.id,
-    status,
-    changedBy: changedBy?.id,
-    changedByUser: changedBy,
+    previousStatus: previousStatus || OrderStatus.PENDING,
+    newStatus: status,
+    changedById: changedBy?.id,
+    changedBy: changedBy,
     notes,
-    timestamp: new Date(),
+    occurredAt: new Date(),
   });
 
   return orderStatusLogRepo.save(log);
@@ -238,4 +235,42 @@ export async function createOrdersWithStatuses(
   }
 
   return orders;
+}
+
+export interface CreateOrderItemOptions {
+  itemType?: "ITEM" | "BUNDLE";
+  originalItemId?: string;
+  name?: { en: string; ar: string };
+  quantity?: number;
+  unitPrice?: number;
+  totalPrice?: number;
+  discountAmount?: number;
+}
+
+/**
+ * Create an order item directly
+ */
+export async function createOrderItem(
+  order: Order,
+  options: CreateOrderItemOptions = {},
+): Promise<OrderItem> {
+  const orderItemRepo = getRepository<OrderItem>(OrderItem);
+
+  const quantity = options.quantity || 1;
+  const unitPrice = options.unitPrice || 50;
+  const totalPrice = options.totalPrice || quantity * unitPrice;
+
+  const orderItem = orderItemRepo.create({
+    order,
+    orderId: order.id,
+    itemType: options.itemType || "ITEM",
+    originalItemId: options.originalItemId || "item-id-placeholder",
+    name: options.name || { en: "Test Item", ar: "عنصر اختبار" },
+    quantity,
+    unitPrice,
+    totalPrice,
+    discountAmount: options.discountAmount || 0,
+  });
+
+  return orderItemRepo.save(orderItem);
 }

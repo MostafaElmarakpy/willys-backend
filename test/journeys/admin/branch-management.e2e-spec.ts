@@ -6,6 +6,7 @@ import {
   authenticatedDelete,
   authenticatedPatch,
   authenticatedPost,
+  authenticatedPut,
 } from "../../helpers/request.helper";
 import {
   cleanDatabase,
@@ -38,7 +39,7 @@ describe("Admin Branch Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        "/branches",
+        "/admin/branches",
         tokens.access_token,
         {
           name: { en: "New Branch", ar: "فرع جديد" },
@@ -65,7 +66,7 @@ describe("Admin Branch Management (E2E)", () => {
 
       const response = await authenticatedPatch(
         app,
-        `/branches/${branch.id}`,
+        `/admin/branches/${branch.id}`,
         tokens.access_token,
         {
           name: { en: "Updated Branch", ar: "فرع محدث" },
@@ -86,7 +87,7 @@ describe("Admin Branch Management (E2E)", () => {
 
       const response = await authenticatedPatch(
         app,
-        `/branches/${branch.id}`,
+        `/admin/branches/${branch.id}`,
         tokens.access_token,
         {
           isActive: false,
@@ -108,7 +109,7 @@ describe("Admin Branch Management (E2E)", () => {
 
       const response = await authenticatedDelete(
         app,
-        `/branches/${branch.id}`,
+        `/admin/branches/${branch.id}`,
         tokens.access_token,
       );
 
@@ -128,9 +129,10 @@ describe("Admin Branch Management (E2E)", () => {
 
       const response = await authenticatedPost(
         app,
-        `/branches/${branch.id}/zones`,
+        "/admin/zones",
         tokens.access_token,
         {
+          branchId: branch.id,
           name: { en: "Zone 1", ar: "منطقة 1" },
           polygon: {
             type: "Polygon",
@@ -145,7 +147,6 @@ describe("Admin Branch Management (E2E)", () => {
             ],
           },
           deliveryFee: 25,
-          minimumOrder: 100,
         },
       );
 
@@ -162,11 +163,13 @@ describe("Admin Branch Management (E2E)", () => {
         password: "Admin@1234",
       });
 
-      const response = await authenticatedPatch(
+      const response = await authenticatedPut(
         app,
-        `/zones/${zone.id}`,
+        `/admin/zones/${zone.id}`,
         tokens.access_token,
         {
+          branchId: branch.id,
+          polygon: zone.polygon,
           deliveryFee: 30,
         },
       );
@@ -186,7 +189,7 @@ describe("Admin Branch Management (E2E)", () => {
 
       const response = await authenticatedDelete(
         app,
-        `/zones/${zone.id}`,
+        `/admin/zones/${zone.id}`,
         tokens.access_token,
       );
 

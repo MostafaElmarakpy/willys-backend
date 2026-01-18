@@ -60,27 +60,22 @@ export async function createTestMenu(
 
   const cheese = await createIngredient(ingredientCategory, createdBy, {
     name: { en: "Cheese", ar: "جبنة" },
-    price: 10,
   });
 
   const lettuce = await createIngredient(ingredientCategory, createdBy, {
     name: { en: "Lettuce", ar: "خس" },
-    price: 5,
   });
 
   const tomato = await createIngredient(ingredientCategory, createdBy, {
     name: { en: "Tomato", ar: "طماطم" },
-    price: 5,
   });
 
   const onion = await createIngredient(ingredientCategory, createdBy, {
     name: { en: "Onion", ar: "بصل" },
-    price: 3,
   });
 
   const pickles = await createIngredient(ingredientCategory, createdBy, {
     name: { en: "Pickles", ar: "مخلل" },
-    price: 3,
   });
 
   const allIngredients = [cheese, lettuce, tomato, onion, pickles];

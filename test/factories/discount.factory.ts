@@ -65,14 +65,12 @@ export function generateDiscountData(
     getQuantity: options.getQuantity,
     freeItem: options.freeItem,
     freeItemId: options.freeItem?.id,
-    minimumPurchaseAmount: options.minimumPurchaseAmount,
-    maximumDiscountAmount: options.maximumDiscountAmount,
+    minimumPurchase: options.minimumPurchaseAmount,
     startDate: options.startDate || new Date(),
     endDate: options.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     status: options.status || DiscountStatus.ACTIVE,
-    usageLimit: options.usageLimit,
-    usageLimitPerUser: options.usageLimitPerUser || 1,
-    isStackable: options.isStackable || false,
+    maxUsageTotal: options.usageLimit,
+    maxUsagePerUser: options.usageLimitPerUser || 1,
     currentUsageCount: 0,
   };
 }
@@ -246,10 +244,9 @@ export async function createDiscountUsageLog(
     discountId: discount.id,
     user,
     userId: user.id,
-    order,
     orderId: order.id,
     discountAmount,
-    appliedAt: new Date(),
+    usedAt: new Date(),
   });
 
   return usageLogRepo.save(usageLog);

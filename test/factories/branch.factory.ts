@@ -73,20 +73,13 @@ export function generateBranchData(
       ar: branchName,
     },
     address: options.address || faker.location.streetAddress(),
-    city: options.city || "Cairo",
     latitude,
     longitude,
-    phoneNumber: options.phoneNumber || faker.phone.number("+20##########"),
+    phone:
+      options.phoneNumber || faker.phone.number({ style: "international" }),
     isActive: options.isActive !== undefined ? options.isActive : true,
-    openingHours: options.openingHours || {
-      monday: { open: "09:00", close: "23:00" },
-      tuesday: { open: "09:00", close: "23:00" },
-      wednesday: { open: "09:00", close: "23:00" },
-      thursday: { open: "09:00", close: "23:00" },
-      friday: { open: "09:00", close: "23:00" },
-      saturday: { open: "09:00", close: "23:00" },
-      sunday: { open: "09:00", close: "23:00" },
-    },
+    openingHours: options.openingHours?.monday?.open || "09:00",
+    closingHours: options.openingHours?.monday?.close || "23:00",
   };
 }
 
@@ -102,8 +95,8 @@ export async function createBranch(
   const branchRepo = getRepository<Branch>(Branch);
   const branch = branchRepo.create({
     ...branchData,
-    createdBy: createdBy.id,
-    createdByUser: createdBy,
+    createdById: createdBy.id,
+    createdBy: createdBy,
   });
 
   return branchRepo.save(branch);
@@ -128,9 +121,6 @@ export function generateZoneData(
     deliveryFee:
       options.deliveryFee ||
       faker.number.float({ min: 10, max: 50, fractionDigits: 2 }),
-    minimumOrder:
-      options.minimumOrder ||
-      faker.number.float({ min: 50, max: 200, fractionDigits: 2 }),
     isActive: options.isActive !== undefined ? options.isActive : true,
   };
 }
@@ -150,8 +140,8 @@ export async function createZone(
     ...zoneData,
     branch,
     branchId: branch.id,
-    createdBy: createdBy.id,
-    createdByUser: createdBy,
+    createdById: createdBy.id,
+    createdBy: createdBy,
   });
 
   return zoneRepo.save(zone);
