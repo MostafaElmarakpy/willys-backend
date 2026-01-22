@@ -75,7 +75,11 @@ describe("Customer Registration & Authentication (E2E)", () => {
       await registerUser(app, userData);
 
       // Second registration with same email
-      const response = await publicPost(app, "/auth/register", userData);
+      const response = await publicPost(app, "/auth/register", {
+        ...userData,
+        registerMethod: "email",
+        callbackUrl: "http://localhost:3000/verify-email",
+      });
 
       expect(response.status).toBe(409); // Conflict
     });

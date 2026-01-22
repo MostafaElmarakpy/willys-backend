@@ -106,7 +106,10 @@ export async function publicPost(
   url: string,
   data?: any,
 ) {
-  return request(app.getHttpServer()).post(url).send(data);
+  return request(app.getHttpServer())
+    .post(url)
+    .set("api-version", "1")
+    .send(data);
 }
 
 /**
@@ -117,14 +120,17 @@ export async function publicPatch(
   url: string,
   data?: any,
 ) {
-  return request(app.getHttpServer()).patch(url).send(data);
+  return request(app.getHttpServer())
+    .patch(url)
+    .set("api-version", "1")
+    .send(data);
 }
 
 /**
  * Make a public DELETE request (no authentication)
  */
 export async function publicDelete(app: INestApplication, url: string) {
-  return request(app.getHttpServer()).delete(url);
+  return request(app.getHttpServer()).delete(url).set("api-version", "1");
 }
 
 /**

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -69,6 +70,7 @@ export class UsersAdminController {
 
   @UseInterceptors(EntityFileInterceptor("user", "avatar"))
   @Post()
+  @HttpCode(201)
   @Version("1")
   @Permission(PermissionModule.USERS, PermissionAction.CREATE)
   async create(

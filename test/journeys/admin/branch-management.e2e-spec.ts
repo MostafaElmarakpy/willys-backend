@@ -63,7 +63,7 @@ describe("Admin Branch Management (E2E)", () => {
         password: "Admin@1234",
       });
 
-      const response = await authenticatedPatch(
+      const response = await authenticatedPut(
         app,
         `/admin/branches/${branch.id}`,
         tokens.access_token,
@@ -86,10 +86,10 @@ describe("Admin Branch Management (E2E)", () => {
 
       const response = await authenticatedPatch(
         app,
-        `/admin/branches/${branch.id}`,
+        `/admin/branches/${branch.id}/toggle-status`,
         tokens.access_token,
         {
-          isActive: false,
+          status: "active",
         },
       );
 

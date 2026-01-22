@@ -103,6 +103,7 @@ describe("Admin User Management (E2E)", () => {
       const response = await request(app.getHttpServer())
         .post("/admin/users")
         .set("Authorization", `Bearer ${tokens.access_token}`)
+        .set("api-version", "1")
         .field("fullName", "New Admin")
         .field("email", uniqueEmail)
         .field("password", "Admin@1234")

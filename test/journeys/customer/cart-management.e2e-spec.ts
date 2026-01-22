@@ -71,8 +71,10 @@ describe("Customer Cart Management (E2E)", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(response.body.data.itemId).toBe(menu.items.burger.id);
-      expect(response.body.data.quantity).toBe(1);
+      expect(response.body.data.items).toBeDefined();
+      expect(response.body.data.items.length).toBeGreaterThan(0);
+      expect(response.body.data.items[0].itemId).toBe(menu.items.burger.id);
+      expect(response.body.data.items[0].quantity).toBe(1);
     });
 
     it("should add item with variant selection", async () => {
@@ -103,7 +105,9 @@ describe("Customer Cart Management (E2E)", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(response.body.data.selectedVariant).toBeDefined();
+      expect(response.body.data.items).toBeDefined();
+      expect(response.body.data.items.length).toBeGreaterThan(0);
+      expect(response.body.data.items[0].selectedVariant).toBeDefined();
     });
 
     it("should add item with extras", async () => {
@@ -160,7 +164,11 @@ describe("Customer Cart Management (E2E)", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(response.body.data.bundleId).toBe(menu.bundles.mealDeal.id);
+      expect(response.body.data.items).toBeDefined();
+      expect(response.body.data.items.length).toBeGreaterThan(0);
+      expect(response.body.data.items[0].bundleId).toBe(
+        menu.bundles.mealDeal.id,
+      );
     });
 
     it("should update cart item quantity", async () => {
@@ -186,7 +194,7 @@ describe("Customer Cart Management (E2E)", () => {
         },
       );
 
-      const cartItemId = addResponse.body.data.id;
+      const cartItemId = addResponse.body.data.items[0].id;
 
       // Update quantity
       const updateResponse = await authenticatedPatch(
@@ -197,7 +205,11 @@ describe("Customer Cart Management (E2E)", () => {
       );
 
       expect(updateResponse.status).toBe(200);
-      expect(updateResponse.body.data.quantity).toBe(3);
+      expect(updateResponse.body.data.items).toBeDefined();
+      const updatedItem = updateResponse.body.data.items.find(
+        (item) => item.id === cartItemId,
+      );
+      expect(updatedItem.quantity).toBe(3);
     });
 
     it("should remove item from cart", async () => {
@@ -223,7 +235,7 @@ describe("Customer Cart Management (E2E)", () => {
         },
       );
 
-      const cartItemId = addResponse.body.data.id;
+      const cartItemId = addResponse.body.data.items[0].id;
 
       // Remove item
       const removeResponse = await authenticatedDelete(
@@ -280,9 +292,9 @@ describe("Customer Cart Management (E2E)", () => {
         password: "Test@1234",
       });
 
-      const response = await authenticatedPatch(
+      const response = await authenticatedPost(
         app,
-        "/cart",
+        "/cart/order-type",
         tokens.access_token,
         { orderType: "DELIVERY" },
       );
@@ -298,9 +310,9 @@ describe("Customer Cart Management (E2E)", () => {
         password: "Test@1234",
       });
 
-      const response = await authenticatedPatch(
+      const response = await authenticatedPost(
         app,
-        "/cart",
+        "/cart/order-type",
         tokens.access_token,
         { orderType: "PICKUP" },
       );
@@ -366,8 +378,9 @@ describe("Customer Cart Management (E2E)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(response.body.data.subtotal).toBeDefined();
-      expect(response.body.data.total).toBeDefined();
+      expect(response.body.data.summary).toBeDefined();
+      expect(response.body.data.summary.subtotal).toBeDefined();
+      expect(response.body.data.summary.total).toBeDefined();
     });
   });
 });

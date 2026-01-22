@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -37,6 +38,7 @@ export class BranchesController {
   ) {}
 
   @Post()
+  @HttpCode(201)
   @Version("1")
   @Permission(PermissionModule.BRANCHES, PermissionAction.CREATE)
   async create(@Body() createBranchDto: CreateBranchDto) {

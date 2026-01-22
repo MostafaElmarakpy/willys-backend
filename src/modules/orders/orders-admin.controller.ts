@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -111,6 +112,7 @@ export class OrdersAdminController {
   }
 
   @Post(":id/cancel")
+  @HttpCode(200)
   @Permission(PermissionModule.ORDERS, PermissionAction.CANCEL)
   async cancelOrder(
     @User("id") userId: string,

@@ -61,9 +61,14 @@ describe("Customer Checkout - Delivery (E2E)", () => {
       });
 
       // Set delivery address
-      await authenticatedPost(app, "/cart/address", tokens.access_token, {
-        addressId: address.id,
-      });
+      await authenticatedPost(
+        app,
+        "/cart/delivery-address",
+        tokens.access_token,
+        {
+          deliveryAddressId: address.id,
+        },
+      );
 
       // Checkout
       const response = await authenticatedPost(

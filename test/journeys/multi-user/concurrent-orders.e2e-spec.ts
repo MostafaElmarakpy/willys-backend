@@ -99,14 +99,14 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
 
       // Set addresses
       await Promise.all([
-        authenticatedPost(app, "/cart/address", tokens1.access_token, {
-          addressId: address1.id,
+        authenticatedPost(app, "/cart/delivery-address", tokens1.access_token, {
+          deliveryAddressId: address1.id,
         }),
-        authenticatedPost(app, "/cart/address", tokens2.access_token, {
-          addressId: address2.id,
+        authenticatedPost(app, "/cart/delivery-address", tokens2.access_token, {
+          deliveryAddressId: address2.id,
         }),
-        authenticatedPost(app, "/cart/address", tokens3.access_token, {
-          addressId: address3.id,
+        authenticatedPost(app, "/cart/delivery-address", tokens3.access_token, {
+          deliveryAddressId: address3.id,
         }),
       ]);
 
@@ -186,11 +186,11 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
       ]);
 
       await Promise.all([
-        authenticatedPost(app, "/cart/address", tokens1.access_token, {
-          addressId: address1.id,
+        authenticatedPost(app, "/cart/delivery-address", tokens1.access_token, {
+          deliveryAddressId: address1.id,
         }),
-        authenticatedPost(app, "/cart/address", tokens2.access_token, {
-          addressId: address2.id,
+        authenticatedPost(app, "/cart/delivery-address", tokens2.access_token, {
+          deliveryAddressId: address2.id,
         }),
       ]);
 
@@ -250,9 +250,14 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
       // Set addresses
       await Promise.all(
         users.map((u, i) =>
-          authenticatedPost(app, "/cart/address", u.tokens.access_token, {
-            addressId: addresses[i].id,
-          }),
+          authenticatedPost(
+            app,
+            "/cart/delivery-address",
+            u.tokens.access_token,
+            {
+              deliveryAddressId: addresses[i].id,
+            },
+          ),
         ),
       );
 

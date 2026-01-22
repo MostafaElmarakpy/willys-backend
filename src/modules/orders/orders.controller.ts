@@ -39,6 +39,7 @@ export class OrdersController {
   ) {}
 
   @Post("checkout")
+  @HttpCode(201)
   async checkout(
     @User("id") userId: string,
     @Body() dto: CheckoutDto,

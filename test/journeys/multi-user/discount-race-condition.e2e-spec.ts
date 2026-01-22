@@ -100,10 +100,10 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
 
         await authenticatedPost(
           app,
-          "/cart/address",
+          "/cart/delivery-address",
           users[i].tokens.access_token,
           {
-            addressId: addresses[i].id,
+            deliveryAddressId: addresses[i].id,
           },
         );
 
@@ -268,10 +268,10 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
 
         await authenticatedPost(
           app,
-          "/cart/address",
+          "/cart/delivery-address",
           users[i].tokens.access_token,
           {
-            addressId: addresses[i].id,
+            deliveryAddressId: addresses[i].id,
           },
         );
       }

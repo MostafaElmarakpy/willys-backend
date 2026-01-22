@@ -156,9 +156,14 @@ describe("Full Admin Journey (E2E)", () => {
     });
 
     // Set address
-    await authenticatedPost(app, "/cart/address", customerTokens.access_token, {
-      addressId: address.id,
-    });
+    await authenticatedPost(
+      app,
+      "/cart/delivery-address",
+      customerTokens.access_token,
+      {
+        deliveryAddressId: address.id,
+      },
+    );
 
     // Checkout
     const orderResponse = await authenticatedPost(

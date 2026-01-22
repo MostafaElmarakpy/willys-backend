@@ -119,9 +119,14 @@ describe("Full Customer Journey (E2E)", () => {
       orderType: "DELIVERY",
     });
 
-    await authenticatedPost(app, "/cart/address", tokens.access_token, {
-      addressId: address.id,
-    });
+    await authenticatedPost(
+      app,
+      "/cart/delivery-address",
+      tokens.access_token,
+      {
+        deliveryAddressId: address.id,
+      },
+    );
 
     // Step 8: Get cart summary (validate totals)
     const cartResponse = await authenticatedGet(

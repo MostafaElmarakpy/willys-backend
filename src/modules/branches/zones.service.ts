@@ -412,26 +412,37 @@ export class ZonesService {
   }
 
   // Convert WKT polygon to GeoJSON format
-  private wktToGeoJson(wkt: string): {
+  private wktToGeoJson(wkt: string | any): {
     type: "Polygon";
     coordinates: number[][][];
   } {
-    // Simple WKT parser for POLYGON format
-    const match = wkt.match(/POLYGON\(\(([^)]+)\)\)/);
-    if (!match) {
-      throw new Error("Invalid WKT polygon format");
+    // If already GeoJSON (TypeORM returns PostGIS as GeoJSON objects), return it
+    if (typeof wkt === "object" && wkt !== null && wkt.type === "Polygon") {
+      return wkt;
     }
 
-    const coordString = match[1];
-    const coords = coordString.split(", ").map((pair) => {
-      const [x, y] = pair.split(" ").map(Number);
-      return [x, y];
-    });
+    // If string, parse as WKT format
+    if (typeof wkt === "string") {
+      const match = wkt.match(/POLYGON\(\(([^)]+)\)\)/);
+      if (!match) {
+        throw new Error("Invalid WKT polygon format");
+      }
 
-    return {
-      type: "Polygon",
-      coordinates: [coords],
-    };
+      const coordString = match[1];
+      const coords = coordString.split(", ").map((pair) => {
+        const [x, y] = pair.split(" ").map(Number);
+        return [x, y];
+      });
+
+      return {
+        type: "Polygon",
+        coordinates: [coords],
+      };
+    }
+
+    throw new Error(
+      "Invalid polygon format: must be either WKT string or GeoJSON object",
+    );
   }
 
   private calculatePolygonArea(polygon: { coordinates: number[][][] }): number {

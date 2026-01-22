@@ -86,6 +86,7 @@ export class CartController {
   }
 
   @Post("order-type")
+  @HttpCode(200)
   async setOrderType(@User("id") userId: string, @Body() dto: SetOrderTypeDto) {
     const cart = await this.cartService.setOrderType(userId, dto.orderType);
     return createSuccessResponse(
@@ -95,6 +96,7 @@ export class CartController {
   }
 
   @Post("branch")
+  @HttpCode(200)
   async setBranch(@User("id") userId: string, @Body() dto: SetBranchDto) {
     const cart = await this.cartService.setBranch(userId, dto.branchId);
     return createSuccessResponse(
@@ -104,6 +106,7 @@ export class CartController {
   }
 
   @Post("delivery-address")
+  @HttpCode(200)
   async setDeliveryAddress(
     @User("id") userId: string,
     @Body() dto: SetDeliveryAddressDto,
@@ -119,6 +122,7 @@ export class CartController {
   }
 
   @Post("pickup-time")
+  @HttpCode(200)
   async setPickupTime(
     @User("id") userId: string,
     @Body() dto: SetPickupTimeDto,

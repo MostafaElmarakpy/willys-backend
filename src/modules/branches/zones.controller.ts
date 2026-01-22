@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -33,6 +34,7 @@ export class ZonesController {
   constructor(private readonly zonesService: ZonesService) {}
 
   @Post()
+  @HttpCode(201)
   @Version("1")
   @Permission(PermissionModule.ZONES, PermissionAction.CREATE)
   async create(@Body() createZoneDto: CreateZoneDto) {
