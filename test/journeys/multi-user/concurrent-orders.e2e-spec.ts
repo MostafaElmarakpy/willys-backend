@@ -113,13 +113,16 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
       // All users checkout simultaneously
       const checkoutPromises = [
         authenticatedPost(app, "/orders/checkout", tokens1.access_token, {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         }),
         authenticatedPost(app, "/orders/checkout", tokens2.access_token, {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         }),
         authenticatedPost(app, "/orders/checkout", tokens3.access_token, {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         }),
       ];
 
@@ -193,10 +196,12 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
 
       const [result1, result2] = await Promise.all([
         authenticatedPost(app, "/orders/checkout", tokens1.access_token, {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         }),
         authenticatedPost(app, "/orders/checkout", tokens2.access_token, {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         }),
       ]);
 
@@ -255,7 +260,8 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
       const checkouts = await Promise.all(
         users.map((u) =>
           authenticatedPost(app, "/orders/checkout", u.tokens.access_token, {
-            paymentMethod: "CASH",
+            paymentType: "CASH",
+            idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
           }),
         ),
       );

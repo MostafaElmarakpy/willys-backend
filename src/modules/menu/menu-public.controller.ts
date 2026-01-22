@@ -4,6 +4,7 @@ import {
   NotFoundException,
   Param,
   ParseUUIDPipe,
+  Query,
   Version,
 } from "@nestjs/common";
 import { ItemStatus } from "../../common/enums/ItemStatus";
@@ -33,6 +34,19 @@ export class MenuPublicController {
       result.categories,
       "Categories retrieved successfully",
     );
+  }
+
+  @Get("search")
+  @Version("1")
+  async searchItems(@Query("query") query: string) {
+    const result = await this.itemsService.findAll({
+      search: query,
+      status: ItemStatus.ACTIVE,
+      page: 1,
+      limit: 50,
+    });
+
+    return createSuccessResponse(result.items, "Items retrieved successfully");
   }
 
   @Get("categories/:categoryId/items")

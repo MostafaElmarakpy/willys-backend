@@ -43,11 +43,10 @@ describe("Admin Branch Management (E2E)", () => {
         tokens.access_token,
         {
           name: { en: "New Branch", ar: "فرع جديد" },
-          address: "123 Test Street",
-          city: "Cairo",
+          address: "123 Test Street, Cairo",
           latitude: 30.0444,
           longitude: 31.2357,
-          phoneNumber: "+201234567890",
+          phone: "+201234567890",
         },
       );
 
@@ -169,7 +168,18 @@ describe("Admin Branch Management (E2E)", () => {
         tokens.access_token,
         {
           branchId: branch.id,
-          polygon: zone.polygon,
+          polygon: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [31.0, 30.0],
+                [31.5, 30.0],
+                [31.5, 30.5],
+                [31.0, 30.5],
+                [31.0, 30.0],
+              ],
+            ],
+          },
           deliveryFee: 30,
         },
       );

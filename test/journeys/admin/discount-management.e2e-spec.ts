@@ -208,13 +208,15 @@ describe("Admin Discount Management (E2E)", () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
     });
 
     it("should assign discount to specific items", async () => {
       const admin = await createDefaultAdmin();
       const menu = await createTestMenu(admin);
-      const discount = await createPercentageDiscount(admin, 20);
+      const discount = await createPercentageDiscount(admin, 20, {
+        targetType: DiscountTargetType.ITEM,
+      });
 
       const { tokens } = await loginUser(app, {
         identifier: admin.email!,
@@ -230,7 +232,7 @@ describe("Admin Discount Management (E2E)", () => {
         },
       );
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
     });
   });
 

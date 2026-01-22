@@ -71,7 +71,8 @@ describe("Customer Checkout - Delivery (E2E)", () => {
         "/orders/checkout",
         tokens.access_token,
         {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         },
       );
 
@@ -105,7 +106,8 @@ describe("Customer Checkout - Delivery (E2E)", () => {
         "/orders/checkout",
         tokens.access_token,
         {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         },
       );
 

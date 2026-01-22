@@ -77,6 +77,7 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
       await assignDiscountToUsers(
         discount,
         dbUsers.filter((u) => u !== null) as User[],
+        admin,
       );
 
       // Create addresses
@@ -121,7 +122,8 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
       const checkouts = await Promise.all(
         users.map((u) =>
           authenticatedPost(app, "/orders/checkout", u.tokens.access_token, {
-            paymentMethod: "CASH",
+            paymentType: "CASH",
+            idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
           }).catch((err) => err.response || { status: 400 }),
         ),
       );
@@ -152,7 +154,7 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
       const userRepo = getRepository<User>(User);
       const dbUser = await userRepo.findOne({ where: { id: user.id } });
 
-      await assignDiscountToUsers(discount, [dbUser!]);
+      await assignDiscountToUsers(discount, [dbUser!], admin);
 
       const address = await createHomeAddress(dbUser!);
 
@@ -244,6 +246,7 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
       await assignDiscountToUsers(
         discount,
         dbUsers.filter((u) => u !== null) as User[],
+        admin,
       );
 
       const addresses = await Promise.all(

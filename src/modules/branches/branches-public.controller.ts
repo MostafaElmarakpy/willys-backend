@@ -8,10 +8,14 @@ import {
 } from "@nestjs/common";
 import { createSuccessResponse } from "../../common/utils/api-response-wrapper";
 import { BranchesService } from "./branches.service";
+import { ZonesService } from "./zones.service";
 
 @Controller("branches")
 export class BranchesPublicController {
-  constructor(private readonly branchesService: BranchesService) {}
+  constructor(
+    private readonly branchesService: BranchesService,
+    private readonly zonesService: ZonesService,
+  ) {}
 
   @Get()
   @Version("1")
@@ -39,6 +43,29 @@ export class BranchesPublicController {
     return createSuccessResponse(
       branches,
       "Nearby branches retrieved successfully",
+    );
+  }
+
+  @Get("serving")
+  @Version("1")
+  async findServingBranch(
+    @Query("latitude") latitude: number,
+    @Query("longitude") longitude: number,
+  ) {
+    const result = await this.zonesService.checkPointInZone({
+      latitude,
+      longitude,
+    });
+
+    const servingBranch = result.matchingBranches[0]?.branch || null;
+
+    return createSuccessResponse(
+      {
+        branch: servingBranch,
+        canDeliver: result.isInZone,
+        zone: result.matchingBranches[0]?.zone || null,
+      },
+      servingBranch ? "Serving branch found" : "No branch serves this location",
     );
   }
 

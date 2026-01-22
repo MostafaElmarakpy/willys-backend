@@ -1,4 +1,5 @@
 import { INestApplication } from "@nestjs/common";
+import * as request from "supertest";
 import { UserRole } from "../../../src/common/enums/UserRole";
 import { createUsers } from "../../factories/user.factory";
 import {
@@ -10,7 +11,6 @@ import {
   authenticatedDelete,
   authenticatedGet,
   authenticatedPatch,
-  authenticatedPost,
 } from "../../helpers/request.helper";
 import {
   cleanDatabase,
@@ -100,20 +100,16 @@ describe("Admin User Management (E2E)", () => {
         .toString()
         .padStart(8, "0")}`;
 
-      const response = await authenticatedPost(
-        app,
-        "/admin/users",
-        tokens.access_token,
-        {
-          fullName: "New Admin",
-          email: uniqueEmail,
-          password: "Admin@1234",
-          role: UserRole.admin,
-          userLocale: "en",
-          phoneNumber: uniquePhone,
-          phoneNumberCountryCode: "EG",
-        },
-      );
+      const response = await request(app.getHttpServer())
+        .post("/admin/users")
+        .set("Authorization", `Bearer ${tokens.access_token}`)
+        .field("fullName", "New Admin")
+        .field("email", uniqueEmail)
+        .field("password", "Admin@1234")
+        .field("role", UserRole.admin)
+        .field("userLocale", "en")
+        .field("phoneNumber", uniquePhone)
+        .field("phoneNumberCountryCode", "EG");
 
       expect(response.status).toBe(201);
       expect(response.body.data.role).toBe(UserRole.admin);

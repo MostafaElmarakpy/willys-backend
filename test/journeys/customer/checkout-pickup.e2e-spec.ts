@@ -59,7 +59,8 @@ describe("Customer Checkout - Pickup (E2E)", () => {
         "/orders/checkout",
         tokens.access_token,
         {
-          paymentMethod: "CASH",
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
         },
       );
 

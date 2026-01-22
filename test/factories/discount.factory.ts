@@ -164,6 +164,7 @@ export async function createFreeItemDiscount(
 export async function assignDiscountToUser(
   discount: Discount,
   user: User,
+  assignedBy: User,
 ): Promise<UserDiscount> {
   const userDiscountRepo = getRepository<UserDiscount>(UserDiscount);
   const userDiscount = userDiscountRepo.create({
@@ -171,6 +172,8 @@ export async function assignDiscountToUser(
     discountId: discount.id,
     user,
     userId: user.id,
+    assignedBy: assignedBy.id,
+    assignedByUser: assignedBy,
     usageCount: 0,
   });
 
@@ -183,6 +186,7 @@ export async function assignDiscountToUser(
 export async function assignDiscountToItem(
   discount: Discount,
   item: Item,
+  assignedBy: User,
 ): Promise<ItemDiscount> {
   const itemDiscountRepo = getRepository<ItemDiscount>(ItemDiscount);
   const itemDiscount = itemDiscountRepo.create({
@@ -190,6 +194,8 @@ export async function assignDiscountToItem(
     discountId: discount.id,
     item,
     itemId: item.id,
+    assignedBy: assignedBy.id,
+    assignedByUser: assignedBy,
   });
 
   return itemDiscountRepo.save(itemDiscount);
@@ -201,11 +207,12 @@ export async function assignDiscountToItem(
 export async function assignDiscountToUsers(
   discount: Discount,
   users: User[],
+  assignedBy: User,
 ): Promise<UserDiscount[]> {
   const userDiscounts: UserDiscount[] = [];
 
   for (const user of users) {
-    const userDiscount = await assignDiscountToUser(discount, user);
+    const userDiscount = await assignDiscountToUser(discount, user, assignedBy);
     userDiscounts.push(userDiscount);
   }
 
@@ -218,11 +225,12 @@ export async function assignDiscountToUsers(
 export async function assignDiscountToItems(
   discount: Discount,
   items: Item[],
+  assignedBy: User,
 ): Promise<ItemDiscount[]> {
   const itemDiscounts: ItemDiscount[] = [];
 
   for (const item of items) {
-    const itemDiscount = await assignDiscountToItem(discount, item);
+    const itemDiscount = await assignDiscountToItem(discount, item, assignedBy);
     itemDiscounts.push(itemDiscount);
   }
 

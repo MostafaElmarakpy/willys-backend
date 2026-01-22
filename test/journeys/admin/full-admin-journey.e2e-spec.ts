@@ -165,7 +165,10 @@ describe("Full Admin Journey (E2E)", () => {
       app,
       "/orders/checkout",
       customerTokens.access_token,
-      { paymentMethod: "CASH" },
+      {
+        paymentType: "CASH",
+        idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
+      },
     );
 
     expect(orderResponse.status).toBe(201);

@@ -127,10 +127,47 @@ export class ZonesService {
   async update(id: string, updateZoneDto: UpdateZoneDto): Promise<Zone> {
     const zone = await this.findOne(id);
 
-    Object.assign(zone, updateZoneDto);
-
     try {
-      return await this.zoneRepository.save(zone);
+      // If polygon is being updated, convert it to WKT
+      if (updateZoneDto.polygon) {
+        const polygonWkt = this.geoJsonToWkt(updateZoneDto.polygon);
+
+        // Update using raw SQL to handle polygon
+        await this.zoneRepository.query(
+          `
+          UPDATE zones 
+          SET name = COALESCE($1, name),
+              "branchId" = COALESCE($2, "branchId"),
+              polygon = COALESCE(ST_GeomFromText($3, 4326), polygon),
+              "centerLatitude" = COALESCE($4, "centerLatitude"),
+              "centerLongitude" = COALESCE($5, "centerLongitude"),
+              "radiusKm" = COALESCE($6, "radiusKm"),
+              "isActive" = COALESCE($7, "isActive"),
+              priority = COALESCE($8, priority),
+              "deliveryFee" = COALESCE($9, "deliveryFee"),
+              "updatedAt" = NOW()
+          WHERE id = $10
+        `,
+          [
+            updateZoneDto.name ? JSON.stringify(updateZoneDto.name) : null,
+            updateZoneDto.branchId || null,
+            polygonWkt,
+            updateZoneDto.centerLatitude ?? null,
+            updateZoneDto.centerLongitude ?? null,
+            updateZoneDto.radiusKm ?? null,
+            updateZoneDto.isActive ?? null,
+            updateZoneDto.priority ?? null,
+            updateZoneDto.deliveryFee ?? null,
+            id,
+          ],
+        );
+
+        return await this.findOne(id);
+      } else {
+        // If no polygon update, use regular TypeORM save
+        Object.assign(zone, updateZoneDto);
+        return await this.zoneRepository.save(zone);
+      }
     } catch (error) {
       throw new BadRequestException(`Failed to update zone: ${error.message}`);
     }

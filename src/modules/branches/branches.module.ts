@@ -9,10 +9,16 @@ import { BranchesPublicController } from "./branches-public.controller";
 import { OrderRoutingService } from "./order-routing.service";
 import { ZonesController } from "./zones.controller";
 import { ZonesService } from "./zones.service";
+import { ZonesPublicController } from "./zones-public.controller";
 
 @Module({
   imports: [TypeOrmModule.forFeature([Branch, Zone])],
-  controllers: [BranchesController, BranchesPublicController, ZonesController],
+  controllers: [
+    BranchesController,
+    BranchesPublicController,
+    ZonesController,
+    ZonesPublicController,
+  ],
   providers: [
     BranchesService,
     ZonesService,
