@@ -165,9 +165,14 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
         branchId: mainBranch.id,
       });
 
-      await authenticatedPost(app, "/cart/delivery-address", tokens.access_token, {
-        deliveryAddressId: address.id,
-      });
+      await authenticatedPost(
+        app,
+        "/cart/delivery-address",
+        tokens.access_token,
+        {
+          deliveryAddressId: address.id,
+        },
+      );
 
       await authenticatedPost(app, "/cart/discount", tokens.access_token, {
         code: "ONEPERUSER",
@@ -192,9 +197,14 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
         branchId: mainBranch.id,
       });
 
-      await authenticatedPost(app, "/cart/delivery-address", tokens.access_token, {
-        deliveryAddressId: address.id,
-      });
+      await authenticatedPost(
+        app,
+        "/cart/delivery-address",
+        tokens.access_token,
+        {
+          deliveryAddressId: address.id,
+        },
+      );
 
       const secondDiscountAttempt = await authenticatedPost(
         app,
