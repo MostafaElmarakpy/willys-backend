@@ -53,6 +53,9 @@ export async function registerUser(
 
   if (registerMethod === "email") {
     payload.email = userData.email;
+    // Always include phone number for checkout functionality
+    payload.phoneNumber = userData.phoneNumber || "+201234567890";
+    payload.phoneNumberCountryCode = userData.phoneNumberCountryCode || "EG";
   } else {
     payload.phoneNumber = userData.phoneNumber;
     payload.phoneNumberCountryCode = userData.phoneNumberCountryCode || "+20";

@@ -8,10 +8,9 @@ import { getRepository } from "../setup/test-app";
 export interface CreateBranchOptions {
   name?: BilingualStringObject;
   address?: string;
-  city?: string;
   latitude?: number;
   longitude?: number;
-  phoneNumber?: string;
+  phone?: string;
   isActive?: boolean;
   openingHours?: any;
   createdBy?: User;
@@ -75,8 +74,7 @@ export function generateBranchData(
     address: options.address || faker.location.streetAddress(),
     latitude,
     longitude,
-    phone:
-      options.phoneNumber || faker.phone.number({ style: "international" }),
+    phone: options.phone || faker.phone.number({ style: "international" }),
     isActive: options.isActive !== undefined ? options.isActive : true,
     openingHours: options.openingHours?.monday?.open || "09:00",
     closingHours: options.openingHours?.monday?.close || "23:00",

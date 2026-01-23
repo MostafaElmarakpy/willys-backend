@@ -82,9 +82,9 @@ describe("Customer Checkout - Delivery (E2E)", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(response.body.data.orderNumber).toBeDefined();
-      expect(response.body.data.orderType).toBe("DELIVERY");
-      expect(response.body.data.total).toBeGreaterThan(0);
+      expect(response.body.data.order.orderNumber).toBeDefined();
+      expect(response.body.data.order.orderType).toBe("DELIVERY");
+      expect(response.body.data.order.total).toBeGreaterThan(0);
     });
 
     it("should reject checkout without delivery address", async () => {
@@ -147,9 +147,14 @@ describe("Customer Checkout - Delivery (E2E)", () => {
         branchId: mainBranch.id,
       });
 
-      await authenticatedPost(app, "/cart/address", tokens.access_token, {
-        addressId: address.id,
-      });
+      await authenticatedPost(
+        app,
+        "/cart/delivery-address",
+        tokens.access_token,
+        {
+          deliveryAddressId: address.id,
+        },
+      );
 
       // Get cart to check delivery fee
       const cartResponse = await authenticatedGet(
@@ -185,18 +190,26 @@ describe("Customer Checkout - Delivery (E2E)", () => {
         branchId: mainBranch.id,
       });
 
-      await authenticatedPost(app, "/cart/address", tokens.access_token, {
-        addressId: address.id,
-      });
+      await authenticatedPost(
+        app,
+        "/cart/delivery-address",
+        tokens.access_token,
+        {
+          deliveryAddressId: address.id,
+        },
+      );
 
       const response = await authenticatedPost(
         app,
         "/orders/checkout",
         tokens.access_token,
-        { paymentMethod: "CASH" },
+        {
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
+        },
       );
 
-      expect(response.body.data.orderNumber).toMatch(/^WO\d+$/);
+      expect(response.body.data.order.orderNumber).toMatch(/^WO\d+$/);
     });
 
     it("should return estimated delivery time", async () => {
@@ -221,18 +234,26 @@ describe("Customer Checkout - Delivery (E2E)", () => {
         branchId: mainBranch.id,
       });
 
-      await authenticatedPost(app, "/cart/address", tokens.access_token, {
-        addressId: address.id,
-      });
+      await authenticatedPost(
+        app,
+        "/cart/delivery-address",
+        tokens.access_token,
+        {
+          deliveryAddressId: address.id,
+        },
+      );
 
       const response = await authenticatedPost(
         app,
         "/orders/checkout",
         tokens.access_token,
-        { paymentMethod: "CASH" },
+        {
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
+        },
       );
 
-      expect(response.body.data.estimatedDeliveryTime).toBeDefined();
+      expect(response.body.data.order.estimatedDeliveryTime).toBeDefined();
     });
   });
 });

@@ -52,11 +52,10 @@ describe("Full Admin Journey (E2E)", () => {
       tokens.access_token,
       {
         name: { en: "Main Branch", ar: "الفرع الرئيسي" },
-        address: "123 Main St",
-        city: "Cairo",
+        address: "123 Main St, Cairo",
         latitude: 30.0444,
         longitude: 31.2357,
-        phoneNumber: "+201234567890",
+        phone: "+201234567890",
       },
     );
 

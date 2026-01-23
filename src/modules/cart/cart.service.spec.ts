@@ -8,6 +8,7 @@ import { Branch } from "../../database/entities/branch.entity";
 import { Bundle } from "../../database/entities/bundle.entity";
 import { Cart } from "../../database/entities/cart.entity";
 import { CartItem } from "../../database/entities/cart-item.entity";
+import { Ingredient } from "../../database/entities/ingredient.entity";
 import { Item } from "../../database/entities/item.entity";
 import { UserAddress } from "../../database/entities/user-address.entity";
 import { BranchMenuService } from "../branch-menu/branch-menu.service";
@@ -147,6 +148,12 @@ describe("CartService", () => {
         },
         {
           provide: getRepositoryToken(Branch),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(Ingredient),
           useValue: {
             findOne: jest.fn(),
           },

@@ -65,8 +65,8 @@ describe("Customer Checkout - Pickup (E2E)", () => {
       );
 
       expect(response.status).toBe(201);
-      expect(response.body.data.orderType).toBe("PICKUP");
-      expect(response.body.data.branchId).toBe(mainBranch.id);
+      expect(response.body.data.order.orderType).toBe("PICKUP");
+      expect(response.body.data.order.branchId).toBe(mainBranch.id);
     });
 
     it("should have zero delivery fee for pickup orders", async () => {
@@ -94,10 +94,13 @@ describe("Customer Checkout - Pickup (E2E)", () => {
         app,
         "/orders/checkout",
         tokens.access_token,
-        { paymentMethod: "CASH" },
+        {
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
+        },
       );
 
-      expect(response.body.data.deliveryFee).toBe(0);
+      expect(response.body.data.order.deliveryFee).toBe(0);
     });
 
     it("should allow scheduling pickup time", async () => {
@@ -128,10 +131,13 @@ describe("Customer Checkout - Pickup (E2E)", () => {
         app,
         "/orders/checkout",
         tokens.access_token,
-        { paymentMethod: "CASH" },
+        {
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
+        },
       );
 
-      expect(response.body.data.scheduledPickupTime).toBeDefined();
+      expect(response.body.data.order.scheduledPickupTime).toBeDefined();
     });
   });
 
@@ -161,11 +167,14 @@ describe("Customer Checkout - Pickup (E2E)", () => {
         app,
         "/orders/checkout",
         tokens.access_token,
-        { paymentMethod: "CASH" },
+        {
+          paymentType: "CASH",
+          idempotencyKey: `checkout-${Date.now()}-${Math.random()}`,
+        },
       );
 
       // Should have preparation time estimate
-      expect(response.body.data).toBeDefined();
+      expect(response.body.data.order).toBeDefined();
     });
   });
 });
