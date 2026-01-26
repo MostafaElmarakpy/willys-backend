@@ -14,7 +14,13 @@ import {
 import { OrderItem } from "src/database/entities/order-item.entity";
 import { OrderStatusLog } from "src/database/entities/order-status-log.entity";
 import { UserAddress } from "src/database/entities/user-address.entity";
-import { Between, DataSource, IsNull, type Repository } from "typeorm";
+import {
+  Between,
+  DataSource,
+  IsNull,
+  type QueryRunner,
+  type Repository,
+} from "typeorm";
 import { OrderFilterDto } from "./dto/order-filter.dto";
 
 @Injectable()
@@ -87,10 +93,18 @@ export class OrdersService {
     paymentId?: string,
     ipAddress?: string,
     userAgent?: string,
+    externalQueryRunner?: QueryRunner,
   ): Promise<Order> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    // Use external query runner if provided, otherwise create our own
+    const queryRunner =
+      externalQueryRunner || this.dataSource.createQueryRunner();
+    const isExternalTransaction = !!externalQueryRunner;
+
+    // Only manage connection and transaction if we created it
+    if (!isExternalTransaction) {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+    }
 
     try {
       // Generate order number
@@ -151,7 +165,7 @@ export class OrdersService {
         userAgent,
       });
 
-      await queryRunner.manager.save(order);
+      const savedOrder = await queryRunner.manager.save(order);
 
       // Create order items from cart items
       for (const cartItem of cart.items || []) {
@@ -159,7 +173,7 @@ export class OrdersService {
 
         const itemData = cartItem.item || cartItem.bundle;
         const orderItem = queryRunner.manager.create(OrderItem, {
-          orderId: order.id,
+          orderId: savedOrder.id,
           itemType: cartItem.itemType,
           originalItemId: cartItem.itemId || cartItem.bundleId,
           name: itemData?.name || { en: "Unknown", ar: "غير معروف" },
@@ -187,7 +201,7 @@ export class OrdersService {
 
       // Create initial status log
       const statusLog = queryRunner.manager.create(OrderStatusLog, {
-        orderId: order.id,
+        orderId: savedOrder.id,
         previousStatus: OrderStatus.PENDING,
         newStatus: OrderStatus.PENDING,
         notes: "Order created",
@@ -196,14 +210,27 @@ export class OrdersService {
 
       await queryRunner.manager.save(statusLog);
 
-      await queryRunner.commitTransaction();
+      // Only commit if we created the transaction
+      if (!isExternalTransaction) {
+        await queryRunner.commitTransaction();
+        // After commit, fetch with relations
+        return this.findOne(savedOrder.id);
+      }
 
-      return this.findOne(order.id);
+      // If using external transaction, just return the saved order object
+      // The caller will fetch it with relations after committing their transaction
+      return savedOrder;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      // Only rollback if we created the transaction
+      if (!isExternalTransaction) {
+        await queryRunner.rollbackTransaction();
+      }
       throw error;
     } finally {
-      await queryRunner.release();
+      // Only release if we created the query runner
+      if (!isExternalTransaction) {
+        await queryRunner.release();
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DiscountTargetType } from "src/common/enums/DiscountTargetType";
+import { OrderStatus } from "src/common/enums/OrderStatus";
 import { PaymentStatus } from "src/common/enums/PaymentStatus";
 import { PaymentType } from "src/common/enums/PaymentType";
 import type { AppliedDiscount } from "src/database/entities/cart.entity";
@@ -112,16 +113,17 @@ export class CheckoutService {
         userId,
       );
 
-      // Create order from cart
+      // Create order from cart (pass queryRunner to avoid nested transactions)
       const order = await this.ordersService.createFromCart(
         userId,
         cart,
         undefined,
         ipAddress,
         userAgent,
+        queryRunner,
       );
 
-      // Record discount usage
+      // Record discount usage (pass queryRunner to avoid nested transactions)
       for (const appliedDiscount of cart.appliedDiscounts || []) {
         await this.discountsService.recordUsage(
           appliedDiscount.discountId,
@@ -129,6 +131,7 @@ export class CheckoutService {
           appliedDiscount.amount,
           undefined,
           order.id,
+          queryRunner,
         );
       }
 
@@ -148,8 +151,12 @@ export class CheckoutService {
         userId,
       );
 
-      // Link payment to order
-      await this.ordersService.linkPayment(order.id, payment.id);
+      // Link payment to order within the transaction
+      await queryRunner.manager.update(
+        Order,
+        { id: order.id },
+        { paymentId: payment.id },
+      );
 
       // Process payment
       let paymentResult: any;
@@ -176,8 +183,12 @@ export class CheckoutService {
           userId,
         );
 
-        // For cash payments, confirm order immediately
-        await this.ordersService.confirmOrder(order.id, userId);
+        // For cash payments, confirm order immediately within the transaction
+        await queryRunner.manager.update(
+          Order,
+          { id: order.id },
+          { status: OrderStatus.CONFIRMED, confirmedAt: new Date() },
+        );
       }
 
       // Clear cart on success
@@ -196,8 +207,16 @@ export class CheckoutService {
 
       await queryRunner.commitTransaction();
 
-      // Fetch updated order
-      const updatedOrder = await this.ordersService.findOne(order.id);
+      // Fetch updated order with relations
+      // If fetchfails for any reason, fall back to the order we have
+      let updatedOrder: Order;
+      try {
+        updatedOrder = await this.ordersService.findOne(order.id);
+      } catch {
+        // If we can't find the order, use the one we have
+        // This shouldn't happen but provides a fallback
+        updatedOrder = order;
+      }
 
       return {
         order: updatedOrder,

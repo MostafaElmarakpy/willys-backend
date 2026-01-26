@@ -11,7 +11,7 @@ import { Discount } from "src/database/entities/discount.entity";
 import { DiscountUsageLog } from "src/database/entities/discount-usage-log.entity";
 import { ItemDiscount } from "src/database/entities/item-discount.entity";
 import { UserDiscount } from "src/database/entities/user-discount.entity";
-import { DataSource, IsNull, type Repository } from "typeorm";
+import { DataSource, IsNull, type QueryRunner, type Repository } from "typeorm";
 import { CreateDiscountDto } from "./dto/create-discount.dto";
 import { DiscountFilterDto } from "./dto/discount-filter.dto";
 import { UpdateDiscountDto } from "./dto/update-discount.dto";
@@ -593,10 +593,18 @@ export class DiscountsService {
     discountAmount: number,
     itemId?: string,
     orderId?: string,
+    externalQueryRunner?: QueryRunner,
   ): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    // Use external query runner if provided, otherwise create our own
+    const queryRunner =
+      externalQueryRunner || this.dataSource.createQueryRunner();
+    const isExternalTransaction = !!externalQueryRunner;
+
+    // Only manage connection and transaction if we created it
+    if (!isExternalTransaction) {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+    }
 
     try {
       // Lock the discount row for update and increment atomically
@@ -672,12 +680,21 @@ export class DiscountsService {
         }
       }
 
-      await queryRunner.commitTransaction();
+      // Only commit if we created the transaction
+      if (!isExternalTransaction) {
+        await queryRunner.commitTransaction();
+      }
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      // Only rollback if we created the transaction
+      if (!isExternalTransaction) {
+        await queryRunner.rollbackTransaction();
+      }
       throw error;
     } finally {
-      await queryRunner.release();
+      // Only release if we created the query runner
+      if (!isExternalTransaction) {
+        await queryRunner.release();
+      }
     }
   }
 

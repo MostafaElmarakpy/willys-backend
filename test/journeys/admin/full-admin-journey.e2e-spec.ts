@@ -176,7 +176,7 @@ describe("Full Admin Journey (E2E)", () => {
     );
 
     expect(orderResponse.status).toBe(201);
-    const orderId = orderResponse.body.data.id;
+    const orderId = orderResponse.body.data.order.id;
 
     // Step 8: Admin views incoming order
     const ordersListResponse = await authenticatedGet(
