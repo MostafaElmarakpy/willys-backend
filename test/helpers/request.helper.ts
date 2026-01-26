@@ -14,7 +14,8 @@ export async function authenticatedGet(
 ) {
   let req = request(app.getHttpServer())
     .get(url)
-    .set("Authorization", `Bearer ${token}`);
+    .set("Authorization", `Bearer ${token}`)
+    .set("api-version", "1");
 
   if (query) {
     req = req.query(query);
@@ -35,6 +36,7 @@ export async function authenticatedPost(
   return request(app.getHttpServer())
     .post(url)
     .set("Authorization", `Bearer ${token}`)
+    .set("api-version", "1")
     .send(data);
 }
 
@@ -50,6 +52,7 @@ export async function authenticatedPatch(
   return request(app.getHttpServer())
     .patch(url)
     .set("Authorization", `Bearer ${token}`)
+    .set("api-version", "1")
     .send(data);
 }
 
@@ -65,6 +68,7 @@ export async function authenticatedPut(
   return request(app.getHttpServer())
     .put(url)
     .set("Authorization", `Bearer ${token}`)
+    .set("api-version", "1")
     .send(data);
 }
 
@@ -78,7 +82,8 @@ export async function authenticatedDelete(
 ) {
   return request(app.getHttpServer())
     .delete(url)
-    .set("Authorization", `Bearer ${token}`);
+    .set("Authorization", `Bearer ${token}`)
+    .set("api-version", "1");
 }
 
 /**

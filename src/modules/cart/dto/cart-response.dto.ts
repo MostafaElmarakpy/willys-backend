@@ -94,6 +94,13 @@ export class CartResponseDto {
   items: CartItemResponseDto[];
   appliedDiscounts?: AppliedDiscount[];
   summary: CartSummaryDto;
+  // Flattened fields for backward compatibility
+  subtotal: number;
+  discountAmount: number;
+  deliveryFee: number;
+  tax: number;
+  total: number;
+  itemCount: number;
   lastValidatedAt?: Date;
   validationErrors?: Array<{ itemId: string; error: string }>;
   createdAt: Date;
@@ -111,6 +118,13 @@ export class CartResponseDto {
     this.items = cart.items?.map((item) => new CartItemResponseDto(item)) || [];
     this.appliedDiscounts = cart.appliedDiscounts;
     this.summary = new CartSummaryDto(cart);
+    // Flatten summary fields to root level for backward compatibility
+    this.subtotal = this.summary.subtotal;
+    this.discountAmount = this.summary.discountAmount;
+    this.deliveryFee = this.summary.deliveryFee;
+    this.tax = this.summary.tax;
+    this.total = this.summary.total;
+    this.itemCount = this.summary.itemCount;
     this.lastValidatedAt = cart.lastValidatedAt;
     this.validationErrors = cart.validationErrors;
     this.createdAt = cart.createdAt;

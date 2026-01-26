@@ -11,7 +11,7 @@ import { Discount } from "src/database/entities/discount.entity";
 import { DiscountUsageLog } from "src/database/entities/discount-usage-log.entity";
 import { ItemDiscount } from "src/database/entities/item-discount.entity";
 import { UserDiscount } from "src/database/entities/user-discount.entity";
-import { IsNull, type Repository } from "typeorm";
+import { DataSource, IsNull, type Repository } from "typeorm";
 import { CreateDiscountDto } from "./dto/create-discount.dto";
 import { DiscountFilterDto } from "./dto/discount-filter.dto";
 import { UpdateDiscountDto } from "./dto/update-discount.dto";
@@ -27,6 +27,7 @@ export class DiscountsService {
     readonly itemDiscountRepository: Repository<ItemDiscount>,
     @InjectRepository(DiscountUsageLog)
     readonly usageLogRepository: Repository<DiscountUsageLog>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
@@ -441,7 +442,13 @@ export class DiscountsService {
     discountId: string,
     userId: string,
     itemId?: string,
+    useTransaction = false,
   ): Promise<{ canUse: boolean; reason?: string }> {
+    // Use pessimistic locking when called within a transaction
+    if (useTransaction) {
+      return this.canUseDiscountWithLock(discountId, userId, itemId);
+    }
+
     const discount = await this.findOne(discountId);
 
     if (!this.isDiscountActive(discount)) {
@@ -488,6 +495,98 @@ export class DiscountsService {
     return { canUse: true };
   }
 
+  private async canUseDiscountWithLock(
+    discountId: string,
+    userId: string,
+    itemId?: string,
+  ): Promise<{ canUse: boolean; reason?: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Lock the discount row for update
+      const discount = await queryRunner.manager
+        .createQueryBuilder(Discount, "discount")
+        .where("discount.id = :id", { id: discountId })
+        .andWhere("discount.deletedAt IS NULL")
+        .setLock("pessimistic_write")
+        .getOne();
+
+      if (!discount) {
+        await queryRunner.rollbackTransaction();
+        return { canUse: false, reason: "Discount not found" };
+      }
+
+      if (!this.isDiscountActive(discount)) {
+        await queryRunner.rollbackTransaction();
+        return {
+          canUse: false,
+          reason: "Discount is not active or has expired",
+        };
+      }
+
+      if (
+        discount.maxUsageTotal &&
+        discount.currentUsageCount >= discount.maxUsageTotal
+      ) {
+        await queryRunner.rollbackTransaction();
+        return { canUse: false, reason: "Discount usage limit reached" };
+      }
+
+      if (discount.targetType === DiscountTargetType.USER) {
+        // Lock user discount for update
+        const userDiscount = await queryRunner.manager
+          .createQueryBuilder(UserDiscount, "userDiscount")
+          .where("userDiscount.userId = :userId", { userId })
+          .andWhere("userDiscount.discountId = :discountId", { discountId })
+          .setLock("pessimistic_write")
+          .getOne();
+
+        if (!userDiscount) {
+          await queryRunner.rollbackTransaction();
+          return {
+            canUse: false,
+            reason: "Discount not assigned to this user",
+          };
+        }
+
+        if (
+          discount.maxUsagePerUser &&
+          userDiscount.usageCount >= discount.maxUsagePerUser
+        ) {
+          await queryRunner.rollbackTransaction();
+          return {
+            canUse: false,
+            reason: "User has reached their usage limit for this discount",
+          };
+        }
+      }
+
+      if (discount.targetType === DiscountTargetType.ITEM && itemId) {
+        const itemDiscount = await queryRunner.manager.findOne(ItemDiscount, {
+          where: { itemId, discountId },
+        });
+
+        if (!itemDiscount) {
+          await queryRunner.rollbackTransaction();
+          return {
+            canUse: false,
+            reason: "Discount not assigned to this item",
+          };
+        }
+      }
+
+      await queryRunner.commitTransaction();
+      return { canUse: true };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async recordUsage(
     discountId: string,
     userId: string,
@@ -495,29 +594,90 @@ export class DiscountsService {
     itemId?: string,
     orderId?: string,
   ): Promise<void> {
-    const discount = await this.findOne(discountId);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    await this.usageLogRepository.save({
-      discountId,
-      userId,
-      itemId,
-      orderId,
-      discountAmount,
-    });
+    try {
+      // Lock the discount row for update and increment atomically
+      const discount = await queryRunner.manager
+        .createQueryBuilder(Discount, "discount")
+        .where("discount.id = :id", { id: discountId })
+        .setLock("pessimistic_write")
+        .getOne();
 
-    discount.currentUsageCount += 1;
-    await this.discountRepository.save(discount);
+      if (!discount) {
+        throw new NotFoundException("Discount not found");
+      }
 
-    if (discount.targetType === DiscountTargetType.USER) {
-      const userDiscount = await this.userDiscountRepository.findOne({
-        where: { userId, discountId },
+      // Double-check usage limits with locked row
+      if (
+        discount.maxUsageTotal &&
+        discount.currentUsageCount >= discount.maxUsageTotal
+      ) {
+        throw new BadRequestException("Discount usage limit reached");
+      }
+
+      // Create usage log
+      await queryRunner.manager.save(DiscountUsageLog, {
+        discountId,
+        userId,
+        itemId,
+        orderId,
+        discountAmount,
       });
 
-      if (userDiscount) {
-        userDiscount.usageCount += 1;
-        userDiscount.lastUsedAt = new Date();
-        await this.userDiscountRepository.save(userDiscount);
+      // Atomically increment usage count
+      await queryRunner.manager.increment(
+        Discount,
+        { id: discountId },
+        "currentUsageCount",
+        1,
+      );
+
+      if (discount.targetType === DiscountTargetType.USER) {
+        // Lock user discount for update
+        const userDiscount = await queryRunner.manager
+          .createQueryBuilder(UserDiscount, "userDiscount")
+          .where("userDiscount.userId = :userId", { userId })
+          .andWhere("userDiscount.discountId = :discountId", { discountId })
+          .setLock("pessimistic_write")
+          .getOne();
+
+        if (userDiscount) {
+          // Double-check per-user limit
+          if (
+            discount.maxUsagePerUser &&
+            userDiscount.usageCount >= discount.maxUsagePerUser
+          ) {
+            throw new BadRequestException(
+              "User has reached their usage limit for this discount",
+            );
+          }
+
+          // Atomically increment user usage count
+          await queryRunner.manager.increment(
+            UserDiscount,
+            { userId, discountId },
+            "usageCount",
+            1,
+          );
+
+          // Update last used timestamp
+          await queryRunner.manager.update(
+            UserDiscount,
+            { userId, discountId },
+            { lastUsedAt: new Date() },
+          );
+        }
       }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 

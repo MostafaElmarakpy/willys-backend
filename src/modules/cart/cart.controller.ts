@@ -42,6 +42,50 @@ export class CartController {
     );
   }
 
+  @Patch()
+  async updateCart(@User("id") userId: string, @Body() dto: any) {
+    let cart = await this.cartService.getCart(userId);
+
+    // Update order type if provided
+    if (dto.orderType !== undefined) {
+      cart = await this.cartService.setOrderType(userId, dto.orderType);
+    }
+
+    // Update branch if provided
+    if (dto.branchId !== undefined) {
+      cart = await this.cartService.setBranch(userId, dto.branchId);
+    }
+
+    // Update scheduled pickup time if provided
+    if (dto.scheduledPickupTime !== undefined) {
+      cart = await this.cartService.setPickupTime(
+        userId,
+        dto.scheduledPickupTime,
+      );
+    }
+
+    // Update delivery address if provided
+    if (dto.deliveryAddressId !== undefined) {
+      cart = await this.cartService.setDeliveryAddress(
+        userId,
+        dto.deliveryAddressId,
+      );
+    }
+
+    // Update special instructions if provided
+    if (dto.specialInstructions !== undefined) {
+      cart = await this.cartService.setSpecialInstructions(
+        userId,
+        dto.specialInstructions,
+      );
+    }
+
+    return createSuccessResponse(
+      new CartResponseDto(cart),
+      "Cart updated successfully",
+    );
+  }
+
   @Post("items")
   async addItem(@User("id") userId: string, @Body() dto: AddToCartDto) {
     const cart = await this.cartService.addItem(userId, dto);
