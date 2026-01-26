@@ -1,11 +1,15 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { DiscountTargetType } from "src/common/enums/DiscountTargetType";
 import { PaymentStatus } from "src/common/enums/PaymentStatus";
 import { PaymentType } from "src/common/enums/PaymentType";
+import type { AppliedDiscount } from "src/database/entities/cart.entity";
 import { Cart } from "src/database/entities/cart.entity";
+import { Discount } from "src/database/entities/discount.entity";
 import { Order } from "src/database/entities/order.entity";
 import { User } from "src/database/entities/user.entity";
-import { DataSource, type Repository } from "typeorm";
+import { UserDiscount } from "src/database/entities/user-discount.entity";
+import { DataSource, type QueryRunner, type Repository } from "typeorm";
 import { CartService } from "../cart/cart.service";
 import { DiscountsService } from "../discounts/discounts.service";
 import { PaymentsService } from "../payments/payments.service";
@@ -102,6 +106,12 @@ export class CheckoutService {
     await queryRunner.startTransaction();
 
     try {
+      await this.validateDiscountsWithLock(
+        queryRunner,
+        cart.appliedDiscounts || [],
+        userId,
+      );
+
       // Create order from cart
       const order = await this.ordersService.createFromCart(
         userId,
@@ -250,6 +260,77 @@ export class CheckoutService {
         "Payment failed",
         true,
       );
+    }
+  }
+
+  private async validateDiscountsWithLock(
+    queryRunner: QueryRunner,
+    appliedDiscounts: AppliedDiscount[],
+    userId: string,
+  ): Promise<void> {
+    for (const appliedDiscount of appliedDiscounts) {
+      // Lock the discount row for update
+      const discount = await queryRunner.manager
+        .createQueryBuilder(Discount, "discount")
+        .where("discount.id = :id", { id: appliedDiscount.discountId })
+        .andWhere("discount.deletedAt IS NULL")
+        .setLock("pessimistic_write")
+        .getOne();
+
+      if (!discount) {
+        throw new BadRequestException(
+          `Discount "${appliedDiscount.code}" is no longer available`,
+        );
+      }
+
+      // Check if discount is still active
+      const now = new Date();
+      if (
+        !discount.isActive ||
+        (discount.endDate && new Date(discount.endDate) < now) ||
+        new Date(discount.startDate) > now
+      ) {
+        throw new BadRequestException(
+          `Discount "${appliedDiscount.code}" is no longer active`,
+        );
+      }
+
+      // Check total usage limit with locked row
+      if (
+        discount.maxUsageTotal &&
+        discount.currentUsageCount >= discount.maxUsageTotal
+      ) {
+        throw new BadRequestException(
+          `Discount "${appliedDiscount.code}" has reached its usage limit`,
+        );
+      }
+
+      // Check per-user usage limit for user-targeted discounts
+      if (discount.targetType === DiscountTargetType.USER) {
+        const userDiscount = await queryRunner.manager
+          .createQueryBuilder(UserDiscount, "userDiscount")
+          .where("userDiscount.userId = :userId", { userId })
+          .andWhere("userDiscount.discountId = :discountId", {
+            discountId: appliedDiscount.discountId,
+          })
+          .setLock("pessimistic_write")
+          .getOne();
+
+        if (!userDiscount) {
+          throw new BadRequestException(
+            `Discount "${appliedDiscount.code}" is not assigned to your account`,
+          );
+        }
+
+        if (
+          discount.maxUsagePerUser &&
+          userDiscount.usageCount >= discount.maxUsagePerUser
+        ) {
+          throw new BadRequestException(
+            `You have reached your usage limit for discount "${appliedDiscount.code}"`,
+          );
+        }
+      }
     }
   }
 }

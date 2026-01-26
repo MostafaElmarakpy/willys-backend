@@ -31,20 +31,20 @@ export class ZonesService {
     }
 
     try {
-      // Convert GeoJSON polygon to WKT format
-      const polygonWkt = this.geoJsonToWkt(createZoneDto.polygon);
+      // Convert GeoJSON polygon to PostGIS geometry
+      const polygonGeoJSON = JSON.stringify(createZoneDto.polygon);
 
-      // Insert zone directly using raw SQL to include polygon
+      // Insert zone using PostGIS ST_GeomFromGeoJSON function
       const result = await this.zoneRepository.query(
         `
         INSERT INTO zones (name, "branchId", polygon, "centerLatitude", "centerLongitude", "radiusKm", "isActive", priority, "deliveryFee", "createdAt", "updatedAt")
-        VALUES ($1, $2, ST_GeomFromText($3, 4326), $4, $5, $6, $7, $8, $9, NOW(), NOW())
+        VALUES ($1, $2, ST_GeomFromGeoJSON($3), $4, $5, $6, $7, $8, $9, NOW(), NOW())
         RETURNING id
       `,
         [
           createZoneDto.name ? JSON.stringify(createZoneDto.name) : null,
           createZoneDto.branchId,
-          polygonWkt,
+          polygonGeoJSON,
           createZoneDto.centerLatitude || null,
           createZoneDto.centerLongitude || null,
           createZoneDto.radiusKm || null,
@@ -128,9 +128,9 @@ export class ZonesService {
     const zone = await this.findOne(id);
 
     try {
-      // If polygon is being updated, convert it to WKT
+      // If polygon is being updated, convert to PostGIS geometry
       if (updateZoneDto.polygon) {
-        const polygonWkt = this.geoJsonToWkt(updateZoneDto.polygon);
+        const polygonGeoJSON = JSON.stringify(updateZoneDto.polygon);
 
         // Update using raw SQL to handle polygon
         await this.zoneRepository.query(
@@ -138,7 +138,7 @@ export class ZonesService {
           UPDATE zones 
           SET name = COALESCE($1, name),
               "branchId" = COALESCE($2, "branchId"),
-              polygon = COALESCE(ST_GeomFromText($3, 4326), polygon),
+              polygon = COALESCE(ST_GeomFromGeoJSON($3), polygon),
               "centerLatitude" = COALESCE($4, "centerLatitude"),
               "centerLongitude" = COALESCE($5, "centerLongitude"),
               "radiusKm" = COALESCE($6, "radiusKm"),
@@ -151,7 +151,7 @@ export class ZonesService {
           [
             updateZoneDto.name ? JSON.stringify(updateZoneDto.name) : null,
             updateZoneDto.branchId || null,
-            polygonWkt,
+            polygonGeoJSON,
             updateZoneDto.centerLatitude ?? null,
             updateZoneDto.centerLongitude ?? null,
             updateZoneDto.radiusKm ?? null,

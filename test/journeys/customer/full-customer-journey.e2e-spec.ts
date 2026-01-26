@@ -162,9 +162,9 @@ describe("Full Customer Journey (E2E)", () => {
     );
 
     expect(checkoutResponse.status).toBe(201);
-    expect(checkoutResponse.body.data.orderNumber).toBeDefined();
+    expect(checkoutResponse.body.data.order.orderNumber).toBeDefined();
 
-    const orderId = checkoutResponse.body.data.id;
+    const orderId = checkoutResponse.body.data.order.id;
 
     // Step 11: Verify order created
     const orderResponse = await authenticatedGet(

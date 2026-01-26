@@ -134,7 +134,7 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
       expect(results[2].status).toBe(201);
 
       // All orders should have unique order numbers
-      const orderNumbers = results.map((r) => r.body.data.orderNumber);
+      const orderNumbers = results.map((r) => r.body.data.order.orderNumber);
       const uniqueOrderNumbers = new Set(orderNumbers);
       expect(uniqueOrderNumbers.size).toBe(3);
     });

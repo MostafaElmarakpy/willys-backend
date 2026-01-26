@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
+import { useContainer } from "class-validator";
 import { DataSource } from "typeorm";
 import { AppModule } from "../../src/app.module";
 import { ConfigService } from "../../src/config/config.service";
@@ -63,6 +64,9 @@ export async function createTestApp(): Promise<INestApplication> {
 
   // Disable throttling for tests
   // Note: The app will still have throttle guards, but we can bypass them in tests
+
+  // Enable DI for custom validators
+  useContainer(testApp.select(AppModule), { fallbackOnErrors: true });
 
   await testApp.init();
 
