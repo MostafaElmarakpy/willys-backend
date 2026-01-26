@@ -73,6 +73,11 @@ export class ConfigService {
       paymobCreditCardIntegrationId:
         process.env.PAYMOB_CREDIT_CARD_INTEGRATION_ID || "",
       paymobIframeId: process.env.PAYMOB_IFRAME_ID || "",
+      // Firebase FCM Configuration (optional - for push notifications)
+      firebaseProjectId: process.env.FIREBASE_PROJECT_ID || "",
+      firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL || "",
+      firebasePrivateKey:
+        process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n") || "",
       // totpSecret: process.env.TOTP_SECRET!,
     };
 

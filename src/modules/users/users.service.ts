@@ -4,6 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
@@ -17,6 +18,7 @@ import { MailService } from "src/common/mail/mail.service";
 import { User } from "src/database/entities/user.entity";
 import { UploadMediaService } from "src/services/upload-media/upload-media.service";
 import { Repository } from "typeorm";
+import { UserRegisteredEvent } from "../notifications/events/user.events";
 import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
@@ -26,6 +28,7 @@ export class UsersService {
     private readonly uploadMediaService: UploadMediaService,
     private jwtService: JwtService,
     private mailService: MailService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async register(
@@ -103,6 +106,17 @@ export class UsersService {
           }
         });
     }
+
+    // Emit user registered event (fire-and-forget)
+    this.eventEmitter.emit(
+      "user.registered",
+      new UserRegisteredEvent(
+        newUser.id,
+        newUser.fullName,
+        newUser.email,
+        newUser.phoneNumber,
+      ),
+    );
 
     return new ProfileDto(newUser);
   }

@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PaymentStatus } from "src/common/enums/PaymentStatus";
 import { PaymentType } from "src/common/enums/PaymentType";
@@ -12,6 +13,7 @@ import { RefundType } from "src/common/enums/RefundType";
 import { Payment } from "src/database/entities/payment.entity";
 import { Refund } from "src/database/entities/refund.entity";
 import { Repository } from "typeorm";
+import { PaymentRefundedEvent } from "../notifications/events/payment.events";
 import { ApproveRefundDto } from "./dto/approve-refund.dto";
 import { CreateRefundDto } from "./dto/create-refund.dto";
 import { RefundResponseDto } from "./dto/refund-response.dto";
@@ -27,6 +29,7 @@ export class RefundsService {
     @InjectRepository(Refund) readonly refundRepository: Repository<Refund>,
     @InjectRepository(Payment) readonly paymentRepository: Repository<Payment>,
     private readonly paymobService: PaymobService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async requestRefund(
@@ -325,6 +328,23 @@ export class RefundsService {
       });
 
       this.logger.log(`Refund processed successfully: ${refund.refundId}`);
+
+      // Emit payment refunded event (fire-and-forget)
+      const paymentWithUser = await this.paymentRepository.findOne({
+        where: { id: payment.id },
+        relations: ["user"],
+      });
+      this.eventEmitter.emit(
+        "payment.refunded",
+        new PaymentRefundedEvent(
+          payment.id,
+          refund.refundId,
+          Number(payment.amount),
+          Number(refund.amount),
+          paymentWithUser?.user?.fullName || "Customer",
+          payment.metadata?.orderNumber,
+        ),
+      );
     } catch (error) {
       this.logger.error(`Refund processing failed: ${refund.refundId}`, error);
 

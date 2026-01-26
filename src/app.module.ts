@@ -1,5 +1,6 @@
 import * as path from "node:path";
 import { MiddlewareConsumer, Module, RequestMethod } from "@nestjs/common";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ScheduleModule } from "@nestjs/schedule";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import { TerminusModule } from "@nestjs/terminus";
@@ -27,6 +28,7 @@ import { CartModule } from "./modules/cart/cart.module";
 import { DiscountsModule } from "./modules/discounts/discounts.module";
 import { HealthModule } from "./modules/health/health.module";
 import { MenuModule } from "./modules/menu/menu.module";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { OrdersModule } from "./modules/orders/orders.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
 import { RolesModule } from "./modules/roles/roles.module";
@@ -35,6 +37,7 @@ import { UploadMediaModule } from "./services/upload-media/upload-media.module";
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -85,6 +88,7 @@ import { UploadMediaModule } from "./services/upload-media/upload-media.module";
     AnalyticsModule,
     CartModule,
     OrdersModule,
+    NotificationsModule,
   ],
   providers: [LocaleSubscriber, YcI18nService, MailService],
   exports: [LocaleSubscriber, YcI18nService],

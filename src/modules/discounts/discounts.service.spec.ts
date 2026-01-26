@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { DiscountStatus } from "../../common/enums/DiscountStatus";
 import { DiscountTargetType } from "../../common/enums/DiscountTargetType";
 import { DiscountType } from "../../common/enums/DiscountType";
@@ -20,6 +20,7 @@ describe("DiscountsService", () => {
   let userDiscountRepository: jest.Mocked<Repository<UserDiscount>>;
   let itemDiscountRepository: jest.Mocked<Repository<ItemDiscount>>;
   let usageLogRepository: jest.Mocked<Repository<DiscountUsageLog>>;
+  let mockQueryRunner: any;
 
   // Mock data
   const mockUserId = "550e8400-e29b-41d4-a716-446655440000";
@@ -107,6 +108,28 @@ describe("DiscountsService", () => {
   };
 
   beforeEach(async () => {
+    // Set up mock query runner
+    mockQueryRunner = {
+      connect: jest.fn(),
+      startTransaction: jest.fn(),
+      commitTransaction: jest.fn(),
+      rollbackTransaction: jest.fn(),
+      release: jest.fn(),
+      manager: {
+        save: jest.fn(),
+        findOne: jest.fn(),
+        find: jest.fn(),
+        increment: jest.fn(),
+        update: jest.fn(),
+        createQueryBuilder: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnThis(),
+          andWhere: jest.fn().mockReturnThis(),
+          setLock: jest.fn().mockReturnThis(),
+          getOne: jest.fn(),
+        }),
+      },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DiscountsService,
@@ -144,6 +167,12 @@ describe("DiscountsService", () => {
           useValue: {
             find: jest.fn(),
             save: jest.fn(),
+          },
+        },
+        {
+          provide: DataSource,
+          useValue: {
+            createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner),
           },
         },
       ],
@@ -931,15 +960,28 @@ describe("DiscountsService", () => {
       usageLogRepository.save.mockResolvedValue(
         mockUsageLog as DiscountUsageLog,
       );
+      // Mock the query builder chain for recordUsage
+      mockQueryRunner.manager.createQueryBuilder.mockReturnValue({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        setLock: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockResolvedValue(mockDiscount),
+      });
     });
 
     it("should record discount usage", async () => {
-      userDiscountRepository.findOne.mockResolvedValue(
-        mockUserDiscount as UserDiscount,
-      );
-      userDiscountRepository.save.mockResolvedValue(
-        mockUserDiscount as UserDiscount,
-      );
+      let callCount = 0;
+      mockQueryRunner.manager.createQueryBuilder.mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        setLock: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockImplementation(() => {
+          callCount++;
+          return Promise.resolve(
+            callCount === 1 ? mockDiscount : mockUserDiscount,
+          );
+        }),
+      }));
 
       await service.recordUsage(
         mockDiscountId,
@@ -949,49 +991,67 @@ describe("DiscountsService", () => {
         mockOrderId,
       );
 
-      expect(usageLogRepository.save).toHaveBeenCalledWith({
-        discountId: mockDiscountId,
-        userId: mockUserId,
-        itemId: undefined,
-        orderId: mockOrderId,
-        discountAmount: 10,
-      });
-      expect(discountRepository.save).toHaveBeenCalled();
+      expect(mockQueryRunner.manager.save).toHaveBeenCalled();
+      expect(mockQueryRunner.manager.increment).toHaveBeenCalled();
     });
 
     it("should increment discount currentUsageCount", async () => {
       const freshDiscount = { ...mockDiscount, currentUsageCount: 0 };
-      discountRepository.findOne.mockResolvedValue(freshDiscount as Discount);
-      userDiscountRepository.findOne.mockResolvedValue(
-        mockUserDiscount as UserDiscount,
-      );
-      userDiscountRepository.save.mockResolvedValue(
-        mockUserDiscount as UserDiscount,
-      );
+      let callCount = 0;
+      mockQueryRunner.manager.createQueryBuilder.mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        setLock: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockImplementation(() => {
+          callCount++;
+          return Promise.resolve(
+            callCount === 1 ? freshDiscount : mockUserDiscount,
+          );
+        }),
+      }));
 
       await service.recordUsage(mockDiscountId, mockUserId, 10);
 
-      expect(discountRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          currentUsageCount: 1,
-        }),
+      expect(mockQueryRunner.manager.increment).toHaveBeenCalledWith(
+        Discount,
+        { id: mockDiscountId },
+        "currentUsageCount",
+        1,
       );
     });
 
     it("should update userDiscount for USER-targeted discount", async () => {
-      userDiscountRepository.findOne.mockResolvedValue({
+      const mockUserDiscountData = {
         ...mockUserDiscount,
         usageCount: 0,
-      } as UserDiscount);
-      userDiscountRepository.save.mockResolvedValue(
-        mockUserDiscount as UserDiscount,
-      );
+      } as UserDiscount;
+
+      // Mock will be called twice: first for discount, then for userDiscount
+      let callCount = 0;
+      mockQueryRunner.manager.createQueryBuilder.mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        setLock: jest.fn().mockReturnThis(),
+        getOne: jest.fn().mockImplementation(() => {
+          callCount++;
+          return Promise.resolve(
+            callCount === 1 ? mockDiscount : mockUserDiscountData,
+          );
+        }),
+      }));
 
       await service.recordUsage(mockDiscountId, mockUserId, 10);
 
-      expect(userDiscountRepository.save).toHaveBeenCalledWith(
+      expect(mockQueryRunner.manager.increment).toHaveBeenCalledWith(
+        UserDiscount,
+        { userId: mockUserId, discountId: mockDiscountId },
+        "usageCount",
+        1,
+      );
+      expect(mockQueryRunner.manager.update).toHaveBeenCalledWith(
+        UserDiscount,
+        { userId: mockUserId, discountId: mockDiscountId },
         expect.objectContaining({
-          usageCount: 1,
           lastUsedAt: expect.any(Date),
         }),
       );

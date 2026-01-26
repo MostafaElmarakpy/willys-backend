@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PaymentEventType } from "src/common/enums/PaymentEventType";
 import { PaymentStatus } from "src/common/enums/PaymentStatus";
@@ -11,6 +12,10 @@ import { PaymentType } from "src/common/enums/PaymentType";
 import { Payment } from "src/database/entities/payment.entity";
 import { PaymentTransactionLog } from "src/database/entities/payment-transaction-log.entity";
 import { Repository } from "typeorm";
+import {
+  PaymentFailedEvent,
+  PaymentSuccessEvent,
+} from "../notifications/events/payment.events";
 import { CreatePaymentDto } from "./dto/create-payment.dto";
 import { CreatePaymentResponseDto } from "./dto/create-payment-response.dto";
 import { PaymentFilterDto } from "./dto/payment-filter.dto";
@@ -28,6 +33,7 @@ export class PaymentsService {
     @InjectRepository(PaymentTransactionLog)
     readonly transactionLogRepository: Repository<PaymentTransactionLog>,
     private readonly paymobService: PaymobService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async createPayment(
@@ -266,6 +272,24 @@ export class PaymentsService {
       this.logger.log(
         `Payment successful via webhook: ${payment.transactionId}`,
       );
+
+      // Emit payment success event (fire-and-forget)
+      // Note: We need to fetch user info for customer name
+      const paymentWithUser = await this.paymentRepository.findOne({
+        where: { id: payment.id },
+        relations: ["user"],
+      });
+      this.eventEmitter.emit(
+        "payment.success",
+        new PaymentSuccessEvent(
+          payment.id,
+          payment.transactionId,
+          Number(payment.amount),
+          paymentWithUser?.user?.fullName || "Customer",
+          payment.metadata?.orderId,
+          payment.metadata?.orderNumber,
+        ),
+      );
     } else if (webhookData.obj.success === false) {
       payment.status = PaymentStatus.FAILED;
       payment.errorMessage = webhookData.obj.data?.message || "Payment failed";
@@ -283,6 +307,22 @@ export class PaymentsService {
       );
 
       this.logger.warn(`Payment failed via webhook: ${payment.transactionId}`);
+
+      // Emit payment failed event (fire-and-forget)
+      const paymentWithUser = await this.paymentRepository.findOne({
+        where: { id: payment.id },
+        relations: ["user"],
+      });
+      this.eventEmitter.emit(
+        "payment.failed",
+        new PaymentFailedEvent(
+          payment.id,
+          payment.transactionId,
+          Number(payment.amount),
+          paymentWithUser?.user?.fullName || "Customer",
+          payment.errorMessage,
+        ),
+      );
     }
 
     await this.logTransaction(

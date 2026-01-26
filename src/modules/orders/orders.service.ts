@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { OrderStatus } from "src/common/enums/OrderStatus";
 import { OrderType } from "src/common/enums/OrderType";
@@ -21,6 +22,10 @@ import {
   type QueryRunner,
   type Repository,
 } from "typeorm";
+import {
+  OrderCreatedEvent,
+  OrderStatusChangedEvent,
+} from "../notifications/events/order.events";
 import { OrderFilterDto } from "./dto/order-filter.dto";
 
 @Injectable()
@@ -67,6 +72,7 @@ export class OrdersService {
     @InjectRepository(UserAddress)
     readonly addressRepository: Repository<UserAddress>,
     private readonly dataSource: DataSource,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async generateOrderNumber(): Promise<string> {
@@ -214,7 +220,24 @@ export class OrdersService {
       if (!isExternalTransaction) {
         await queryRunner.commitTransaction();
         // After commit, fetch with relations
-        return this.findOne(savedOrder.id);
+        const completeOrder = await this.findOne(savedOrder.id);
+
+        // Emit order created event (fire-and-forget)
+        this.eventEmitter.emit(
+          "order.created",
+          new OrderCreatedEvent(
+            completeOrder.id,
+            completeOrder.orderNumber,
+            completeOrder.userId,
+            completeOrder.user?.fullName || "Customer",
+            Number(completeOrder.total),
+            completeOrder.branchId,
+            completeOrder.branch?.name?.en || "Branch",
+            completeOrder.orderType,
+          ),
+        );
+
+        return completeOrder;
       }
 
       // If using external transaction, just return the saved order object
@@ -440,7 +463,21 @@ export class OrdersService {
 
     await this.statusLogRepository.save(statusLog);
 
-    return this.findOne(orderId);
+    const updatedOrder = await this.findOne(orderId);
+
+    // Emit order status changed event (fire-and-forget)
+    this.eventEmitter.emit(
+      "order.status.changed",
+      new OrderStatusChangedEvent(
+        updatedOrder.id,
+        updatedOrder.orderNumber,
+        previousStatus,
+        newStatus,
+        updatedOrder.user?.fullName || "Customer",
+      ),
+    );
+
+    return updatedOrder;
   }
 
   async cancelOrder(
