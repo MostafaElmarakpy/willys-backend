@@ -1,4 +1,5 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { PaymentEventType } from "src/common/enums/PaymentEventType";
@@ -74,6 +75,12 @@ describe("PaymentsService", () => {
             createOrder: jest.fn(),
             createPaymentKey: jest.fn(),
             buildIframeUrl: jest.fn(),
+          },
+        },
+        {
+          provide: EventEmitter2,
+          useValue: {
+            emit: jest.fn(),
           },
         },
       ],

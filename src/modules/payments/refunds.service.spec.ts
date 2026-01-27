@@ -1,4 +1,5 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { PaymentStatus } from "src/common/enums/PaymentStatus";
@@ -77,6 +78,12 @@ describe("RefundsService", () => {
           provide: PaymobService,
           useValue: {
             processRefund: jest.fn(),
+          },
+        },
+        {
+          provide: EventEmitter2,
+          useValue: {
+            emit: jest.fn(),
           },
         },
       ],

@@ -1,4 +1,5 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { DataSource, type Repository, type SelectQueryBuilder } from "typeorm";
@@ -140,6 +141,12 @@ describe("OrdersService", () => {
             createQueryRunner: jest.fn(() => mockQueryRunner),
           },
         },
+        {
+          provide: EventEmitter2,
+          useValue: {
+            emit: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -155,28 +162,29 @@ describe("OrdersService", () => {
 
   describe("generateOrderNumber", () => {
     it("should generate order number with correct format", async () => {
-      orderRepository.count.mockResolvedValue(0);
-
       const result = await service.generateOrderNumber();
 
-      expect(result).toMatch(/^WLY-\d{8}-0001$/);
+      // Format: WLY-YYMMDDHHMM-RRR (YY is 2-digit year)
+      expect(result).toMatch(/^WLY-\d{10}-\d{3}$/);
     });
 
-    it("should increment sequence number based on existing orders", async () => {
-      orderRepository.count.mockResolvedValue(5);
+    it("should generate unique order numbers", async () => {
+      const result1 = await service.generateOrderNumber();
+      const result2 = await service.generateOrderNumber();
 
-      const result = await service.generateOrderNumber();
-
-      expect(result).toMatch(/^WLY-\d{8}-0006$/);
+      expect(result1).not.toBe(result2);
     });
 
-    it("should use current date in order number", async () => {
-      orderRepository.count.mockResolvedValue(0);
-      const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    it("should use current date and time in order number", async () => {
+      const now = new Date();
+      const year = now.getFullYear().toString().slice(-2);
+      const month = (now.getMonth() + 1).toString().padStart(2, "0");
+      const day = now.getDate().toString().padStart(2, "0");
+      const datePrefix = `${year}${month}${day}`;
 
       const result = await service.generateOrderNumber();
 
-      expect(result).toContain(today);
+      expect(result).toContain(datePrefix);
     });
   });
 
