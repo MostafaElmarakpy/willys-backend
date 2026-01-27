@@ -12,21 +12,27 @@ export class UserEventListener {
 
   @OnEvent("user.registered")
   async handleUserRegistered(event: UserRegisteredEvent): Promise<void> {
-    this.logger.log(`User registered event received: ${event.fullName}`);
+    try {
+      this.logger.log(`User registered event received: ${event.fullName}`);
 
-    const contactInfo = event.email || event.phoneNumber || "No contact info";
+      const contactInfo = event.email || event.phoneNumber || "No contact info";
 
-    await this.notificationsService.sendNotificationToAdmins(
-      NotificationType.USER_REGISTERED,
-      "New User Registered",
-      `${event.fullName} has created a new account (${contactInfo})`,
-      {
-        userId: event.userId,
-        fullName: event.fullName,
-        email: event.email || "",
-        phoneNumber: event.phoneNumber || "",
-        link: `/customers/${event.userId}`,
-      },
-    );
+      await this.notificationsService.sendNotificationToAdmins(
+        NotificationType.USER_REGISTERED,
+        "New User Registered",
+        `${event.fullName} has created a new account (${contactInfo})`,
+        {
+          userId: event.userId,
+          fullName: event.fullName,
+          email: event.email || "",
+          phoneNumber: event.phoneNumber || "",
+          link: `/customers/${event.userId}`,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to handle user registered event: ${error.message}`,
+      );
+    }
   }
 }

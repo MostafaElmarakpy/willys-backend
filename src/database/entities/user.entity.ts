@@ -4,6 +4,8 @@ import { UserProvider } from "src/common/enums/UserProvider";
 import { UserRole } from "src/common/enums/UserRole";
 import { UserStatus } from "src/common/enums/UserStatus";
 import { AccessToken } from "src/database/entities/access-token.entity";
+import { AdminFcmToken } from "src/database/entities/admin-fcm-token.entity";
+import { AdminNotificationPreferences } from "src/database/entities/admin-notification-preferences.entity";
 import { ResetPasswordToken } from "src/database/entities/reset-password-token.entity";
 import { Role } from "src/database/entities/role.entity";
 import {
@@ -15,6 +17,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -137,4 +140,16 @@ export class User {
   @Column({ type: "uuid", nullable: true })
   @Index()
   adminRoleId?: string;
+
+  @OneToMany(
+    () => AdminFcmToken,
+    (token) => token.user,
+  )
+  adminFcmTokens?: AdminFcmToken[];
+
+  @OneToOne(
+    () => AdminNotificationPreferences,
+    (preferences) => preferences.user,
+  )
+  adminNotificationPreferences?: AdminNotificationPreferences;
 }

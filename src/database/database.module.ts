@@ -32,6 +32,12 @@ import { DataSourceOptions } from "typeorm";
             subscribersDir: "dist/subscribers",
           },
           synchronize: false,
+          extra: {
+            max: process.env.NODE_ENV === "test" ? 50 : 20,
+            min: 5,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000,
+          },
         } as DataSourceOptions;
 
         return {

@@ -117,56 +117,141 @@ export class NotificationsService {
     data?: Record<string, any>,
     targetUserId?: string,
   ): Promise<void> {
+    // Early exit if database is not connected
     try {
-      // Create notification record
-      const notification = this.notificationRepository.create({
-        type,
-        title,
-        message,
-        data,
-        targetUserId,
-      });
-      await this.notificationRepository.save(notification);
-
-      // Get admin users with their tokens and preferences
-      const adminsWithTokens = await this.getAdminsWithTokens(
-        type,
-        targetUserId,
-      );
-
-      if (adminsWithTokens.length === 0) {
-        this.logger.debug("No admins to notify");
+      const connection = this.notificationRepository.manager.connection;
+      if (!connection?.isInitialized) {
+        this.logger.debug(
+          "Database connection not initialized, skipping notification",
+        );
         return;
       }
+    } catch {
+      this.logger.debug(
+        "Unable to check database connection, skipping notification",
+      );
+      return;
+    }
 
-      // Collect all tokens
-      const allTokens = adminsWithTokens.flatMap((admin) => admin.tokens);
+    const maxRetries = 3;
+    let lastError: Error | null = null;
 
-      if (allTokens.length > 0) {
-        const fcmData: Record<string, string> = {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Create notification record
+        const notification = this.notificationRepository.create({
           type,
-          notificationId: notification.id,
-          ...this.serializeData(data),
-        };
+          title,
+          message,
+          data,
+          targetUserId,
+        });
+        await this.notificationRepository.save(notification);
 
-        const { success, failed, tokensToRemove } =
-          await this.fcmService.sendToTokens(
-            allTokens,
-            { title, body: message },
-            fcmData,
-          );
+        // Get admin users with their tokens and preferences
+        const adminsWithTokens = await this.getAdminsWithTokens(
+          type,
+          targetUserId,
+        );
 
-        // Remove invalid tokens
-        for (const token of tokensToRemove) {
-          await this.removeInvalidToken(token);
+        if (adminsWithTokens.length === 0) {
+          this.logger.debug("No admins to notify");
+          return;
         }
 
-        this.logger.log(
-          `Notification sent: ${success.length} success, ${failed.length} failed`,
+        // Collect all tokens
+        const allTokens = adminsWithTokens.flatMap((admin) => admin.tokens);
+
+        if (allTokens.length > 0) {
+          const fcmData: Record<string, string> = {
+            type,
+            notificationId: notification.id,
+            ...this.serializeData(data),
+          };
+
+          const { success, failed, tokensToRemove } =
+            await this.fcmService.sendToTokens(
+              allTokens,
+              { title, body: message },
+              fcmData,
+            );
+
+          // Remove invalid tokens
+          for (const token of tokensToRemove) {
+            try {
+              await this.removeInvalidToken(token);
+            } catch (removeError) {
+              this.logger.warn(
+                `Failed to remove invalid token: ${removeError.message}`,
+              );
+            }
+          }
+
+          this.logger.log(
+            `Notification sent: ${success.length} success, ${failed.length} failed`,
+          );
+        }
+        return; // Success, exit the function
+      } catch (error) {
+        lastError = error;
+
+        // Driver not connected means database is shutting down - don't retry
+        const isDriverDisconnected = error.message?.includes(
+          "Driver not Connected",
+        );
+
+        if (isDriverDisconnected) {
+          this.logger.debug(
+            "Database driver disconnected, skipping notification",
+          );
+          return; // Exit early, no need to retry or log errors
+        }
+
+        // Other connection errors are transient - retry them
+        const isTransientError =
+          error.message?.includes("Connection terminated") ||
+          error.message?.includes("ECONNREFUSED") ||
+          error.message?.includes("ETIMEDOUT") ||
+          error.message?.includes("Connection lost") ||
+          error.message?.includes("socket hang up") ||
+          error.code === "ECONNRESET" ||
+          error.code === "ENOTFOUND" ||
+          error.name === "ConnectionIsNotSetError";
+
+        if (isTransientError && attempt < maxRetries) {
+          this.logger.warn(
+            `Database connection error on attempt ${attempt}/${maxRetries}: ${error.message}, retrying in ${attempt * 1000}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+          continue;
+        }
+
+        this.logger.error(
+          `Failed to send notification (attempt ${attempt}/${maxRetries}): ${error.message}`,
+          error.stack,
+        );
+
+        if (attempt === maxRetries) {
+          break;
+        }
+      }
+    }
+
+    if (lastError) {
+      // Connection terminated during retry is a warn, not an error
+      const isConnectionTerminated = lastError.message?.includes(
+        "Connection terminated",
+      );
+
+      if (isConnectionTerminated) {
+        this.logger.warn(
+          `Database connection terminated, notification not sent. Type: ${type}, Title: ${title}`,
+        );
+      } else {
+        this.logger.error(
+          `All retry attempts exhausted for notification. Type: ${type}, Title: ${title}`,
         );
       }
-    } catch (error) {
-      this.logger.error(`Failed to send notification: ${error}`);
     }
   }
 
@@ -186,9 +271,16 @@ export class NotificationsService {
   ): Promise<Array<{ userId: string; tokens: string[] }>> {
     const preferenceField = this.getPreferenceFieldForType(type);
 
-    // Get all admin/super_admin users
+    // Get all admin users with their preferences and tokens in a single query
     const adminQuery = this.userRepository
       .createQueryBuilder("user")
+      .leftJoinAndSelect("user.adminNotificationPreferences", "preferences")
+      .leftJoinAndSelect(
+        "user.adminFcmTokens",
+        "tokens",
+        "tokens.isActive = :isActive",
+        { isActive: true },
+      )
       .where("user.role IN (:...roles)", {
         roles: [UserRole.admin],
       })
@@ -203,10 +295,7 @@ export class NotificationsService {
     const adminsWithTokens: Array<{ userId: string; tokens: string[] }> = [];
 
     for (const admin of admins) {
-      // Check preferences
-      const preferences = await this.preferencesRepository.findOne({
-        where: { userId: admin.id },
-      });
+      const preferences = admin.adminNotificationPreferences;
 
       // If no preferences exist or push is enabled and this notification type is enabled
       const shouldSend =
@@ -217,16 +306,13 @@ export class NotificationsService {
         continue;
       }
 
-      // Get active tokens for this admin
-      const tokens = await this.fcmTokenRepository.find({
-        where: { userId: admin.id, isActive: true },
-        select: ["token"],
-      });
+      // Get tokens from the joined data
+      const tokens = admin.adminFcmTokens?.map((t) => t.token) || [];
 
       if (tokens.length > 0) {
         adminsWithTokens.push({
           userId: admin.id,
-          tokens: tokens.map((t) => t.token),
+          tokens,
         });
       }
     }

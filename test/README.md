@@ -82,6 +82,9 @@ yarn test:e2e -- --testPathPattern=guest
 # Multi-user tests
 yarn test:e2e -- --testPathPattern=multi-user
 
+# Stress tests
+yarn test:e2e -- --testPathPattern=stress
+
 # Specific test file
 yarn test:e2e -- --testPathPattern=registration
 ```

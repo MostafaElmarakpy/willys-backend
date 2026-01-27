@@ -25,6 +25,7 @@ import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { BranchMenuModule } from "./modules/branch-menu/branch-menu.module";
 import { BranchesModule } from "./modules/branches/branches.module";
 import { CartModule } from "./modules/cart/cart.module";
+import { CustomersModule } from "./modules/customers/customers.module";
 import { DiscountsModule } from "./modules/discounts/discounts.module";
 import { HealthModule } from "./modules/health/health.module";
 import { MenuModule } from "./modules/menu/menu.module";
@@ -89,6 +90,7 @@ import { UploadMediaModule } from "./services/upload-media/upload-media.module";
     CartModule,
     OrdersModule,
     NotificationsModule,
+    CustomersModule,
   ],
   providers: [LocaleSubscriber, YcI18nService, MailService],
   exports: [LocaleSubscriber, YcI18nService],

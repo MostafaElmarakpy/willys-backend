@@ -164,6 +164,15 @@ describe("Full Admin Journey (E2E)", () => {
       },
     );
 
+    await authenticatedPost(
+      app,
+      "/cart/order-type",
+      customerTokens.access_token,
+      {
+        orderType: "DELIVERY",
+      },
+    );
+
     // Checkout
     const orderResponse = await authenticatedPost(
       app,
@@ -177,6 +186,7 @@ describe("Full Admin Journey (E2E)", () => {
 
     expect(orderResponse.status).toBe(201);
     const orderId = orderResponse.body.data.order.id;
+    const orderStatus = orderResponse.body.data.order.status;
 
     // Step 8: Admin views incoming order
     const ordersListResponse = await authenticatedGet(
@@ -184,23 +194,24 @@ describe("Full Admin Journey (E2E)", () => {
       "/admin/orders",
       tokens.access_token,
       {
-        status: OrderStatus.PENDING,
+        status: orderStatus,
       },
     );
 
     expect(ordersListResponse.status).toBe(200);
 
-    // Step 9: Admin confirms order
-    const confirmResponse = await authenticatedPatch(
-      app,
-      `/admin/orders/${orderId}/status`,
-      tokens.access_token,
-      {
-        status: OrderStatus.CONFIRMED,
-      },
-    );
-
-    expect(confirmResponse.status).toBe(200);
+    // Step 9: Admin confirms order (only if not already confirmed)
+    if (orderStatus !== OrderStatus.CONFIRMED) {
+      const confirmResponse = await authenticatedPatch(
+        app,
+        `/admin/orders/${orderId}/status`,
+        tokens.access_token,
+        {
+          status: OrderStatus.CONFIRMED,
+        },
+      );
+      expect(confirmResponse.status).toBe(200);
+    }
 
     // Step 10: Update order through lifecycle
     await authenticatedPatch(

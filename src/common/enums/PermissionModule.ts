@@ -13,4 +13,5 @@ export enum PermissionModule {
   ROLES = "ROLES",
   ORDERS = "ORDERS",
   ADDRESSES = "ADDRESSES",
+  CUSTOMERS = "CUSTOMERS",
 }

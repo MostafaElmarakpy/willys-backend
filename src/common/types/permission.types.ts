@@ -110,4 +110,10 @@ export const MODULE_PERMISSIONS: Record<PermissionModule, PermissionAction[]> =
       PermissionAction.UPDATE,
       PermissionAction.DELETE,
     ],
+    [PermissionModule.CUSTOMERS]: [
+      PermissionAction.READ,
+      PermissionAction.DELETE,
+      PermissionAction.VIEW_STATS,
+      PermissionAction.EXPORT,
+    ],
   };
