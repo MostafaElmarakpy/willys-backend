@@ -190,7 +190,7 @@ export class NotificationsService {
     const adminQuery = this.userRepository
       .createQueryBuilder("user")
       .where("user.role IN (:...roles)", {
-        roles: [UserRole.admin, UserRole.super_admin],
+        roles: [UserRole.admin],
       })
       .andWhere("user.deletedAt IS NULL");
 
