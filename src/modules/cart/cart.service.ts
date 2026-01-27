@@ -475,12 +475,16 @@ export class CartService {
       Number(cart.subtotal),
     );
 
+    if (!discountAmount || discountAmount <= 0) {
+      throw new BadRequestException("Invalid discount amount calculated");
+    }
+
     // Add to applied discounts
     const appliedDiscount: AppliedDiscount = {
       discountId: discount.id,
       code: discount.code,
       type: discount.type,
-      amount: discountAmount,
+      amount: Number(discountAmount),
     };
 
     cart.appliedDiscounts = [...(cart.appliedDiscounts || []), appliedDiscount];

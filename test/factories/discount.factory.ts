@@ -69,6 +69,7 @@ export function generateDiscountData(
     startDate: options.startDate || new Date(),
     endDate: options.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     status: options.status || DiscountStatus.ACTIVE,
+    isActive: true,
     maxUsageTotal: options.usageLimit,
     maxUsagePerUser: options.usageLimitPerUser || 1,
     currentUsageCount: 0,

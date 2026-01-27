@@ -15,13 +15,7 @@ import {
 import { OrderItem } from "src/database/entities/order-item.entity";
 import { OrderStatusLog } from "src/database/entities/order-status-log.entity";
 import { UserAddress } from "src/database/entities/user-address.entity";
-import {
-  Between,
-  DataSource,
-  IsNull,
-  type QueryRunner,
-  type Repository,
-} from "typeorm";
+import { DataSource, IsNull, type QueryRunner, type Repository } from "typeorm";
 import {
   OrderCreatedEvent,
   OrderStatusChangedEvent,
@@ -76,21 +70,17 @@ export class OrdersService {
   ) {}
 
   async generateOrderNumber(): Promise<string> {
-    const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, "");
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, "0");
+    const day = now.getDate().toString().padStart(2, "0");
+    const hour = now.getHours().toString().padStart(2, "0");
+    const minute = now.getMinutes().toString().padStart(2, "0");
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
 
-    // Get count of orders today
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
-
-    const count = await this.orderRepository.count({
-      where: {
-        createdAt: Between(startOfDay, endOfDay),
-      },
-    });
-
-    const sequence = String(count + 1).padStart(4, "0");
-    return `WLY-${dateStr}-${sequence}`;
+    return `WLY-${year}${month}${day}${hour}${minute}-${random}`;
   }
 
   async createFromCart(

@@ -783,11 +783,16 @@ export class DiscountsService {
     const startDate = new Date(discount.startDate);
     const endDate = discount.endDate ? new Date(discount.endDate) : null;
 
+    const startDateWithBuffer = new Date(startDate.getTime() - 1000);
+    const endDateWithBuffer = endDate
+      ? new Date(endDate.getTime() + 1000)
+      : null;
+
     return (
       discount.isActive &&
       discount.status === DiscountStatus.ACTIVE &&
-      startDate <= now &&
-      (!endDate || endDate >= now)
+      startDateWithBuffer <= now &&
+      (!endDateWithBuffer || endDateWithBuffer >= now)
     );
   }
 

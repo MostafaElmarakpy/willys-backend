@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   Min,
 } from "class-validator";
 import { OrderStatus } from "src/common/enums/OrderStatus";
@@ -46,6 +47,7 @@ export class OrderFilterDto {
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number = 20;
 
   @IsOptional()

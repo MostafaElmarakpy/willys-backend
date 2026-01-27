@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsUUID,
+  Max,
   Min,
 } from "class-validator";
 
@@ -30,5 +31,6 @@ export class AnalyticsFilterDto {
   @Type(() => Number)
   @IsNumber()
   @Min(1)
+  @Max(100)
   limit?: number = 30;
 }

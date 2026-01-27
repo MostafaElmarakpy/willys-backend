@@ -100,6 +100,15 @@ export async function cleanDatabase(): Promise<void> {
   await queryRunner.connect();
 
   try {
+    await queryRunner.query(`
+      SELECT pg_terminate_backend(pid) 
+      FROM pg_stat_activity 
+      WHERE datname = current_database() 
+      AND pid <> pg_backend_pid()
+      AND state = 'idle in transaction'
+      AND state_change < current_timestamp - INTERVAL '5 seconds';
+    `);
+
     // Temporarily disable foreign key checks for faster cleanup
     await queryRunner.query("SET session_replication_role = replica;");
 
@@ -109,6 +118,7 @@ export async function cleanDatabase(): Promise<void> {
       "payment_transaction_logs",
       "order_status_logs",
       "discount_usage_logs",
+      "notifications",
 
       // Junction/join tables
       "item_ingredients",
@@ -172,11 +182,24 @@ export async function cleanDatabase(): Promise<void> {
     ];
 
     for (const table of tables) {
-      await queryRunner.query(`TRUNCATE TABLE "${table}" CASCADE;`);
+      try {
+        await queryRunner.query(`TRUNCATE TABLE "${table}" CASCADE;`);
+      } catch (error: any) {
+        // If table doesn't exist, continue (some tables might be optional)
+        if (error.code !== "42P01") {
+          console.warn(
+            `Warning: Failed to truncate table ${table}:`,
+            error.message,
+          );
+        }
+      }
     }
 
     // Re-enable foreign key checks
     await queryRunner.query("SET session_replication_role = DEFAULT;");
+  } catch (error) {
+    console.error("Database cleanup failed:", error);
+    throw error;
   } finally {
     await queryRunner.release();
   }

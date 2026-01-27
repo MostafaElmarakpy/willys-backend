@@ -96,8 +96,7 @@ export class AuthenticationService {
       ),
     });
 
-    // save access token to db
-    this.saveAccessTokenToDb(
+    await this.saveAccessTokenToDb(
       user,
       accessToken,
       refreshToken,
@@ -105,7 +104,7 @@ export class AuthenticationService {
       refreshExpirationDate,
     );
 
-    this.userService.updateLastLogin(user.id);
+    await this.userService.updateLastLogin(user.id);
 
     return {
       user: new ProfileDto(user),
@@ -126,16 +125,26 @@ export class AuthenticationService {
     expirationDate: Date,
     refreshExpirationDate: Date,
   ) {
-    const accessTokenEntity = this.accessTokenRepository.create({
-      refreshToken,
-      accessToken,
-      identifier: user.email || user.phoneNumber,
-      userId: user.id,
-      expiration: expirationDate,
-      refreshExpiration: refreshExpirationDate,
-    });
+    try {
+      const accessTokenEntity = this.accessTokenRepository.create({
+        refreshToken,
+        accessToken,
+        identifier: user.email || user.phoneNumber,
+        userId: user.id,
+        expiration: expirationDate,
+        refreshExpiration: refreshExpirationDate,
+      });
 
-    await this.accessTokenRepository.save(accessTokenEntity);
+      await this.accessTokenRepository.save(accessTokenEntity);
+    } catch (error: any) {
+      if (error.code === "23503") {
+        console.error(
+          `Failed to save access token for user ${user.id}: User may have been deleted`,
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
   async login(loginDto: LoginDto) {
