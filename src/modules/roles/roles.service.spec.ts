@@ -12,7 +12,9 @@ import { RolesService } from "./roles.service";
 jest.mock("uuid", () => ({
   validate: jest.fn((id) => {
     // Simple UUID format check for testing
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      id,
+    );
   }),
 }));
 
@@ -26,7 +28,12 @@ describe("RolesService", () => {
     name: "admin",
     displayName: "Administrator",
     description: "System administrator role",
-    permissions: { [PermissionModule.USERS]: [PermissionAction.READ, PermissionAction.CREATE] },
+    permissions: {
+      [PermissionModule.USERS]: [
+        PermissionAction.READ,
+        PermissionAction.CREATE,
+      ],
+    },
     isSystemRole: false,
     isActive: true,
     createdAt: new Date(),
@@ -154,7 +161,7 @@ describe("RolesService", () => {
 
     it("should throw BadRequestException for invalid UUID", async () => {
       await expect(service.findOne("invalid-id")).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
 
@@ -162,7 +169,7 @@ describe("RolesService", () => {
       roleRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.findOne("550e8400-e29b-41d4-a716-446655440000")
+        service.findOne("550e8400-e29b-41d4-a716-446655440000"),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -214,7 +221,7 @@ describe("RolesService", () => {
       roleRepository.findOne.mockResolvedValue(mockRole as Role);
 
       await expect(service.create(createDto)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
   });
@@ -241,7 +248,7 @@ describe("RolesService", () => {
       roleRepository.findOne.mockResolvedValue(mockSystemRole as Role);
 
       await expect(
-        service.update(mockSystemRole.id!, { name: "new_name" })
+        service.update(mockSystemRole.id!, { name: "new_name" }),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -249,7 +256,7 @@ describe("RolesService", () => {
       roleRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.update("550e8400-e29b-41d4-a716-446655440000", updateDto)
+        service.update("550e8400-e29b-41d4-a716-446655440000", updateDto),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -269,7 +276,7 @@ describe("RolesService", () => {
       roleRepository.findOne.mockResolvedValue(mockSystemRole as Role);
 
       await expect(service.remove(mockSystemRole.id!)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
 
@@ -278,7 +285,7 @@ describe("RolesService", () => {
       userRepository.count.mockResolvedValue(5);
 
       await expect(service.remove(mockRole.id!)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
   });
@@ -300,7 +307,7 @@ describe("RolesService", () => {
 
     it("should throw BadRequestException for invalid user ID", async () => {
       await expect(
-        service.assignRoleToUser("invalid", mockRole.id!)
+        service.assignRoleToUser("invalid", mockRole.id!),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -310,8 +317,8 @@ describe("RolesService", () => {
       await expect(
         service.assignRoleToUser(
           "550e8400-e29b-41d4-a716-446655440000",
-          mockRole.id!
-        )
+          mockRole.id!,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -321,7 +328,7 @@ describe("RolesService", () => {
       roleRepository.findOne.mockResolvedValue(inactiveRole);
 
       await expect(
-        service.assignRoleToUser(mockUser.id!, inactiveRole.id!)
+        service.assignRoleToUser(mockUser.id!, inactiveRole.id!),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -342,7 +349,7 @@ describe("RolesService", () => {
 
     it("should throw BadRequestException for invalid user ID", async () => {
       await expect(service.removeRoleFromUser("invalid")).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
     });
 
@@ -350,7 +357,7 @@ describe("RolesService", () => {
       userRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.removeRoleFromUser("550e8400-e29b-41d4-a716-446655440000")
+        service.removeRoleFromUser("550e8400-e29b-41d4-a716-446655440000"),
       ).rejects.toThrow(NotFoundException);
     });
   });

@@ -365,7 +365,9 @@ describe("IsValidPolygon Decorator (GeoJSON)", () => {
       dto.polygon = null;
 
       const errors = await validate(dto);
-      expect(errors[0].constraints?.isValidPolygon).toContain("GeoJSON Polygon");
+      expect(errors[0].constraints?.isValidPolygon).toContain(
+        "GeoJSON Polygon",
+      );
     });
   });
 });

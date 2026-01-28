@@ -1,7 +1,12 @@
 import { NotFoundException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { DataSource, IsNull, type Repository, type SelectQueryBuilder } from "typeorm";
+import {
+  DataSource,
+  IsNull,
+  type Repository,
+  type SelectQueryBuilder,
+} from "typeorm";
 import { Category } from "../../database/entities/category.entity";
 import { CategoriesService } from "./categories.service";
 import { CategoryOrderBy } from "./dto/category/category-filter.dto";
@@ -100,7 +105,7 @@ describe("CategoriesService", () => {
       await service.create(createDto, "user-123");
 
       expect(categoryRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ sortOrder: 0 })
+        expect.objectContaining({ sortOrder: 0 }),
       );
     });
   });
@@ -128,7 +133,7 @@ describe("CategoriesService", () => {
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         "(category.name ->> 'en' ILIKE :search OR category.name ->> 'ar' ILIKE :search)",
-        { search: "%test%" }
+        { search: "%test%" },
       );
     });
 
@@ -139,7 +144,7 @@ describe("CategoriesService", () => {
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         "category.isActive = :isActive",
-        { isActive: true }
+        { isActive: true },
       );
     });
 
@@ -150,30 +155,57 @@ describe("CategoriesService", () => {
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         "category.isActive = :isActive",
-        { isActive: false }
+        { isActive: false },
       );
     });
 
     it("should order by sortOrder when specified", async () => {
       queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await service.findAll(1, 10, undefined, undefined, CategoryOrderBy.SORT_ORDER, "DESC");
+      await service.findAll(
+        1,
+        10,
+        undefined,
+        undefined,
+        CategoryOrderBy.SORT_ORDER,
+        "DESC",
+      );
 
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith("category.sortOrder", "DESC");
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        "category.sortOrder",
+        "DESC",
+      );
     });
 
     it("should order by updatedAt when specified", async () => {
       queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await service.findAll(1, 10, undefined, undefined, CategoryOrderBy.UPDATED_AT, "ASC");
+      await service.findAll(
+        1,
+        10,
+        undefined,
+        undefined,
+        CategoryOrderBy.UPDATED_AT,
+        "ASC",
+      );
 
-      expect(queryBuilder.orderBy).toHaveBeenCalledWith("category.updatedAt", "ASC");
+      expect(queryBuilder.orderBy).toHaveBeenCalledWith(
+        "category.updatedAt",
+        "ASC",
+      );
     });
 
     it("should order by items count when specified", async () => {
       queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await service.findAll(1, 10, undefined, undefined, CategoryOrderBy.ITEMS_COUNT, "DESC");
+      await service.findAll(
+        1,
+        10,
+        undefined,
+        undefined,
+        CategoryOrderBy.ITEMS_COUNT,
+        "DESC",
+      );
 
       expect(queryBuilder.addSelect).toHaveBeenCalled();
       expect(queryBuilder.orderBy).toHaveBeenCalledWith("items_count", "DESC");
@@ -207,7 +239,7 @@ describe("CategoriesService", () => {
       categoryRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne("non-existent")).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });
@@ -235,9 +267,9 @@ describe("CategoriesService", () => {
     it("should throw NotFoundException when category not found", async () => {
       categoryRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.update("non-existent", updateDto, "user-456")).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        service.update("non-existent", updateDto, "user-456"),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -255,7 +287,7 @@ describe("CategoriesService", () => {
       categoryRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove("non-existent")).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });
@@ -286,11 +318,13 @@ describe("CategoriesService", () => {
 
     it("should reorder categories successfully", async () => {
       const mockCategoryRepo = {
-        find: jest.fn().mockResolvedValue([
-          { id: "cat-1" },
-          { id: "cat-2" },
-          { id: "cat-3" },
-        ]),
+        find: jest
+          .fn()
+          .mockResolvedValue([
+            { id: "cat-1" },
+            { id: "cat-2" },
+            { id: "cat-3" },
+          ]),
         update: jest.fn().mockResolvedValue({ affected: 1 }),
       };
 
@@ -299,7 +333,7 @@ describe("CategoriesService", () => {
           return cb({
             getRepository: () => mockCategoryRepo,
           });
-        }
+        },
       );
 
       const result = await service.reorderCategories(reorderDto);
@@ -320,11 +354,11 @@ describe("CategoriesService", () => {
           return cb({
             getRepository: () => mockCategoryRepo,
           });
-        }
+        },
       );
 
       await expect(service.reorderCategories(reorderDto)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });

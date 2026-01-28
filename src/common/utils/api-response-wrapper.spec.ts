@@ -1,16 +1,16 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import {
-  createSuccessResponse,
   createCreatedResponse,
-  createPaginatedResponse,
   createErrorResponse,
+  createPaginatedResponse,
+  createSuccessResponse,
   throwBadRequest,
-  throwUnauthorized,
-  throwForbidden,
-  throwNotFound,
   throwConflict,
-  throwValidationError,
+  throwForbidden,
   throwInternalError,
+  throwNotFound,
+  throwUnauthorized,
+  throwValidationError,
 } from "./api-response-wrapper";
 
 describe("API Response Wrapper", () => {
@@ -40,7 +40,11 @@ describe("API Response Wrapper", () => {
     it("should create success response with custom status code", () => {
       const data = { id: 1 };
 
-      const response = createSuccessResponse(data, "Accepted", HttpStatus.ACCEPTED);
+      const response = createSuccessResponse(
+        data,
+        "Accepted",
+        HttpStatus.ACCEPTED,
+      );
 
       expect(response.statusCode).toBe(HttpStatus.ACCEPTED);
     });
@@ -86,7 +90,10 @@ describe("API Response Wrapper", () => {
     it("should create response with custom message", () => {
       const data = { id: 1 };
 
-      const response = createCreatedResponse(data, "User registered successfully");
+      const response = createCreatedResponse(
+        data,
+        "User registered successfully",
+      );
 
       expect(response.message).toBe("User registered successfully");
       expect(response.statusCode).toBe(HttpStatus.CREATED);
@@ -140,7 +147,13 @@ describe("API Response Wrapper", () => {
     it("should handle custom message", () => {
       const data = [{ id: 1 }];
 
-      const response = createPaginatedResponse(data, 1, 10, 1, "Users retrieved");
+      const response = createPaginatedResponse(
+        data,
+        1,
+        10,
+        1,
+        "Users retrieved",
+      );
 
       expect(response.message).toBe("Users retrieved");
     });
@@ -156,7 +169,9 @@ describe("API Response Wrapper", () => {
 
   describe("createErrorResponse", () => {
     it("should throw HttpException with default status code", () => {
-      expect(() => createErrorResponse("Something went wrong")).toThrow(HttpException);
+      expect(() => createErrorResponse("Something went wrong")).toThrow(
+        HttpException,
+      );
     });
 
     it("should throw HttpException with correct status code", () => {
@@ -170,7 +185,11 @@ describe("API Response Wrapper", () => {
 
     it("should include error type when provided", () => {
       try {
-        createErrorResponse("Invalid input", HttpStatus.BAD_REQUEST, "Bad Request");
+        createErrorResponse(
+          "Invalid input",
+          HttpStatus.BAD_REQUEST,
+          "Bad Request",
+        );
       } catch (error) {
         const response = (error as HttpException).getResponse() as any;
         expect(response.error).toBe("Bad Request");
@@ -201,7 +220,9 @@ describe("API Response Wrapper", () => {
       try {
         throwBadRequest();
       } catch (error) {
-        expect((error as HttpException).getStatus()).toBe(HttpStatus.BAD_REQUEST);
+        expect((error as HttpException).getStatus()).toBe(
+          HttpStatus.BAD_REQUEST,
+        );
         const response = (error as HttpException).getResponse() as any;
         expect(response.message).toBe("Bad Request");
       }
@@ -222,7 +243,9 @@ describe("API Response Wrapper", () => {
       try {
         throwUnauthorized();
       } catch (error) {
-        expect((error as HttpException).getStatus()).toBe(HttpStatus.UNAUTHORIZED);
+        expect((error as HttpException).getStatus()).toBe(
+          HttpStatus.UNAUTHORIZED,
+        );
         const response = (error as HttpException).getResponse() as any;
         expect(response.message).toBe("Unauthorized");
       }
@@ -306,7 +329,9 @@ describe("API Response Wrapper", () => {
       try {
         throwValidationError();
       } catch (error) {
-        expect((error as HttpException).getStatus()).toBe(HttpStatus.BAD_REQUEST);
+        expect((error as HttpException).getStatus()).toBe(
+          HttpStatus.BAD_REQUEST,
+        );
         const response = (error as HttpException).getResponse() as any;
         expect(response.message).toBe("Validation failed");
         expect(response.error).toBe("Validation Error");
@@ -327,7 +352,10 @@ describe("API Response Wrapper", () => {
         throwValidationError(["Email is required", "Password is too short"]);
       } catch (error) {
         const response = (error as HttpException).getResponse() as any;
-        expect(response.message).toEqual(["Email is required", "Password is too short"]);
+        expect(response.message).toEqual([
+          "Email is required",
+          "Password is too short",
+        ]);
       }
     });
   });
@@ -337,7 +365,9 @@ describe("API Response Wrapper", () => {
       try {
         throwInternalError();
       } catch (error) {
-        expect((error as HttpException).getStatus()).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
+        expect((error as HttpException).getStatus()).toBe(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
         const response = (error as HttpException).getResponse() as any;
         expect(response.message).toBe("Internal server error");
       }

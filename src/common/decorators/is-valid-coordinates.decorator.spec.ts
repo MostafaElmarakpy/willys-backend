@@ -1,12 +1,12 @@
 import { validate } from "class-validator";
 import {
   IsValidCoordinates,
-  IsValidPolygon,
-  IsValidLineString,
-  IsValidStrictCoordinates,
   IsValidFastCoordinates,
   IsValidLargePolygon,
+  IsValidLineString,
+  IsValidPolygon,
   IsValidRealtimeCoordinates,
+  IsValidStrictCoordinates,
 } from "./is-valid-coordinates.decorator";
 
 // Test DTOs

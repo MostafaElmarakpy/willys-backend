@@ -1,9 +1,16 @@
-import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, Permission, Permissions, RequireAllPermissions, type RequiredPermission } from "./permissions.decorator";
-import { ROLES_KEY, Roles } from "./roles.decorator";
-import { User } from "./user.decorator";
-import { UserRole } from "../enums/UserRole";
 import { PermissionAction } from "../enums/PermissionAction";
 import { PermissionModule } from "../enums/PermissionModule";
+import { UserRole } from "../enums/UserRole";
+import {
+  PERMISSIONS_KEY,
+  PERMISSIONS_MODE_KEY,
+  Permission,
+  Permissions,
+  RequireAllPermissions,
+  type RequiredPermission,
+} from "./permissions.decorator";
+import { ROLES_KEY, Roles } from "./roles.decorator";
+import { User } from "./user.decorator";
 
 describe("Decorators", () => {
   describe("Roles Decorator", () => {
@@ -44,13 +51,18 @@ describe("Decorators", () => {
 
   describe("Permissions Decorator", () => {
     it("should set single permission with Permission decorator", () => {
-      const decorator = Permission(PermissionModule.USERS, PermissionAction.READ);
+      const decorator = Permission(
+        PermissionModule.USERS,
+        PermissionAction.READ,
+      );
       const target = class TestClass {};
 
       decorator(target, undefined as any, undefined as any);
 
       const permissions = Reflect.getMetadata(PERMISSIONS_KEY, target);
-      expect(permissions).toEqual([{ module: PermissionModule.USERS, action: PermissionAction.READ }]);
+      expect(permissions).toEqual([
+        { module: PermissionModule.USERS, action: PermissionAction.READ },
+      ]);
     });
 
     it("should set multiple permissions with Permissions decorator", () => {

@@ -14,8 +14,10 @@ describe("NotificationsService", () => {
   let service: NotificationsService;
   let fcmTokenRepository: jest.Mocked<Repository<AdminFcmToken>>;
   let notificationRepository: jest.Mocked<Repository<AdminNotification>>;
-  let preferencesRepository: jest.Mocked<Repository<AdminNotificationPreferences>>;
-  let userRepository: jest.Mocked<Repository<User>>;
+  let preferencesRepository: jest.Mocked<
+    Repository<AdminNotificationPreferences>
+  >;
+  let _userRepository: jest.Mocked<Repository<User>>;
   let fcmService: jest.Mocked<FcmService>;
   let queryBuilder: any;
 
@@ -120,8 +122,10 @@ describe("NotificationsService", () => {
     service = module.get<NotificationsService>(NotificationsService);
     fcmTokenRepository = module.get(getRepositoryToken(AdminFcmToken));
     notificationRepository = module.get(getRepositoryToken(AdminNotification));
-    preferencesRepository = module.get(getRepositoryToken(AdminNotificationPreferences));
-    userRepository = module.get(getRepositoryToken(User));
+    preferencesRepository = module.get(
+      getRepositoryToken(AdminNotificationPreferences),
+    );
+    _userRepository = module.get(getRepositoryToken(User));
     fcmService = module.get(FcmService);
   });
 
@@ -138,14 +142,16 @@ describe("NotificationsService", () => {
     };
 
     it("should update existing token if found", async () => {
-      fcmTokenRepository.findOne.mockResolvedValue(mockFcmToken as AdminFcmToken);
+      fcmTokenRepository.findOne.mockResolvedValue(
+        mockFcmToken as AdminFcmToken,
+      );
       fcmTokenRepository.save.mockResolvedValue(mockFcmToken as AdminFcmToken);
 
       const result = await service.registerToken(mockUserId, registerDto);
 
       expect(result).toEqual(mockFcmToken);
       expect(fcmTokenRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ isActive: true })
+        expect.objectContaining({ isActive: true }),
       );
     });
 
@@ -170,7 +176,7 @@ describe("NotificationsService", () => {
 
       expect(fcmTokenRepository.update).toHaveBeenCalledWith(
         { userId: mockUserId, deviceId: registerDto.deviceId },
-        { isActive: false }
+        { isActive: false },
       );
     });
 
@@ -194,7 +200,7 @@ describe("NotificationsService", () => {
 
       expect(fcmTokenRepository.update).toHaveBeenCalledWith(
         { userId: mockUserId, token: mockToken },
-        { isActive: false }
+        { isActive: false },
       );
     });
   });
@@ -205,14 +211,16 @@ describe("NotificationsService", () => {
 
       await service.removeInvalidToken(mockToken);
 
-      expect(fcmTokenRepository.delete).toHaveBeenCalledWith({ token: mockToken });
+      expect(fcmTokenRepository.delete).toHaveBeenCalledWith({
+        token: mockToken,
+      });
     });
   });
 
   describe("getPreferences", () => {
     it("should return existing preferences", async () => {
       preferencesRepository.findOne.mockResolvedValue(
-        mockPreferences as AdminNotificationPreferences
+        mockPreferences as AdminNotificationPreferences,
       );
 
       const result = await service.getPreferences(mockUserId);
@@ -223,16 +231,18 @@ describe("NotificationsService", () => {
     it("should create default preferences if not found", async () => {
       preferencesRepository.findOne.mockResolvedValue(null);
       preferencesRepository.create.mockReturnValue(
-        mockPreferences as AdminNotificationPreferences
+        mockPreferences as AdminNotificationPreferences,
       );
       preferencesRepository.save.mockResolvedValue(
-        mockPreferences as AdminNotificationPreferences
+        mockPreferences as AdminNotificationPreferences,
       );
 
       const result = await service.getPreferences(mockUserId);
 
       expect(result).toBeDefined();
-      expect(preferencesRepository.create).toHaveBeenCalledWith({ userId: mockUserId });
+      expect(preferencesRepository.create).toHaveBeenCalledWith({
+        userId: mockUserId,
+      });
       expect(preferencesRepository.save).toHaveBeenCalled();
     });
   });
@@ -245,7 +255,7 @@ describe("NotificationsService", () => {
 
     it("should update existing preferences", async () => {
       preferencesRepository.findOne.mockResolvedValue(
-        mockPreferences as AdminNotificationPreferences
+        mockPreferences as AdminNotificationPreferences,
       );
       preferencesRepository.save.mockResolvedValue({
         ...mockPreferences,
@@ -284,7 +294,10 @@ describe("NotificationsService", () => {
       queryBuilder.getManyAndCount.mockResolvedValue([notifications, 1]);
       queryBuilder.getCount.mockResolvedValue(1);
 
-      const result = await service.getNotifications(mockUserId, { page: 1, limit: 20 });
+      const result = await service.getNotifications(mockUserId, {
+        page: 1,
+        limit: 20,
+      });
 
       expect(result).toEqual({
         notifications,
@@ -305,7 +318,7 @@ describe("NotificationsService", () => {
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         "notification.type = :type",
-        { type: NotificationType.ORDER_NEW }
+        { type: NotificationType.ORDER_NEW },
       );
     });
 
@@ -321,7 +334,7 @@ describe("NotificationsService", () => {
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         "notification.isRead = :isRead",
-        { isRead: false }
+        { isRead: false },
       );
     });
   });
@@ -334,7 +347,7 @@ describe("NotificationsService", () => {
 
       expect(notificationRepository.update).toHaveBeenCalledWith(
         { id: mockNotification.id },
-        expect.objectContaining({ isRead: true })
+        expect.objectContaining({ isRead: true }),
       );
     });
   });
@@ -346,7 +359,7 @@ describe("NotificationsService", () => {
       await service.markAllAsRead(mockUserId);
 
       expect(queryBuilder.set).toHaveBeenCalledWith(
-        expect.objectContaining({ isRead: true })
+        expect.objectContaining({ isRead: true }),
       );
       expect(queryBuilder.execute).toHaveBeenCalled();
     });
@@ -368,15 +381,19 @@ describe("NotificationsService", () => {
       await service.sendNotificationToAdmins(
         NotificationType.ORDER_NEW,
         "Title",
-        "Message"
+        "Message",
       );
 
       expect(notificationRepository.create).not.toHaveBeenCalled();
     });
 
     it("should create notification and send to admins with tokens", async () => {
-      notificationRepository.create.mockReturnValue(mockNotification as AdminNotification);
-      notificationRepository.save.mockResolvedValue(mockNotification as AdminNotification);
+      notificationRepository.create.mockReturnValue(
+        mockNotification as AdminNotification,
+      );
+      notificationRepository.save.mockResolvedValue(
+        mockNotification as AdminNotification,
+      );
 
       const mockAdmin = {
         id: mockUserId,
@@ -395,7 +412,7 @@ describe("NotificationsService", () => {
       await service.sendNotificationToAdmins(
         NotificationType.ORDER_NEW,
         "New Order",
-        "A new order has been placed"
+        "A new order has been placed",
       );
 
       expect(notificationRepository.create).toHaveBeenCalled();
@@ -404,8 +421,12 @@ describe("NotificationsService", () => {
     });
 
     it("should remove invalid tokens after sending", async () => {
-      notificationRepository.create.mockReturnValue(mockNotification as AdminNotification);
-      notificationRepository.save.mockResolvedValue(mockNotification as AdminNotification);
+      notificationRepository.create.mockReturnValue(
+        mockNotification as AdminNotification,
+      );
+      notificationRepository.save.mockResolvedValue(
+        mockNotification as AdminNotification,
+      );
 
       const mockAdmin = {
         id: mockUserId,
@@ -425,29 +446,38 @@ describe("NotificationsService", () => {
       await service.sendNotificationToAdmins(
         NotificationType.ORDER_NEW,
         "New Order",
-        "A new order has been placed"
+        "A new order has been placed",
       );
 
       // Verify the notification flow executed
       expect(fcmService.sendToTokens).toHaveBeenCalledWith(
         [mockToken],
-        expect.objectContaining({ title: "New Order", body: "A new order has been placed" }),
-        expect.any(Object)
+        expect.objectContaining({
+          title: "New Order",
+          body: "A new order has been placed",
+        }),
+        expect.any(Object),
       );
-      expect(fcmTokenRepository.delete).toHaveBeenCalledWith({ token: mockToken });
+      expect(fcmTokenRepository.delete).toHaveBeenCalledWith({
+        token: mockToken,
+      });
     });
 
     it("should handle database errors gracefully", async () => {
-      notificationRepository.create.mockReturnValue(mockNotification as AdminNotification);
-      notificationRepository.save.mockRejectedValue(new Error("Driver not Connected"));
+      notificationRepository.create.mockReturnValue(
+        mockNotification as AdminNotification,
+      );
+      notificationRepository.save.mockRejectedValue(
+        new Error("Driver not Connected"),
+      );
 
       // Should not throw
       await expect(
         service.sendNotificationToAdmins(
           NotificationType.ORDER_NEW,
           "Title",
-          "Message"
-        )
+          "Message",
+        ),
       ).resolves.not.toThrow();
     });
   });

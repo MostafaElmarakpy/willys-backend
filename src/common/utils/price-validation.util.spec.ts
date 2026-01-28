@@ -1,8 +1,8 @@
 import { BadRequestException } from "@nestjs/common";
 import {
-  validatePriceAgainstParent,
   type PriceValidationEntity,
   type PriceValidationOptions,
+  validatePriceAgainstParent,
 } from "./price-validation.util";
 
 describe("Price Validation Utility", () => {
@@ -49,8 +49,12 @@ describe("Price Validation Utility", () => {
           validatePriceAgainstParent(0, parentEntity, defaultOptions);
         } catch (error) {
           expect((error as BadRequestException).message).toContain("Item");
-          expect((error as BadRequestException).message).toContain("starting price");
-          expect((error as BadRequestException).message).toContain("positive number");
+          expect((error as BadRequestException).message).toContain(
+            "starting price",
+          );
+          expect((error as BadRequestException).message).toContain(
+            "positive number",
+          );
         }
       });
 
@@ -63,7 +67,9 @@ describe("Price Validation Utility", () => {
         try {
           validatePriceAgainstParent(0, parentEntity, options);
         } catch (error) {
-          expect((error as BadRequestException).message).toContain("base price");
+          expect((error as BadRequestException).message).toContain(
+            "base price",
+          );
         }
       });
     });

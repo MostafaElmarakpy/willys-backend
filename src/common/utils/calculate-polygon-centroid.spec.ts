@@ -1,5 +1,5 @@
-import { calculatePolygonCentroid, type Centroid } from "./calculate-polygon-centroid";
 import type { Coordinate } from "../classes/coordinates";
+import { calculatePolygonCentroid } from "./calculate-polygon-centroid";
 
 describe("Calculate Polygon Centroid", () => {
   describe("Empty coordinates", () => {
@@ -21,7 +21,9 @@ describe("Calculate Polygon Centroid", () => {
     });
 
     it("should handle string coordinates for single point", () => {
-      const coordinates: Coordinate[] = [{ lat: "30.5" as any, lng: "31.5" as any }];
+      const coordinates: Coordinate[] = [
+        { lat: "30.5" as any, lng: "31.5" as any },
+      ];
 
       const centroid = calculatePolygonCentroid(coordinates);
 

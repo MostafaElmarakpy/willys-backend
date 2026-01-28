@@ -96,7 +96,7 @@ describe("ItemsService", () => {
         expect.objectContaining({
           pricing: 50,
           createdBy: "user-123",
-        })
+        }),
       );
     });
 
@@ -111,7 +111,7 @@ describe("ItemsService", () => {
       expect(itemRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           pricing: 75,
-        })
+        }),
       );
     });
 
@@ -129,7 +129,7 @@ describe("ItemsService", () => {
       expect(itemRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           pricing: 100,
-        })
+        }),
       );
     });
 
@@ -138,7 +138,7 @@ describe("ItemsService", () => {
       itemRepository.create.mockReturnValue(mockItem as Item);
 
       await expect(
-        service.create(dtoWithInvalidPricing, "user-123", {})
+        service.create(dtoWithInvalidPricing, "user-123", {}),
       ).rejects.toThrow("Invalid price string");
     });
 
@@ -150,7 +150,7 @@ describe("ItemsService", () => {
       itemRepository.create.mockReturnValue(mockItem as Item);
 
       await expect(
-        service.create(dtoWithInvalidPricing, "user-123", {})
+        service.create(dtoWithInvalidPricing, "user-123", {}),
       ).rejects.toThrow("Invalid price in pricing object");
     });
 
@@ -170,7 +170,7 @@ describe("ItemsService", () => {
       expect(uploadMediaService.saveOneFile).toHaveBeenCalledWith(
         files.image,
         "properties",
-        mockItem.id
+        mockItem.id,
       );
     });
 
@@ -315,7 +315,7 @@ describe("ItemsService", () => {
       itemRepository.findOne.mockResolvedValue(null);
 
       await expect(service.findOne("non-existent")).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });
@@ -333,7 +333,12 @@ describe("ItemsService", () => {
         ...updateDto,
       } as Item);
 
-      const result = await service.update("item-123", updateDto, "user-456", {});
+      const result = await service.update(
+        "item-123",
+        updateDto,
+        "user-456",
+        {},
+      );
 
       expect(result).toBeDefined();
       expect(itemRepository.save).toHaveBeenCalled();
@@ -343,10 +348,15 @@ describe("ItemsService", () => {
       itemRepository.findOne.mockResolvedValue({ ...mockItem } as Item);
       itemRepository.save.mockResolvedValue(mockItem as Item);
 
-      await service.update("item-123", { pricing: "200" as any }, "user-456", {});
+      await service.update(
+        "item-123",
+        { pricing: "200" as any },
+        "user-456",
+        {},
+      );
 
       expect(itemRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ pricing: 200 })
+        expect.objectContaining({ pricing: 200 }),
       );
     });
 
@@ -358,11 +368,11 @@ describe("ItemsService", () => {
         "item-123",
         { pricing: { type: "number", price: "300" } as any },
         "user-456",
-        {}
+        {},
       );
 
       expect(itemRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ pricing: 300 })
+        expect.objectContaining({ pricing: 300 }),
       );
     });
 
@@ -385,13 +395,15 @@ describe("ItemsService", () => {
     it("should update ingredients", async () => {
       itemRepository.findOne.mockResolvedValue({ ...mockItem } as Item);
       itemRepository.save.mockResolvedValue(mockItem as Item);
-      ingredientRepository.findBy.mockResolvedValue([mockIngredient as Ingredient]);
+      ingredientRepository.findBy.mockResolvedValue([
+        mockIngredient as Ingredient,
+      ]);
 
       await service.update(
         "item-123",
         { ingredientIds: ["ing-456"] },
         "user-456",
-        {}
+        {},
       );
 
       expect(ingredientRepository.findBy).toHaveBeenCalled();
@@ -401,15 +413,10 @@ describe("ItemsService", () => {
       itemRepository.findOne.mockResolvedValue({ ...mockItem } as Item);
       itemRepository.save.mockResolvedValue(mockItem as Item);
 
-      await service.update(
-        "item-123",
-        { ingredientIds: [] },
-        "user-456",
-        {}
-      );
+      await service.update("item-123", { ingredientIds: [] }, "user-456", {});
 
       expect(itemRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ ingredients: [] })
+        expect.objectContaining({ ingredients: [] }),
       );
     });
 
@@ -417,7 +424,7 @@ describe("ItemsService", () => {
       itemRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.update("non-existent", updateDto, "user-456", {})
+        service.update("non-existent", updateDto, "user-456", {}),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -436,7 +443,7 @@ describe("ItemsService", () => {
       itemRepository.findOne.mockResolvedValue(null);
 
       await expect(service.remove("non-existent")).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
     });
   });
@@ -450,7 +457,11 @@ describe("ItemsService", () => {
 
       expect(result).toEqual(items);
       expect(itemRepository.find).toHaveBeenCalledWith({
-        where: { categoryId: "cat-123", status: ItemStatus.ACTIVE, deletedAt: IsNull() },
+        where: {
+          categoryId: "cat-123",
+          status: ItemStatus.ACTIVE,
+          deletedAt: IsNull(),
+        },
         relations: ["ingredients"],
         order: { sortOrder: "ASC", createdAt: "DESC" },
       });
@@ -479,16 +490,16 @@ describe("ItemsService", () => {
           }),
           status: ItemStatus.DRAFT,
           createdBy: "user-456",
-        })
+        }),
       );
     });
 
     it("should throw NotFoundException when original item not found", async () => {
       itemRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.duplicate("non-existent", "user-456")).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        service.duplicate("non-existent", "user-456"),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -507,16 +518,16 @@ describe("ItemsService", () => {
         expect.objectContaining({
           status: ItemStatus.ARCHIVED,
           updatedBy: "user-456",
-        })
+        }),
       );
     });
 
     it("should throw NotFoundException when item not found", async () => {
       itemRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.archiveItem("non-existent", "user-456")).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        service.archiveItem("non-existent", "user-456"),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

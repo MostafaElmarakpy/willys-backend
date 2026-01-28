@@ -1,8 +1,8 @@
 import { validate } from "class-validator";
-import { IsPhoneNumberWithCountryCode } from "./is-phone-number-with-Country-code";
-import { AtLeastOneValue } from "./at-least-one-price";
-import { IsUniqueConstraint } from "./is-unique.constraint";
 import { DataSource, Not, Repository } from "typeorm";
+import { AtLeastOneValue } from "./at-least-one-price";
+import { IsPhoneNumberWithCountryCode } from "./is-phone-number-with-Country-code";
+import { IsUniqueConstraint } from "./is-unique.constraint";
 
 // Test DTOs for validators
 class PhoneNumberTestDto {
@@ -56,7 +56,9 @@ describe("Validators", () => {
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
-      expect(errors[0].constraints).toHaveProperty("IsPhoneNumberWithCountryCode");
+      expect(errors[0].constraints).toHaveProperty(
+        "IsPhoneNumberWithCountryCode",
+      );
     });
 
     it("should fail when country code is not provided", async () => {
@@ -92,8 +94,12 @@ describe("Validators", () => {
       dto.countryCode = "EG";
 
       const errors = await validate(dto);
-      expect(errors[0].constraints?.IsPhoneNumberWithCountryCode).toContain("phoneNumber");
-      expect(errors[0].constraints?.IsPhoneNumberWithCountryCode).toContain("EG");
+      expect(errors[0].constraints?.IsPhoneNumberWithCountryCode).toContain(
+        "phoneNumber",
+      );
+      expect(errors[0].constraints?.IsPhoneNumberWithCountryCode).toContain(
+        "EG",
+      );
     });
   });
 

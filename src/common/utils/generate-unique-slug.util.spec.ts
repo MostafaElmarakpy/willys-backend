@@ -1,11 +1,11 @@
 import type { Repository, SelectQueryBuilder } from "typeorm";
+import type { BilingualString } from "../dto/bilingual-string.dto";
 import {
   generateUniqueSlug,
+  regenerateAllSlugs,
   updateSlugIfNeeded,
   validateSlugFormat,
-  regenerateAllSlugs,
 } from "./generate-unique-slug.util";
-import type { BilingualString } from "../dto/bilingual-string.dto";
 
 // Mock entity interface
 interface MockEntity {
@@ -51,7 +51,10 @@ describe("Generate Unique Slug Utility", () => {
 
     it("should append number when slug exists", async () => {
       mockQueryBuilder.getOne
-        .mockResolvedValueOnce({ id: "1", slug: { en: "test", ar: "تجربة" } } as MockEntity) // First check - exists
+        .mockResolvedValueOnce({
+          id: "1",
+          slug: { en: "test", ar: "تجربة" },
+        } as MockEntity) // First check - exists
         .mockResolvedValueOnce(null); // Second check - doesn't exist
 
       const name = { en: "Test", ar: "تجربة" };
@@ -64,21 +67,23 @@ describe("Generate Unique Slug Utility", () => {
     it("should throw error when name is empty", async () => {
       const name = { en: "", ar: "تجربة" };
 
-      await expect(generateUniqueSlug(mockRepository as any, name)).rejects.toThrow(
-        "Both English and Arabic names are required"
-      );
+      await expect(
+        generateUniqueSlug(mockRepository as any, name),
+      ).rejects.toThrow("Both English and Arabic names are required");
     });
 
     it("should throw error when Arabic name is empty", async () => {
       const name = { en: "Test", ar: "" };
 
-      await expect(generateUniqueSlug(mockRepository as any, name)).rejects.toThrow(
-        "Both English and Arabic names are required"
-      );
+      await expect(
+        generateUniqueSlug(mockRepository as any, name),
+      ).rejects.toThrow("Both English and Arabic names are required");
     });
 
     it("should throw error when name is null", async () => {
-      await expect(generateUniqueSlug(mockRepository as any, null as any)).rejects.toThrow();
+      await expect(
+        generateUniqueSlug(mockRepository as any, null as any),
+      ).rejects.toThrow();
     });
 
     it("should exclude current entity ID when updating", async () => {
@@ -88,9 +93,12 @@ describe("Generate Unique Slug Utility", () => {
 
       await generateUniqueSlug(mockRepository as any, name, {}, "entity-123");
 
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith("entity.id != :excludeId", {
-        excludeId: "entity-123",
-      });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        "entity.id != :excludeId",
+        {
+          excludeId: "entity-123",
+        },
+      );
     });
 
     it("should handle special characters in name", async () => {
@@ -110,7 +118,9 @@ describe("Generate Unique Slug Utility", () => {
 
       const name = { en: "Test Product", ar: "منتج تجريبي" };
 
-      const slug = await generateUniqueSlug(mockRepository as any, name, { suffix: "v2" });
+      const slug = await generateUniqueSlug(mockRepository as any, name, {
+        suffix: "v2",
+      });
 
       expect(slug.en).toContain("v2");
     });
@@ -123,18 +133,25 @@ describe("Generate Unique Slug Utility", () => {
         ar: "هذا اسم طويل جدا",
       };
 
-      const slug = await generateUniqueSlug(mockRepository as any, name, { maxLength: 20 });
+      const slug = await generateUniqueSlug(mockRepository as any, name, {
+        maxLength: 20,
+      });
 
       expect(slug.en.length).toBeLessThanOrEqual(20);
     });
 
     it("should generate timestamp slug when max attempts exceeded", async () => {
       // Make all attempts fail
-      mockQueryBuilder.getOne.mockResolvedValue({ id: "1", slug: { en: "test", ar: "تجربة" } } as MockEntity);
+      mockQueryBuilder.getOne.mockResolvedValue({
+        id: "1",
+        slug: { en: "test", ar: "تجربة" },
+      } as MockEntity);
 
       const name = { en: "Test", ar: "تجربة" };
 
-      const slug = await generateUniqueSlug(mockRepository as any, name, { maxAttempts: 1 });
+      const slug = await generateUniqueSlug(mockRepository as any, name, {
+        maxAttempts: 1,
+      });
 
       // Should contain timestamp (13-digit number)
       expect(slug.en).toMatch(/test-\d+/);
@@ -186,7 +203,11 @@ describe("Generate Unique Slug Utility", () => {
 
       const newName = { en: "New Name", ar: "الاسم الجديد" };
 
-      const newSlug = await updateSlugIfNeeded(mockRepository as any, entity, newName);
+      const newSlug = await updateSlugIfNeeded(
+        mockRepository as any,
+        entity,
+        newName,
+      );
 
       expect(newSlug.en).toBe("new-name");
     });
@@ -202,7 +223,11 @@ describe("Generate Unique Slug Utility", () => {
 
       const newName = { en: "Test Name", ar: "اسم تجربة" };
 
-      const newSlug = await updateSlugIfNeeded(mockRepository as any, entity, newName);
+      const newSlug = await updateSlugIfNeeded(
+        mockRepository as any,
+        entity,
+        newName,
+      );
 
       expect(newSlug.en).toBe("test-name");
     });
@@ -242,7 +267,9 @@ describe("Generate Unique Slug Utility", () => {
       const result = validateSlugFormat(slug);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("English slug contains invalid characters");
+      expect(result.errors).toContain(
+        "English slug contains invalid characters",
+      );
     });
 
     it("should return error for English slug starting with hyphen", () => {
@@ -251,7 +278,9 @@ describe("Generate Unique Slug Utility", () => {
       const result = validateSlugFormat(slug);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("English slug cannot start or end with hyphens");
+      expect(result.errors).toContain(
+        "English slug cannot start or end with hyphens",
+      );
     });
 
     it("should return error for English slug ending with hyphen", () => {
@@ -260,7 +289,9 @@ describe("Generate Unique Slug Utility", () => {
       const result = validateSlugFormat(slug);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("English slug cannot start or end with hyphens");
+      expect(result.errors).toContain(
+        "English slug cannot start or end with hyphens",
+      );
     });
 
     it("should return error for Arabic slug starting with hyphen", () => {
@@ -269,7 +300,9 @@ describe("Generate Unique Slug Utility", () => {
       const result = validateSlugFormat(slug);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Arabic slug cannot start or end with hyphens");
+      expect(result.errors).toContain(
+        "Arabic slug cannot start or end with hyphens",
+      );
     });
 
     it("should return error for Arabic slug ending with hyphen", () => {
@@ -278,7 +311,9 @@ describe("Generate Unique Slug Utility", () => {
       const result = validateSlugFormat(slug);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Arabic slug cannot start or end with hyphens");
+      expect(result.errors).toContain(
+        "Arabic slug cannot start or end with hyphens",
+      );
     });
 
     it("should return error for invalid Arabic characters", () => {
@@ -287,7 +322,9 @@ describe("Generate Unique Slug Utility", () => {
       const result = validateSlugFormat(slug);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Arabic slug contains invalid characters");
+      expect(result.errors).toContain(
+        "Arabic slug contains invalid characters",
+      );
     });
 
     it("should return multiple errors for multiple issues", () => {
@@ -305,7 +342,9 @@ describe("Generate Unique Slug Utility", () => {
       const result = validateSlugFormat(slug);
 
       // English numeric slugs are valid
-      expect(result.errors.filter((e) => e.includes("English"))).toHaveLength(0);
+      expect(result.errors.filter((e) => e.includes("English"))).toHaveLength(
+        0,
+      );
     });
 
     it("should handle whitespace-only strings", () => {
@@ -321,8 +360,16 @@ describe("Generate Unique Slug Utility", () => {
     it("should process entities in batches", async () => {
       mockRepository.count.mockResolvedValue(5);
       mockRepository.find.mockResolvedValue([
-        { id: "1", slug: { en: "old-1", ar: "قديم-1" }, name: { en: "Name 1", ar: "اسم 1" } },
-        { id: "2", slug: { en: "old-2", ar: "قديم-2" }, name: { en: "Name 2", ar: "اسم 2" } },
+        {
+          id: "1",
+          slug: { en: "old-1", ar: "قديم-1" },
+          name: { en: "Name 1", ar: "اسم 1" },
+        },
+        {
+          id: "2",
+          slug: { en: "old-2", ar: "قديم-2" },
+          name: { en: "Name 2", ar: "اسم 2" },
+        },
       ]);
       mockQueryBuilder.getOne.mockResolvedValue(null);
       mockRepository.update.mockResolvedValue({ affected: 1 } as any);
@@ -334,7 +381,7 @@ describe("Generate Unique Slug Utility", () => {
         mockRepository as any,
         (entity: any) => entity.name,
         {},
-        2
+        2,
       );
 
       expect(mockRepository.find).toHaveBeenCalled();
@@ -355,7 +402,7 @@ describe("Generate Unique Slug Utility", () => {
         mockRepository as any,
         (entity: any) => entity.name,
         {},
-        1
+        1,
       );
 
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -367,7 +414,11 @@ describe("Generate Unique Slug Utility", () => {
     it("should not update when slug is unchanged", async () => {
       mockRepository.count.mockResolvedValue(1);
       mockRepository.find.mockResolvedValue([
-        { id: "1", slug: { en: "test-name", ar: "اسم-تجربة" }, name: { en: "Test Name", ar: "اسم تجربة" } },
+        {
+          id: "1",
+          slug: { en: "test-name", ar: "اسم-تجربة" },
+          name: { en: "Test Name", ar: "اسم تجربة" },
+        },
       ]);
       mockQueryBuilder.getOne.mockResolvedValue(null);
 
@@ -377,7 +428,7 @@ describe("Generate Unique Slug Utility", () => {
         mockRepository as any,
         (entity: any) => entity.name,
         {},
-        10
+        10,
       );
 
       // Should still complete without error

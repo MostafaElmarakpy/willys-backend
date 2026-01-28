@@ -85,9 +85,7 @@ describe("LoggerMiddleware", () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("127.0.0.1"),
       );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("GET"),
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("GET"));
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining("/api/test"),
       );

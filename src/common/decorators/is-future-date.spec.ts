@@ -102,7 +102,9 @@ describe("IsFutureDate Decorator", () => {
       dto.date = new Date("2020-01-01");
 
       const errors = await validate(dto);
-      expect(errors[0].constraints?.isFutureDate).toBe("Date must be in the future");
+      expect(errors[0].constraints?.isFutureDate).toBe(
+        "Date must be in the future",
+      );
     });
   });
 });
@@ -201,7 +203,9 @@ describe("IsFutureYear Decorator", () => {
       dto.year = 2000;
 
       const errors = await validate(dto);
-      expect(errors[0].constraints?.isFutureYear).toBe("Year must be current year or in the future");
+      expect(errors[0].constraints?.isFutureYear).toBe(
+        "Year must be current year or in the future",
+      );
     });
   });
 });

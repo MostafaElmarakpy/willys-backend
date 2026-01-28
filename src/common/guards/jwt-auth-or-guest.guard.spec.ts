@@ -1,7 +1,4 @@
-import {
-  type ExecutionContext,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { type ExecutionContext, UnauthorizedException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { UsersService } from "../../modules/users/users.service";
 import { JwtAuthOrGuestGuard } from "./jwt-auth-or-guest.guard";
@@ -61,7 +58,9 @@ describe("JwtAuthOrGuestGuard", () => {
       const result = await guard.canActivate(context);
 
       expect(result).toBe(true);
-      expect(usersService.validateUserToken).toHaveBeenCalledWith("valid-token");
+      expect(usersService.validateUserToken).toHaveBeenCalledWith(
+        "valid-token",
+      );
       const request = context.switchToHttp().getRequest();
       expect(request.user).toEqual(mockUser);
     });
