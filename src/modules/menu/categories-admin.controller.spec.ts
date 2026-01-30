@@ -1,4 +1,5 @@
 import { Test, type TestingModule } from "@nestjs/testing";
+import { S3StorageService } from "src/services/upload-media/multer-config.service";
 import { CategoriesService } from "./categories.service";
 import { CategoriesAdminController } from "./categories-admin.controller";
 
@@ -30,6 +31,17 @@ describe("CategoriesAdminController", () => {
             findOne: jest.fn(),
             update: jest.fn(),
             remove: jest.fn(),
+          },
+        },
+        {
+          provide: S3StorageService,
+          useValue: {
+            multerOptions: jest.fn().mockReturnValue({
+              storage: {},
+              fileFilter: jest.fn(),
+              limits: { fileSize: 100 * 1024 * 1024 },
+            }),
+            validateFileSize: jest.fn(),
           },
         },
       ],

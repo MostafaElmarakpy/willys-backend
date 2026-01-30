@@ -20,7 +20,7 @@ describe("EntityFilesInterceptor", () => {
       validateFileSize: jest.fn().mockReturnValue(true),
     } as unknown as jest.Mocked<S3StorageService>;
 
-    mockRequest = { files: null };
+    mockRequest = { files: undefined };
 
     mockExecutionContext = {
       switchToHttp: () => ({
@@ -194,7 +194,7 @@ describe("EntityFilesInterceptor", () => {
     });
 
     it("should not call validateFileSize when no files", async () => {
-      mockRequest.files = null;
+      mockRequest.files = undefined;
 
       const interceptor = {
         s3StorageService: mockS3StorageService,
