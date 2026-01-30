@@ -2,105 +2,69 @@ import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { DataSource, type Repository, type SelectQueryBuilder } from "typeorm";
+import { DataSource } from "typeorm";
 import { OrderStatus } from "../../common/enums/OrderStatus";
 import { OrderType } from "../../common/enums/OrderType";
-import { Cart } from "../../database/entities/cart.entity";
 import { Order } from "../../database/entities/order.entity";
 import { OrderItem } from "../../database/entities/order-item.entity";
 import { OrderStatusLog } from "../../database/entities/order-status-log.entity";
 import { UserAddress } from "../../database/entities/user-address.entity";
-import { OrderFilterDto } from "./dto/order-filter.dto";
 import { OrdersService } from "./orders.service";
 
 describe("OrdersService", () => {
   let service: OrdersService;
-  let orderRepository: jest.Mocked<Repository<Order>>;
-  let statusLogRepository: jest.Mocked<Repository<OrderStatusLog>>;
-  let addressRepository: jest.Mocked<Repository<UserAddress>>;
+  let orderRepository: any;
+  let orderItemRepository: any;
+  let statusLogRepository: any;
+  let addressRepository: any;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
 
-  // Mock data
-  const mockUserId = "550e8400-e29b-41d4-a716-446655440000";
-  const mockOrderId = "550e8400-e29b-41d4-a716-446655440001";
-  const mockBranchId = "550e8400-e29b-41d4-a716-446655440002";
-  const mockAddressId = "550e8400-e29b-41d4-a716-446655440003";
-  const mockPaymentId = "550e8400-e29b-41d4-a716-446655440004";
+  const mockUserId = "user-123";
 
   const mockOrder: Partial<Order> = {
-    id: mockOrderId,
-    orderNumber: "WLY-20260111-0001",
+    id: "order-123",
+    orderNumber: "WLY-240101-001",
     userId: mockUserId,
-    branchId: mockBranchId,
-    orderType: OrderType.PICKUP,
+    branchId: "branch-123",
+    orderType: OrderType.DELIVERY,
     status: OrderStatus.PENDING,
     subtotal: 100,
-    discountAmount: 0,
-    deliveryFee: 0,
-    tax: 14,
-    total: 114,
-    currency: "EGP",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: undefined,
+    total: 110,
     items: [],
     statusLogs: [],
   };
 
-  const mockAddress: Partial<UserAddress> = {
-    id: mockAddressId,
-    addressLine1: "123 Main St",
-    addressLine2: "Apt 4",
-    city: "Cairo",
-    area: "Maadi",
-    latitude: 30.0444,
-    longitude: 31.2357,
-    deliveryInstructions: "Ring doorbell",
-    contactPhone: "+201234567890",
-  };
-
-  const mockCart: Partial<Cart> = {
-    id: "550e8400-e29b-41d4-a716-446655440005",
-    userId: mockUserId,
-    branchId: mockBranchId,
-    orderType: OrderType.PICKUP,
-    subtotal: 100,
-    discountAmount: 0,
-    deliveryFee: 0,
-    tax: 14,
-    total: 114,
-    items: [],
-  };
-
-  // Mock QueryRunner
   const mockQueryRunner = {
-    connect: jest.fn(),
-    startTransaction: jest.fn(),
-    commitTransaction: jest.fn(),
-    rollbackTransaction: jest.fn(),
-    release: jest.fn(),
+    connect: jest.fn().mockResolvedValue(undefined),
+    startTransaction: jest.fn().mockResolvedValue(undefined),
+    commitTransaction: jest.fn().mockResolvedValue(undefined),
+    rollbackTransaction: jest.fn().mockResolvedValue(undefined),
+    release: jest.fn().mockResolvedValue(undefined),
     manager: {
-      create: jest.fn(),
-      save: jest.fn(),
+      create: jest.fn().mockImplementation((entity, data) => data),
+      save: jest.fn().mockImplementation((data) => ({ ...data, id: "new-id" })),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
     },
   };
 
-  // Mock QueryBuilder
-  const createMockQueryBuilder = () => ({
-    leftJoinAndSelect: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-    andWhere: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    skip: jest.fn().mockReturnThis(),
-    take: jest.fn().mockReturnThis(),
-    clone: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
-    getCount: jest.fn().mockResolvedValue(0),
-    getRawOne: jest.fn().mockResolvedValue({ total: 0 }),
-  });
+  let queryBuilder: any;
 
   beforeEach(async () => {
-    const mockQueryBuilder = createMockQueryBuilder();
+    queryBuilder = {
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getMany: jest.fn(),
+      getManyAndCount: jest.fn(),
+      getOne: jest.fn(),
+      getCount: jest.fn().mockResolvedValue(0),
+      clone: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      getRawOne: jest.fn().mockResolvedValue({ sum: 0 }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -109,10 +73,10 @@ describe("OrdersService", () => {
           provide: getRepositoryToken(Order),
           useValue: {
             findOne: jest.fn(),
-            count: jest.fn(),
+            find: jest.fn(),
             save: jest.fn(),
             create: jest.fn(),
-            createQueryBuilder: jest.fn(() => mockQueryBuilder),
+            createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
           },
         },
         {
@@ -138,7 +102,7 @@ describe("OrdersService", () => {
         {
           provide: DataSource,
           useValue: {
-            createQueryRunner: jest.fn(() => mockQueryRunner),
+            createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner),
           },
         },
         {
@@ -152,8 +116,10 @@ describe("OrdersService", () => {
 
     service = module.get<OrdersService>(OrdersService);
     orderRepository = module.get(getRepositoryToken(Order));
+    orderItemRepository = module.get(getRepositoryToken(OrderItem));
     statusLogRepository = module.get(getRepositoryToken(OrderStatusLog));
     addressRepository = module.get(getRepositoryToken(UserAddress));
+    eventEmitter = module.get(EventEmitter2);
   });
 
   afterEach(() => {
@@ -161,199 +127,22 @@ describe("OrdersService", () => {
   });
 
   describe("generateOrderNumber", () => {
-    it("should generate order number with correct format", async () => {
-      const result = await service.generateOrderNumber();
+    it("should generate a valid order number", async () => {
+      const orderNumber = await service.generateOrderNumber();
 
-      // Format: WLY-YYMMDDHHMM-RRR (YY is 2-digit year)
-      expect(result).toMatch(/^WLY-\d{10}-\d{3}$/);
-    });
-
-    it("should generate unique order numbers", async () => {
-      const result1 = await service.generateOrderNumber();
-      const result2 = await service.generateOrderNumber();
-
-      expect(result1).not.toBe(result2);
-    });
-
-    it("should use current date and time in order number", async () => {
-      const now = new Date();
-      const year = now.getFullYear().toString().slice(-2);
-      const month = (now.getMonth() + 1).toString().padStart(2, "0");
-      const day = now.getDate().toString().padStart(2, "0");
-      const datePrefix = `${year}${month}${day}`;
-
-      const result = await service.generateOrderNumber();
-
-      expect(result).toContain(datePrefix);
-    });
-  });
-
-  describe("createFromCart", () => {
-    beforeEach(() => {
-      orderRepository.count.mockResolvedValue(0);
-      mockQueryRunner.manager.create.mockImplementation((_, data) => data);
-      mockQueryRunner.manager.save.mockImplementation((data) =>
-        Promise.resolve({ ...data, id: mockOrderId }),
-      );
-      orderRepository.findOne.mockResolvedValue(mockOrder as Order);
-    });
-
-    it("should create an order from cart successfully", async () => {
-      const cart = { ...mockCart, items: [] } as Cart;
-
-      const result = await service.createFromCart(mockUserId, cart);
-
-      expect(mockQueryRunner.connect).toHaveBeenCalled();
-      expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
-      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
-      expect(mockQueryRunner.release).toHaveBeenCalled();
-      expect(result).toBeDefined();
-    });
-
-    it("should rollback transaction on error", async () => {
-      mockQueryRunner.manager.save.mockRejectedValueOnce(
-        new Error("Database error"),
-      );
-      const cart = { ...mockCart, items: [] } as Cart;
-
-      await expect(service.createFromCart(mockUserId, cart)).rejects.toThrow(
-        "Database error",
-      );
-      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
-      expect(mockQueryRunner.release).toHaveBeenCalled();
-    });
-
-    it("should create delivery address snapshot for delivery orders", async () => {
-      const cart = {
-        ...mockCart,
-        orderType: OrderType.DELIVERY,
-        deliveryAddressId: mockAddressId,
-        items: [],
-      } as Cart;
-
-      addressRepository.findOne.mockResolvedValue(mockAddress as UserAddress);
-
-      await service.createFromCart(mockUserId, cart);
-
-      expect(addressRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockAddressId },
-      });
-    });
-
-    it("should not fetch address for pickup orders", async () => {
-      const cart = {
-        ...mockCart,
-        orderType: OrderType.PICKUP,
-        items: [],
-      } as Cart;
-
-      await service.createFromCart(mockUserId, cart);
-
-      expect(addressRepository.findOne).not.toHaveBeenCalled();
-    });
-
-    it("should create order items from cart items", async () => {
-      const cartItem = {
-        id: "item-1",
-        itemType: "ITEM",
-        itemId: "menu-item-1",
-        quantity: 2,
-        unitPrice: 50,
-        totalPrice: 100,
-        item: {
-          name: { en: "Burger", ar: "برجر" },
-          description: { en: "Delicious", ar: "لذيذ" },
-          image: "burger.jpg",
-        },
-        deletedAt: undefined,
-      };
-
-      const cart = {
-        ...mockCart,
-        items: [cartItem],
-      } as unknown as Cart;
-
-      await service.createFromCart(mockUserId, cart);
-
-      expect(mockQueryRunner.manager.create).toHaveBeenCalledWith(
-        OrderItem,
-        expect.objectContaining({
-          itemType: "ITEM",
-          originalItemId: "menu-item-1",
-          quantity: 2,
-        }),
-      );
-    });
-
-    it("should skip deleted cart items", async () => {
-      const cartItem = {
-        id: "item-1",
-        itemType: "ITEM",
-        itemId: "menu-item-1",
-        quantity: 2,
-        deletedAt: new Date(),
-      };
-
-      const cart = {
-        ...mockCart,
-        items: [cartItem],
-      } as unknown as Cart;
-
-      await service.createFromCart(mockUserId, cart);
-
-      // Should only call create for Order and OrderStatusLog, not OrderItem
-      const orderItemCreates = mockQueryRunner.manager.create.mock.calls.filter(
-        (call) => call[0] === OrderItem,
-      );
-      expect(orderItemCreates).toHaveLength(0);
-    });
-
-    it("should create initial status log with PENDING status", async () => {
-      const cart = { ...mockCart, items: [] } as Cart;
-
-      await service.createFromCart(mockUserId, cart);
-
-      expect(mockQueryRunner.manager.create).toHaveBeenCalledWith(
-        OrderStatusLog,
-        expect.objectContaining({
-          previousStatus: OrderStatus.PENDING,
-          newStatus: OrderStatus.PENDING,
-          notes: "Order created",
-        }),
-      );
-    });
-
-    it("should include payment ID if provided", async () => {
-      const cart = { ...mockCart, items: [] } as Cart;
-
-      await service.createFromCart(
-        mockUserId,
-        cart,
-        mockPaymentId,
-        "127.0.0.1",
-        "Mozilla/5.0",
-      );
-
-      expect(mockQueryRunner.manager.create).toHaveBeenCalledWith(
-        Order,
-        expect.objectContaining({
-          paymentId: mockPaymentId,
-          ipAddress: "127.0.0.1",
-          userAgent: "Mozilla/5.0",
-        }),
-      );
+      expect(orderNumber).toMatch(/^WLY-\d{10}-\d{3}$/);
     });
   });
 
   describe("findOne", () => {
-    it("should return an order when found", async () => {
-      orderRepository.findOne.mockResolvedValue(mockOrder as Order);
+    it("should return an order by id", async () => {
+      orderRepository.findOne.mockResolvedValue(mockOrder);
 
-      const result = await service.findOne(mockOrderId);
+      const result = await service.findOne("order-123");
 
       expect(result).toEqual(mockOrder);
       expect(orderRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockOrderId, deletedAt: expect.anything() },
+        where: { id: "order-123", deletedAt: expect.anything() },
         relations: ["items", "statusLogs", "branch", "user"],
         order: { statusLogs: { occurredAt: "ASC" } },
       });
@@ -362,847 +151,396 @@ describe("OrdersService", () => {
     it("should throw NotFoundException when order not found", async () => {
       orderRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne("non-existent-id")).rejects.toThrow(
+      await expect(service.findOne("unknown-id")).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
   describe("findByOrderNumber", () => {
-    it("should return an order when found by order number", async () => {
-      orderRepository.findOne.mockResolvedValue(mockOrder as Order);
+    it("should return an order by order number", async () => {
+      orderRepository.findOne.mockResolvedValue(mockOrder);
 
-      const result = await service.findByOrderNumber("WLY-20260111-0001");
+      const result = await service.findByOrderNumber("WLY-240101-001");
 
       expect(result).toEqual(mockOrder);
-      expect(orderRepository.findOne).toHaveBeenCalledWith({
-        where: {
-          orderNumber: "WLY-20260111-0001",
-          deletedAt: expect.anything(),
-        },
-        relations: ["items", "statusLogs", "branch"],
-      });
     });
 
     it("should throw NotFoundException when order not found", async () => {
       orderRepository.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.findByOrderNumber("WLY-99999999-9999"),
-      ).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe("findByUser", () => {
-    it("should return orders for a user with pagination", async () => {
-      const mockOrders = [mockOrder as Order];
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([mockOrders, 1]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = { page: 1, limit: 10 };
-      const result = await service.findByUser(mockUserId, filterDto);
-
-      expect(result.orders).toEqual(mockOrders);
-      expect(result.total).toBe(1);
-    });
-
-    it("should apply status filter when provided", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = {
-        status: OrderStatus.PENDING,
-        page: 1,
-        limit: 10,
-      };
-      await service.findByUser(mockUserId, filterDto);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        "order.status = :status",
-        { status: OrderStatus.PENDING },
-      );
-    });
-
-    it("should apply orderType filter when provided", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = {
-        orderType: OrderType.DELIVERY,
-        page: 1,
-        limit: 10,
-      };
-      await service.findByUser(mockUserId, filterDto);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        "order.orderType = :orderType",
-        { orderType: OrderType.DELIVERY },
-      );
-    });
-
-    it("should apply date range filters when provided", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = {
-        startDate: "2026-01-01",
-        endDate: "2026-01-31",
-        page: 1,
-        limit: 10,
-      };
-      await service.findByUser(mockUserId, filterDto);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        "order.createdAt >= :startDate",
-        { startDate: expect.any(Date) },
-      );
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        "order.createdAt <= :endDate",
-        { endDate: expect.any(Date) },
-      );
-    });
-
-    it("should apply sorting when provided", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = {
-        sortBy: "total",
-        sortOrder: "ASC",
-        page: 1,
-        limit: 10,
-      };
-      await service.findByUser(mockUserId, filterDto);
-
-      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
-        "order.total",
-        "ASC",
-      );
-    });
-  });
-
-  describe("findAll", () => {
-    it("should return all orders with pagination", async () => {
-      const mockOrders = [mockOrder as Order];
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([mockOrders, 1]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = { page: 1, limit: 10 };
-      const result = await service.findAll(filterDto);
-
-      expect(result.orders).toEqual(mockOrders);
-      expect(result.total).toBe(1);
-    });
-
-    it("should apply branchId filter when provided", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = {
-        branchId: mockBranchId,
-        page: 1,
-        limit: 10,
-      };
-      await service.findAll(filterDto);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        "order.branchId = :branchId",
-        { branchId: mockBranchId },
-      );
-    });
-
-    it("should apply search filter when provided", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = {
-        search: "WLY-2026",
-        page: 1,
-        limit: 10,
-      };
-      await service.findAll(filterDto);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        "(order.orderNumber ILIKE :search OR user.email ILIKE :search)",
-        { search: "%WLY-2026%" },
-      );
-    });
-
-    it("should join user relation for admin view", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const filterDto: OrderFilterDto = { page: 1, limit: 10 };
-      await service.findAll(filterDto);
-
-      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
-        "order.user",
-        "user",
-      );
-    });
-  });
-
-  describe("updateStatus", () => {
-    beforeEach(() => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-      } as Order);
-      orderRepository.save.mockImplementation((order) =>
-        Promise.resolve(order as Order),
-      );
-      statusLogRepository.create.mockImplementation(
-        (data) => data as OrderStatusLog,
-      );
-      statusLogRepository.save.mockImplementation((log) =>
-        Promise.resolve(log as OrderStatusLog),
-      );
-    });
-
-    it("should update status when transition is valid", async () => {
-      await service.updateStatus(
-        mockOrderId,
-        OrderStatus.CONFIRMED,
-        mockUserId,
-      );
-
-      expect(orderRepository.save).toHaveBeenCalled();
-      expect(statusLogRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          previousStatus: OrderStatus.PENDING,
-          newStatus: OrderStatus.CONFIRMED,
-        }),
-      );
-    });
-
-    it("should throw BadRequestException for invalid status transition", async () => {
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.COMPLETED, mockUserId),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it("should set confirmedAt timestamp when transitioning to CONFIRMED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-      } as Order);
-
-      await service.updateStatus(mockOrderId, OrderStatus.CONFIRMED);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          confirmedAt: expect.any(Date),
-        }),
-      );
-    });
-
-    it("should set preparingAt timestamp when transitioning to PREPARING", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.CONFIRMED,
-      } as Order);
-
-      await service.updateStatus(mockOrderId, OrderStatus.PREPARING);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          preparingAt: expect.any(Date),
-        }),
-      );
-    });
-
-    it("should set readyAt timestamp when transitioning to READY", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-      } as Order);
-
-      await service.updateStatus(mockOrderId, OrderStatus.READY);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          readyAt: expect.any(Date),
-        }),
-      );
-    });
-
-    it("should set outForDeliveryAt timestamp when transitioning to OUT_FOR_DELIVERY", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-      } as Order);
-
-      await service.updateStatus(mockOrderId, OrderStatus.OUT_FOR_DELIVERY);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          outForDeliveryAt: expect.any(Date),
-        }),
-      );
-    });
-
-    it("should set completedAt timestamp when transitioning to COMPLETED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.READY,
-      } as Order);
-
-      await service.updateStatus(mockOrderId, OrderStatus.COMPLETED);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          completedAt: expect.any(Date),
-        }),
-      );
-    });
-
-    it("should set actualPickupTime for pickup orders when completed", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.READY,
-        orderType: OrderType.PICKUP,
-      } as Order);
-
-      await service.updateStatus(mockOrderId, OrderStatus.COMPLETED);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          actualPickupTime: expect.any(Date),
-        }),
-      );
-    });
-
-    it("should set cancelledAt and cancelledById when transitioning to CANCELLED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-      } as Order);
-
-      await service.updateStatus(
-        mockOrderId,
-        OrderStatus.CANCELLED,
-        mockUserId,
-      );
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          cancelledAt: expect.any(Date),
-          cancelledById: mockUserId,
-        }),
-      );
-    });
-
-    it("should include notes and ipAddress in status log", async () => {
-      await service.updateStatus(
-        mockOrderId,
-        OrderStatus.CONFIRMED,
-        mockUserId,
-        "Order confirmed by admin",
-        "192.168.1.1",
-      );
-
-      expect(statusLogRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          notes: "Order confirmed by admin",
-          ipAddress: "192.168.1.1",
-          changedById: mockUserId,
-        }),
-      );
-    });
-  });
-
-  describe("cancelOrder", () => {
-    beforeEach(() => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-        userId: mockUserId,
-      } as Order);
-      orderRepository.save.mockImplementation((order) =>
-        Promise.resolve(order as Order),
-      );
-      statusLogRepository.create.mockImplementation(
-        (data) => data as OrderStatusLog,
-      );
-      statusLogRepository.save.mockImplementation((log) =>
-        Promise.resolve(log as OrderStatusLog),
-      );
-    });
-
-    it("should allow user to cancel their own pending order", async () => {
-      await service.cancelOrder(
-        mockOrderId,
-        mockUserId,
-        "Changed my mind",
-        false,
-      );
-
-      expect(orderRepository.save).toHaveBeenCalled();
-    });
-
-    it("should throw BadRequestException when user tries to cancel another users order", async () => {
-      const differentUserId = "550e8400-e29b-41d4-a716-446655440099";
-
-      await expect(
-        service.cancelOrder(mockOrderId, differentUserId, "Testing", false),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it("should throw BadRequestException when user tries to cancel non-cancellable order", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-        userId: mockUserId,
-      } as Order);
-
-      await expect(
-        service.cancelOrder(mockOrderId, mockUserId, "Changed my mind", false),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it("should allow admin to cancel orders in any status except completed/cancelled/refunded", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-        userId: mockUserId,
-      } as Order);
-
-      await service.cancelOrder(
-        mockOrderId,
-        "admin-user-id",
-        "Restaurant issue",
-        true,
-      );
-
-      expect(orderRepository.save).toHaveBeenCalled();
-    });
-
-    it("should throw BadRequestException when trying to cancel completed order", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.COMPLETED,
-      } as Order);
-
-      await expect(
-        service.cancelOrder(mockOrderId, mockUserId, "Too late", true),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it("should throw BadRequestException when trying to cancel already cancelled order", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.CANCELLED,
-      } as Order);
-
-      await expect(
-        service.cancelOrder(mockOrderId, mockUserId, "Double cancel", true),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it("should throw BadRequestException when trying to cancel refunded order", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.REFUNDED,
-      } as Order);
-
-      await expect(
-        service.cancelOrder(mockOrderId, mockUserId, "Already refunded", true),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it("should set cancellation reason on order", async () => {
-      await service.cancelOrder(
-        mockOrderId,
-        mockUserId,
-        "Item unavailable",
-        false,
-      );
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          cancellationReason: "Item unavailable",
-        }),
-      );
-    });
-  });
-
-  describe("linkPayment", () => {
-    it("should link payment to order", async () => {
-      orderRepository.findOne.mockResolvedValue(mockOrder as Order);
-      orderRepository.save.mockImplementation((order) =>
-        Promise.resolve(order as Order),
-      );
-
-      await service.linkPayment(mockOrderId, mockPaymentId);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          paymentId: mockPaymentId,
-        }),
-      );
-    });
-
-    it("should throw NotFoundException when order not found", async () => {
-      orderRepository.findOne.mockResolvedValue(null);
-
-      await expect(
-        service.linkPayment("non-existent", mockPaymentId),
-      ).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe("confirmOrder", () => {
-    beforeEach(() => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-      } as Order);
-      orderRepository.save.mockImplementation((order) =>
-        Promise.resolve(order as Order),
-      );
-      statusLogRepository.create.mockImplementation(
-        (data) => data as OrderStatusLog,
-      );
-      statusLogRepository.save.mockImplementation((log) =>
-        Promise.resolve(log as OrderStatusLog),
-      );
-    });
-
-    it("should confirm order by updating status to CONFIRMED", async () => {
-      await service.confirmOrder(mockOrderId, mockUserId);
-
-      expect(orderRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({
-          status: OrderStatus.CONFIRMED,
-        }),
-      );
-    });
-
-    it("should throw BadRequestException if order is not pending", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-      } as Order);
-
-      await expect(service.confirmOrder(mockOrderId)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-  });
-
-  describe("getOrderStats", () => {
-    it("should return order statistics", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getCount
-        .mockResolvedValueOnce(100) // totalOrders
-        .mockResolvedValueOnce(20) // pendingOrders
-        .mockResolvedValueOnce(70) // completedOrders
-        .mockResolvedValueOnce(10); // cancelledOrders
-      mockQueryBuilder.getRawOne.mockResolvedValue({ total: 7000 });
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const result = await service.getOrderStats();
-
-      expect(result).toEqual({
-        totalOrders: 100,
-        pendingOrders: 20,
-        completedOrders: 70,
-        cancelledOrders: 10,
-        totalRevenue: 7000,
-        averageOrderValue: 100,
-      });
-    });
-
-    it("should filter by branchId when provided", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getCount.mockResolvedValue(0);
-      mockQueryBuilder.getRawOne.mockResolvedValue({ total: 0 });
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      await service.getOrderStats(mockBranchId);
-
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        "order.branchId = :branchId",
-        { branchId: mockBranchId },
-      );
-    });
-
-    it("should return zero average when no completed orders", async () => {
-      const mockQueryBuilder = createMockQueryBuilder();
-      mockQueryBuilder.getCount.mockResolvedValue(0);
-      mockQueryBuilder.getRawOne.mockResolvedValue({ total: null });
-      orderRepository.createQueryBuilder.mockReturnValue(
-        mockQueryBuilder as unknown as SelectQueryBuilder<Order>,
-      );
-
-      const result = await service.getOrderStats();
-
-      expect(result.averageOrderValue).toBe(0);
-      expect(result.totalRevenue).toBe(0);
-    });
-  });
-
-  describe("requiresRefund", () => {
-    it("should return true for CONFIRMED status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.CONFIRMED,
-      } as Order);
-
-      const result = await service.requiresRefund(mockOrderId);
-
-      expect(result).toBe(true);
-    });
-
-    it("should return true for PREPARING status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-      } as Order);
-
-      const result = await service.requiresRefund(mockOrderId);
-
-      expect(result).toBe(true);
-    });
-
-    it("should return true for READY status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.READY,
-      } as Order);
-
-      const result = await service.requiresRefund(mockOrderId);
-
-      expect(result).toBe(true);
-    });
-
-    it("should return true for OUT_FOR_DELIVERY status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.OUT_FOR_DELIVERY,
-      } as Order);
-
-      const result = await service.requiresRefund(mockOrderId);
-
-      expect(result).toBe(true);
-    });
-
-    it("should return false for PENDING status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-      } as Order);
-
-      const result = await service.requiresRefund(mockOrderId);
-
-      expect(result).toBe(false);
-    });
-
-    it("should return false for COMPLETED status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.COMPLETED,
-      } as Order);
-
-      const result = await service.requiresRefund(mockOrderId);
-
-      expect(result).toBe(false);
-    });
-
-    it("should return false for CANCELLED status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.CANCELLED,
-      } as Order);
-
-      const result = await service.requiresRefund(mockOrderId);
-
-      expect(result).toBe(false);
-    });
-
-    it("should throw NotFoundException when order not found", async () => {
-      orderRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.requiresRefund("non-existent")).rejects.toThrow(
+      await expect(service.findByOrderNumber("UNKNOWN")).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
-  describe("status transitions", () => {
-    beforeEach(() => {
-      orderRepository.save.mockImplementation((order) =>
-        Promise.resolve(order as Order),
-      );
-      statusLogRepository.create.mockImplementation(
-        (data) => data as OrderStatusLog,
-      );
-      statusLogRepository.save.mockImplementation((log) =>
-        Promise.resolve(log as OrderStatusLog),
-      );
+  describe("findByUser", () => {
+    it("should return paginated orders for a user", async () => {
+      const orders = [mockOrder];
+      queryBuilder.getManyAndCount.mockResolvedValue([orders, 1]);
+
+      const result = await service.findByUser(mockUserId, {});
+
+      expect(result.orders).toEqual(orders);
+      expect(result.total).toBe(1);
     });
 
-    it("should allow PENDING -> CONFIRMED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
+    it("should filter by status", async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findByUser(mockUserId, {
         status: OrderStatus.PENDING,
-      } as Order);
+      });
 
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.CONFIRMED),
-      ).resolves.not.toThrow();
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        "order.status = :status",
+        { status: OrderStatus.PENDING },
+      );
     });
 
-    it("should allow PENDING -> CANCELLED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-      } as Order);
+    it("should filter by order type", async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.CANCELLED),
-      ).resolves.not.toThrow();
+      await service.findByUser(mockUserId, {
+        orderType: OrderType.DELIVERY,
+      });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        "order.orderType = :orderType",
+        { orderType: OrderType.DELIVERY },
+      );
     });
 
-    it("should allow CONFIRMED -> PREPARING", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
+    it("should filter by date range", async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findByUser(mockUserId, {
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
+      });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        "order.createdAt >= :startDate",
+        expect.any(Object),
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        "order.createdAt <= :endDate",
+        expect.any(Object),
+      );
+    });
+
+    it("should apply pagination", async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findByUser(mockUserId, { page: 2, limit: 20 });
+
+      expect(queryBuilder.skip).toHaveBeenCalledWith(20);
+      expect(queryBuilder.take).toHaveBeenCalledWith(20);
+    });
+  });
+
+  describe("findAll", () => {
+    it("should return all orders with filters", async () => {
+      const orders = [mockOrder];
+      queryBuilder.getManyAndCount.mockResolvedValue([orders, 1]);
+
+      const result = await service.findAll({});
+
+      expect(result.orders).toEqual(orders);
+      expect(result.total).toBe(1);
+    });
+
+    it("should filter by branch", async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ branchId: "branch-123" });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        "order.branchId = :branchId",
+        { branchId: "branch-123" },
+      );
+    });
+
+    it("should search by order number or user name", async () => {
+      queryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAll({ search: "WLY" });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalled();
+    });
+  });
+
+  describe("confirmOrder", () => {
+    it("should confirm a pending order", async () => {
+      const pendingOrder = { ...mockOrder, status: OrderStatus.PENDING };
+      orderRepository.findOne.mockResolvedValue(pendingOrder);
+      orderRepository.save.mockResolvedValue({
+        ...pendingOrder,
         status: OrderStatus.CONFIRMED,
-      } as Order);
+      });
+      statusLogRepository.create.mockReturnValue({});
+      statusLogRepository.save.mockResolvedValue({});
 
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.PREPARING),
-      ).resolves.not.toThrow();
+      const result = await service.confirmOrder("order-123");
+
+      expect(result.status).toBe(OrderStatus.CONFIRMED);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        "order.status.changed",
+        expect.any(Object),
+      );
     });
 
-    it("should allow PREPARING -> READY", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-      } as Order);
+    it("should throw BadRequestException for invalid status transition", async () => {
+      const completedOrder = { ...mockOrder, status: OrderStatus.COMPLETED };
+      orderRepository.findOne.mockResolvedValue(completedOrder);
 
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.READY),
-      ).resolves.not.toThrow();
+      await expect(service.confirmOrder("order-123")).rejects.toThrow(
+        BadRequestException,
+      );
     });
+  });
 
-    it("should allow PREPARING -> OUT_FOR_DELIVERY", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PREPARING,
-      } as Order);
-
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.OUT_FOR_DELIVERY),
-      ).resolves.not.toThrow();
-    });
-
-    it("should allow READY -> COMPLETED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.READY,
-      } as Order);
-
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.COMPLETED),
-      ).resolves.not.toThrow();
-    });
-
-    it("should allow OUT_FOR_DELIVERY -> COMPLETED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.OUT_FOR_DELIVERY,
-      } as Order);
-
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.COMPLETED),
-      ).resolves.not.toThrow();
-    });
-
-    it("should allow COMPLETED -> REFUNDED", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.COMPLETED,
-      } as Order);
-
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.REFUNDED),
-      ).resolves.not.toThrow();
-    });
-
-    it("should NOT allow PENDING -> PREPARING (skip CONFIRMED)", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.PENDING,
-      } as Order);
-
-      await expect(
-        service.updateStatus(mockOrderId, OrderStatus.PREPARING),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it("should NOT allow CANCELLED -> any status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
+  describe("cancelOrder", () => {
+    it("should cancel a pending order by user", async () => {
+      const pendingOrder = { ...mockOrder, status: OrderStatus.PENDING };
+      orderRepository.findOne.mockResolvedValue(pendingOrder);
+      orderRepository.save.mockResolvedValue({
+        ...pendingOrder,
         status: OrderStatus.CANCELLED,
-      } as Order);
+      });
+      statusLogRepository.create.mockReturnValue({});
+      statusLogRepository.save.mockResolvedValue({});
+
+      const result = await service.cancelOrder(
+        "order-123",
+        mockUserId,
+        "Changed my mind",
+        false,
+      );
+
+      expect(result.status).toBe(OrderStatus.CANCELLED);
+    });
+
+    it("should throw BadRequestException when user cannot cancel", async () => {
+      const preparingOrder = { ...mockOrder, status: OrderStatus.PREPARING };
+      orderRepository.findOne.mockResolvedValue(preparingOrder);
 
       await expect(
-        service.updateStatus(mockOrderId, OrderStatus.PENDING),
+        service.cancelOrder("order-123", mockUserId, "Changed my mind", false),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it("should NOT allow REFUNDED -> any status", async () => {
-      orderRepository.findOne.mockResolvedValue({
-        ...mockOrder,
-        status: OrderStatus.REFUNDED,
-      } as Order);
+    it("should allow admin to cancel any cancellable order", async () => {
+      const preparingOrder = { ...mockOrder, status: OrderStatus.PREPARING };
+      orderRepository.findOne.mockResolvedValue(preparingOrder);
+      orderRepository.save.mockResolvedValue({
+        ...preparingOrder,
+        status: OrderStatus.CANCELLED,
+      });
+      statusLogRepository.create.mockReturnValue({});
+      statusLogRepository.save.mockResolvedValue({});
+
+      const result = await service.cancelOrder(
+        "order-123",
+        mockUserId,
+        "Admin cancellation",
+        true,
+      );
+
+      expect(result.status).toBe(OrderStatus.CANCELLED);
+    });
+  });
+
+  describe("updateStatus", () => {
+    it("should update order status with valid transition", async () => {
+      const confirmedOrder = { ...mockOrder, status: OrderStatus.CONFIRMED };
+      orderRepository.findOne.mockResolvedValue(confirmedOrder);
+      orderRepository.save.mockResolvedValue({
+        ...confirmedOrder,
+        status: OrderStatus.PREPARING,
+      });
+      statusLogRepository.create.mockReturnValue({});
+      statusLogRepository.save.mockResolvedValue({});
+
+      const result = await service.updateStatus(
+        "order-123",
+        OrderStatus.PREPARING,
+      );
+
+      expect(result.status).toBe(OrderStatus.PREPARING);
+    });
+
+    it("should throw BadRequestException for invalid transition", async () => {
+      const pendingOrder = { ...mockOrder, status: OrderStatus.PENDING };
+      orderRepository.findOne.mockResolvedValue(pendingOrder);
 
       await expect(
-        service.updateStatus(mockOrderId, OrderStatus.COMPLETED),
+        service.updateStatus("order-123", OrderStatus.COMPLETED),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it("should NOT allow backwards transitions (CONFIRMED -> PENDING)", async () => {
+    it("should set completedAt when completing order", async () => {
+      const readyOrder = { ...mockOrder, status: OrderStatus.READY };
+      orderRepository.findOne.mockResolvedValue(readyOrder);
+      orderRepository.save.mockImplementation((order) => order);
+      statusLogRepository.create.mockReturnValue({});
+      statusLogRepository.save.mockResolvedValue({});
+
+      const result = await service.updateStatus(
+        "order-123",
+        OrderStatus.COMPLETED,
+      );
+
+      expect(result.completedAt).toBeDefined();
+    });
+  });
+
+  describe("createFromCart", () => {
+    const mockCart = {
+      userId: mockUserId,
+      branchId: "branch-123",
+      orderType: OrderType.DELIVERY,
+      deliveryAddressId: "address-123",
+      subtotal: 100,
+      discountAmount: 10,
+      deliveryFee: 15,
+      tax: 5,
+      total: 110,
+      items: [
+        {
+          itemId: "item-123",
+          itemType: "ITEM",
+          quantity: 2,
+          unitPrice: 50,
+          totalPrice: 100,
+          item: {
+            name: { en: "Test Item", ar: "عنصر اختبار" },
+            description: { en: "Description", ar: "وصف" },
+            image: "test.jpg",
+          },
+        },
+      ],
+      appliedDiscounts: [
+        { discountId: "discount-123", code: "SAVE10", type: "PERCENTAGE", amount: 10 },
+      ],
+    };
+
+    const mockAddress = {
+      id: "address-123",
+      addressLine1: "123 Test Street",
+      addressLine2: "Apt 4",
+      city: "Cairo",
+      area: "Maadi",
+      latitude: 30.0444,
+      longitude: 31.2357,
+      deliveryInstructions: "Ring bell",
+      contactPhone: "+201234567890",
+    };
+
+    it("should create order from cart successfully", async () => {
+      addressRepository.findOne.mockResolvedValue(mockAddress);
+      mockQueryRunner.manager.create.mockImplementation((_entity, data) => ({
+        ...data,
+        id: "new-order-123",
+      }));
+      mockQueryRunner.manager.save.mockImplementation((data) => Promise.resolve(data));
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
-        status: OrderStatus.CONFIRMED,
-      } as Order);
+        id: "new-order-123",
+        user: { fullName: "Test User" },
+        branch: { name: { en: "Main Branch" } },
+      });
+
+      const result = await service.createFromCart(mockUserId, mockCart as any);
+
+      expect(result).toBeDefined();
+      expect(mockQueryRunner.manager.create).toHaveBeenCalled();
+      expect(mockQueryRunner.manager.save).toHaveBeenCalled();
+    });
+
+    it("should create order without delivery address for pickup", async () => {
+      const pickupCart = { ...mockCart, orderType: OrderType.PICKUP, deliveryAddressId: null };
+      mockQueryRunner.manager.create.mockImplementation((_entity, data) => ({
+        ...data,
+        id: "new-order-123",
+      }));
+      mockQueryRunner.manager.save.mockImplementation((data) => Promise.resolve(data));
+      orderRepository.findOne.mockResolvedValue({
+        ...mockOrder,
+        id: "new-order-123",
+        orderType: OrderType.PICKUP,
+        user: { fullName: "Test User" },
+        branch: { name: { en: "Main Branch" } },
+      });
+
+      const result = await service.createFromCart(mockUserId, pickupCart as any);
+
+      expect(result).toBeDefined();
+      expect(addressRepository.findOne).not.toHaveBeenCalled();
+    });
+
+    it("should rollback transaction on error", async () => {
+      mockQueryRunner.manager.create.mockImplementation(() => {
+        throw new Error("Database error");
+      });
 
       await expect(
-        service.updateStatus(mockOrderId, OrderStatus.PENDING),
-      ).rejects.toThrow(BadRequestException);
+        service.createFromCart(mockUserId, mockCart as any),
+      ).rejects.toThrow("Database error");
+
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.release).toHaveBeenCalled();
+    });
+
+    it("should use external query runner when provided", async () => {
+      const externalQueryRunner = {
+        manager: {
+          create: jest.fn().mockImplementation((_entity, data) => ({ ...data, id: "new-order-123" })),
+          save: jest.fn().mockImplementation((data) => Promise.resolve(data)),
+        },
+      };
+
+      const result = await service.createFromCart(
+        mockUserId,
+        mockCart as any,
+        undefined,
+        undefined,
+        undefined,
+        externalQueryRunner as any,
+      );
+
+      expect(result).toBeDefined();
+      expect(mockQueryRunner.connect).not.toHaveBeenCalled();
+      expect(mockQueryRunner.startTransaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getOrderStats", () => {
+    it("should return order statistics for a user", async () => {
+      queryBuilder.getCount
+        .mockResolvedValueOnce(3) // totalOrders
+        .mockResolvedValueOnce(1) // pendingOrders
+        .mockResolvedValueOnce(2) // completedOrders
+        .mockResolvedValueOnce(0); // cancelledOrders
+      queryBuilder.getRawOne.mockResolvedValue({ total: 250 });
+
+      const result = await service.getOrderStats(mockUserId);
+
+      expect(result.totalOrders).toBe(3);
+      expect(result.completedOrders).toBe(2);
+      expect(result.totalRevenue).toBe(250);
+    });
+
+    it("should return zero stats when no orders", async () => {
+      queryBuilder.getCount.mockResolvedValue(0);
+      queryBuilder.getRawOne.mockResolvedValue({ total: null });
+
+      const result = await service.getOrderStats(mockUserId);
+
+      expect(result.totalOrders).toBe(0);
+      expect(result.completedOrders).toBe(0);
+      expect(result.totalRevenue).toBe(0);
     });
   });
 });

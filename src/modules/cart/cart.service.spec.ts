@@ -20,12 +20,14 @@ import { UpdateCartItemDto } from "./dto/update-cart-item.dto";
 
 describe("CartService", () => {
   let service: CartService;
+  let module: TestingModule;
   let cartRepository: jest.Mocked<Repository<Cart>>;
   let cartItemRepository: jest.Mocked<Repository<CartItem>>;
   let itemRepository: jest.Mocked<Repository<Item>>;
   let bundleRepository: jest.Mocked<Repository<Bundle>>;
   let addressRepository: jest.Mocked<Repository<UserAddress>>;
   let branchRepository: jest.Mocked<Repository<Branch>>;
+  let ingredientRepository: jest.Mocked<Repository<Ingredient>>;
   let discountsService: jest.Mocked<DiscountsService>;
   let orderRoutingService: jest.Mocked<OrderRoutingService>;
   let branchMenuService: jest.Mocked<BranchMenuService>;
@@ -108,7 +110,7 @@ describe("CartService", () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         CartService,
         {
@@ -193,6 +195,7 @@ describe("CartService", () => {
     bundleRepository = module.get(getRepositoryToken(Bundle));
     addressRepository = module.get(getRepositoryToken(UserAddress));
     branchRepository = module.get(getRepositoryToken(Branch));
+    ingredientRepository = module.get(getRepositoryToken(Ingredient));
     discountsService = module.get(DiscountsService);
     orderRoutingService = module.get(OrderRoutingService);
     branchMenuService = module.get(BranchMenuService);
@@ -248,8 +251,60 @@ describe("CartService", () => {
 
   describe("addItem", () => {
     beforeEach(() => {
-      cartRepository.findOne.mockResolvedValue(mockCart as Cart);
-      cartRepository.save.mockResolvedValue(mockCart as Cart);
+      // Return a fresh copy of mockCart to prevent mutation between tests
+      cartRepository.findOne.mockResolvedValue({ ...mockCart, items: [] } as Cart);
+      cartRepository.save.mockResolvedValue({ ...mockCart } as Cart);
+    });
+
+    it("should set branch from dto when provided", async () => {
+      branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
+      itemRepository.findOne.mockResolvedValue(mockItem as Item);
+      branchMenuService.isItemAvailable.mockResolvedValue(true);
+      cartItemRepository.create.mockReturnValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+        branchId: mockBranchId,
+      };
+
+      await service.addItem(mockUserId, dto);
+
+      expect(branchRepository.findOne).toHaveBeenCalledWith({
+        where: { id: mockBranchId, deletedAt: expect.anything() },
+      });
+      expect(cartRepository.save).toHaveBeenCalled();
+    });
+
+    it("should throw NotFoundException when branch from dto not found", async () => {
+      branchRepository.findOne.mockResolvedValue(null);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+        branchId: "non-existent-branch",
+      };
+
+      await expect(service.addItem(mockUserId, dto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it("should throw BadRequestException when bundle not available at branch", async () => {
+      const cartWithBranch = { ...mockCart, branchId: mockBranchId } as Cart;
+      cartRepository.findOne.mockResolvedValue(cartWithBranch);
+      bundleRepository.findOne.mockResolvedValue(mockBundle as Bundle);
+      branchMenuService.isBundleAvailable.mockResolvedValue(false);
+
+      const dto: AddToCartDto = {
+        bundleId: mockBundleId,
+        quantity: 1,
+      };
+
+      await expect(service.addItem(mockUserId, dto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it("should add item to cart successfully", async () => {
@@ -443,6 +498,221 @@ describe("CartService", () => {
         }),
       );
     });
+
+    it("should fetch ingredient details when extras have missing name/price", async () => {
+      const mockIngredient = {
+        id: "ing-1",
+        name: { en: "Cheese", ar: "جبنة" },
+      };
+      ingredientRepository.findOne.mockResolvedValue(mockIngredient as any);
+      itemRepository.findOne.mockResolvedValue(mockItem as Item);
+      cartItemRepository.create.mockReturnValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+        extras: [
+          {
+            ingredientId: "ing-1",
+            quantity: 1,
+            // name and unitPrice not provided
+          },
+        ],
+      };
+
+      await service.addItem(mockUserId, dto);
+
+      expect(ingredientRepository.findOne).toHaveBeenCalledWith({
+        where: { id: "ing-1", deletedAt: expect.anything() },
+      });
+    });
+
+    it("should throw NotFoundException when ingredient for extra not found", async () => {
+      ingredientRepository.findOne.mockResolvedValue(null);
+      itemRepository.findOne.mockResolvedValue(mockItem as Item);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+        extras: [
+          {
+            ingredientId: "non-existent",
+            quantity: 1,
+          },
+        ],
+      };
+
+      await expect(service.addItem(mockUserId, dto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it("should merge duplicate bundles in cart", async () => {
+      const existingBundleItem = {
+        ...mockCartItem,
+        itemType: "BUNDLE",
+        itemId: undefined,
+        bundleId: mockBundleId,
+        quantity: 1,
+      } as CartItem;
+      // Cart without branchId to avoid availability check
+      const cartWithBundle = {
+        ...mockCart,
+        branchId: undefined,
+        items: [existingBundleItem],
+      } as Cart;
+      cartRepository.findOne.mockResolvedValue(cartWithBundle);
+      bundleRepository.findOne.mockResolvedValue(mockBundle as Bundle);
+      cartItemRepository.save.mockResolvedValue(existingBundleItem);
+
+      const dto: AddToCartDto = {
+        bundleId: mockBundleId,
+        quantity: 2,
+      };
+
+      await service.addItem(mockUserId, dto);
+
+      expect(cartItemRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          quantity: 3, // 1 + 2
+        }),
+      );
+    });
+
+    it("should get price from item with numeric pricing", async () => {
+      // Cart without branchId to avoid availability check
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: undefined,
+      } as Cart);
+      const itemWithNumericPricing = {
+        ...mockItem,
+        pricing: 75, // Direct number pricing
+      } as Item;
+      itemRepository.findOne.mockResolvedValue(itemWithNumericPricing);
+      cartItemRepository.create.mockReturnValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+      };
+
+      await service.addItem(mockUserId, dto);
+
+      expect(cartItemRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unitPrice: 75,
+        }),
+      );
+    });
+
+    it("should get price from item with variant pricing structure", async () => {
+      // Cart without branchId to avoid availability check
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: undefined,
+      } as Cart);
+      const itemWithVariantPricing = {
+        ...mockItem,
+        pricing: {
+          variants: [
+            {
+              name: "Size",
+              values: [
+                { name: "Small", price: 30 },
+                { name: "Large", price: 50 },
+              ],
+            },
+          ],
+        },
+      } as unknown as Item;
+      itemRepository.findOne.mockResolvedValue(itemWithVariantPricing);
+      cartItemRepository.create.mockReturnValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+      };
+
+      await service.addItem(mockUserId, dto);
+
+      // Should use first variant's first value price as default
+      expect(cartItemRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unitPrice: 30,
+        }),
+      );
+    });
+
+    it("should use selected variant price when provided", async () => {
+      // Cart without branchId to avoid availability check
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: undefined,
+      } as Cart);
+      const itemWithVariantPricing = {
+        ...mockItem,
+        pricing: {
+          variants: [
+            {
+              name: "Size",
+              values: [
+                { name: "Small", price: 30 },
+                { name: "Large", price: 50 },
+              ],
+            },
+          ],
+        },
+      } as unknown as Item;
+      itemRepository.findOne.mockResolvedValue(itemWithVariantPricing);
+      cartItemRepository.create.mockReturnValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+        selectedVariant: { name: "Size", value: "Large", price: 50 },
+      };
+
+      await service.addItem(mockUserId, dto);
+
+      expect(cartItemRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unitPrice: 50,
+        }),
+      );
+    });
+
+    it("should handle item with no valid pricing and default to 0", async () => {
+      // Cart without branchId to avoid availability check
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: undefined,
+      } as Cart);
+      const itemWithInvalidPricing = {
+        ...mockItem,
+        pricing: {}, // Empty pricing object
+      } as unknown as Item;
+      itemRepository.findOne.mockResolvedValue(itemWithInvalidPricing);
+      cartItemRepository.create.mockReturnValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: AddToCartDto = {
+        itemId: mockItemId,
+        quantity: 1,
+      };
+
+      await service.addItem(mockUserId, dto);
+
+      expect(cartItemRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          unitPrice: 0,
+        }),
+      );
+    });
   });
 
   describe("updateItem", () => {
@@ -509,6 +779,149 @@ describe("CartService", () => {
       expect(cartItemRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           unitPrice: 75,
+        }),
+      );
+    });
+
+    it("should update customizations", async () => {
+      cartItemRepository.findOne.mockResolvedValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: UpdateCartItemDto = {
+        customizations: [
+          {
+            ingredientId: "ing-1",
+            name: { en: "Extra Cheese", ar: "جبنة إضافية" },
+            action: "ADD",
+            price: 10,
+          },
+        ],
+      };
+
+      await service.updateItem(mockUserId, mockCartItemId, dto);
+
+      expect(cartItemRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          customizations: dto.customizations,
+        }),
+      );
+    });
+
+    it("should update extras and recalculate total", async () => {
+      cartItemRepository.findOne.mockResolvedValue(mockCartItem as CartItem);
+      cartItemRepository.save.mockResolvedValue(mockCartItem as CartItem);
+
+      const dto: UpdateCartItemDto = {
+        extras: [
+          {
+            ingredientId: "ing-1",
+            name: { en: "Bacon", ar: "لحم مقدد" },
+            quantity: 2,
+            unitPrice: 15,
+          },
+        ],
+      };
+
+      await service.updateItem(mockUserId, mockCartItemId, dto);
+
+      expect(cartItemRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          extras: expect.arrayContaining([
+            expect.objectContaining({
+              ingredientId: "ing-1",
+              totalPrice: 30,
+            }),
+          ]),
+        }),
+      );
+    });
+
+    it("should recalculate total with customizations having ADD action", async () => {
+      const cartItemWithCustomizations = {
+        ...mockCartItem,
+        unitPrice: 50,
+        quantity: 1,
+        customizations: [
+          {
+            ingredientId: "ing-1",
+            name: { en: "Extra Cheese", ar: "جبنة إضافية" },
+            action: "ADD",
+            price: 10,
+          },
+        ],
+        extras: [],
+      } as unknown as CartItem;
+      cartItemRepository.findOne.mockResolvedValue(cartItemWithCustomizations);
+      cartItemRepository.save.mockResolvedValue(cartItemWithCustomizations);
+
+      const dto: UpdateCartItemDto = { quantity: 2 };
+
+      await service.updateItem(mockUserId, mockCartItemId, dto);
+
+      // totalPrice = (unitPrice + customizationsTotal) * quantity = (50 + 10) * 2 = 120
+      expect(cartItemRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalPrice: 120,
+        }),
+      );
+    });
+
+    it("should handle EXTRA action in customizations", async () => {
+      const cartItemWithExtraAction = {
+        ...mockCartItem,
+        unitPrice: 50,
+        quantity: 1,
+        customizations: [
+          {
+            ingredientId: "ing-1",
+            name: { en: "Extra Sauce", ar: "صوص إضافي" },
+            action: "EXTRA",
+            price: 5,
+          },
+        ],
+        extras: [],
+      } as unknown as CartItem;
+      cartItemRepository.findOne.mockResolvedValue(cartItemWithExtraAction);
+      cartItemRepository.save.mockResolvedValue(cartItemWithExtraAction);
+
+      const dto: UpdateCartItemDto = { quantity: 1 };
+
+      await service.updateItem(mockUserId, mockCartItemId, dto);
+
+      // totalPrice = (unitPrice + customizationsTotal) * quantity = (50 + 5) * 1 = 55
+      expect(cartItemRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalPrice: 55,
+        }),
+      );
+    });
+
+    it("should ignore REMOVE action in customizations price calculation", async () => {
+      const cartItemWithRemoveAction = {
+        ...mockCartItem,
+        unitPrice: 50,
+        quantity: 1,
+        customizations: [
+          {
+            ingredientId: "ing-1",
+            name: { en: "No Onions", ar: "بدون بصل" },
+            action: "REMOVE",
+            price: 0,
+          },
+        ],
+        extras: [],
+      } as unknown as CartItem;
+      cartItemRepository.findOne.mockResolvedValue(cartItemWithRemoveAction);
+      cartItemRepository.save.mockResolvedValue(cartItemWithRemoveAction);
+
+      const dto: UpdateCartItemDto = { quantity: 1 };
+
+      await service.updateItem(mockUserId, mockCartItemId, dto);
+
+      // totalPrice = (unitPrice + 0) * quantity = 50 * 1 = 50
+      expect(cartItemRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          totalPrice: 50,
         }),
       );
     });
@@ -667,6 +1080,51 @@ describe("CartService", () => {
       cartRepository.findOne.mockResolvedValue(cartWithItems);
       branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
       branchMenuService.isItemAvailable.mockResolvedValue(false);
+
+      await expect(service.setBranch(mockUserId, mockBranchId)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("should validate bundle availability when changing branch with bundles", async () => {
+      const bundleCartItem = {
+        ...mockCartItem,
+        itemType: "BUNDLE",
+        itemId: undefined,
+        bundleId: mockBundleId,
+      } as CartItem;
+      const cartWithBundle = {
+        ...mockCart,
+        branchId: "old-branch-id",
+        items: [bundleCartItem],
+      } as Cart;
+      cartRepository.findOne.mockResolvedValue(cartWithBundle);
+      branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
+      branchMenuService.isBundleAvailable.mockResolvedValue(true);
+
+      await service.setBranch(mockUserId, mockBranchId);
+
+      expect(branchMenuService.isBundleAvailable).toHaveBeenCalledWith(
+        mockBranchId,
+        mockBundleId,
+      );
+    });
+
+    it("should throw BadRequestException when bundles unavailable at new branch", async () => {
+      const bundleCartItem = {
+        ...mockCartItem,
+        itemType: "BUNDLE",
+        itemId: undefined,
+        bundleId: mockBundleId,
+      } as CartItem;
+      const cartWithBundle = {
+        ...mockCart,
+        branchId: "old-branch-id",
+        items: [bundleCartItem],
+      } as Cart;
+      cartRepository.findOne.mockResolvedValue(cartWithBundle);
+      branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
+      branchMenuService.isBundleAvailable.mockResolvedValue(false);
 
       await expect(service.setBranch(mockUserId, mockBranchId)).rejects.toThrow(
         BadRequestException,
@@ -849,6 +1307,26 @@ describe("CartService", () => {
       };
       discountsService.findByCode.mockResolvedValue(discountWithMinimum as any);
       discountsService.canUseDiscount.mockResolvedValue({ canUse: true });
+
+      await expect(service.applyDiscount(mockUserId, "SAVE10")).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("should throw BadRequestException when discount amount is zero", async () => {
+      discountsService.findByCode.mockResolvedValue(mockDiscount as any);
+      discountsService.canUseDiscount.mockResolvedValue({ canUse: true });
+      discountsService.calculateDiscountAmount.mockReturnValue(0);
+
+      await expect(service.applyDiscount(mockUserId, "SAVE10")).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it("should throw BadRequestException when discount amount is negative", async () => {
+      discountsService.findByCode.mockResolvedValue(mockDiscount as any);
+      discountsService.canUseDiscount.mockResolvedValue({ canUse: true });
+      discountsService.calculateDiscountAmount.mockReturnValue(-5);
 
       await expect(service.applyDiscount(mockUserId, "SAVE10")).rejects.toThrow(
         BadRequestException,
@@ -1079,6 +1557,43 @@ describe("CartService", () => {
       expect(result.errors).toContainEqual({ error: "Branch not selected" });
     });
 
+    it("should return error when selected branch not found", async () => {
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: mockBranchId,
+        orderType: OrderType.PICKUP,
+        items: [mockCartItem],
+      } as unknown as Cart);
+      branchRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.validateCart(mockUserId);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContainEqual({
+        error: "Selected branch not found",
+      });
+    });
+
+    it("should return error when selected branch is not active", async () => {
+      const inactiveBranch = { ...mockBranch, isActive: false } as Branch;
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: mockBranchId,
+        orderType: OrderType.PICKUP,
+        items: [mockCartItem],
+      } as unknown as Cart);
+      branchRepository.findOne.mockResolvedValue(inactiveBranch);
+      itemRepository.findOne.mockResolvedValue(mockItem as Item);
+      branchMenuService.isItemAvailable.mockResolvedValue(true);
+
+      const result = await service.validateCart(mockUserId);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContainEqual({
+        error: "Selected branch is not active",
+      });
+    });
+
     it("should return error when delivery address not selected for delivery order", async () => {
       cartRepository.findOne.mockResolvedValue({
         ...mockCart,
@@ -1210,6 +1725,57 @@ describe("CartService", () => {
         mockBranchId,
         mockBundleId,
       );
+    });
+
+    it("should return error when bundle no longer exists", async () => {
+      const bundleCartItem = {
+        ...mockCartItem,
+        itemType: "BUNDLE",
+        itemId: undefined,
+        bundleId: mockBundleId,
+      } as CartItem;
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: mockBranchId,
+        orderType: OrderType.PICKUP,
+        items: [bundleCartItem],
+      } as unknown as Cart);
+      branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
+      bundleRepository.findOne.mockResolvedValue(null);
+
+      const result = await service.validateCart(mockUserId);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContainEqual({
+        itemId: mockCartItemId,
+        error: "Bundle no longer exists",
+      });
+    });
+
+    it("should return error when bundle not available at branch", async () => {
+      const bundleCartItem = {
+        ...mockCartItem,
+        itemType: "BUNDLE",
+        itemId: undefined,
+        bundleId: mockBundleId,
+      } as CartItem;
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        branchId: mockBranchId,
+        orderType: OrderType.PICKUP,
+        items: [bundleCartItem],
+      } as unknown as Cart);
+      branchRepository.findOne.mockResolvedValue(mockBranch as Branch);
+      bundleRepository.findOne.mockResolvedValue(mockBundle as Bundle);
+      branchMenuService.isBundleAvailable.mockResolvedValue(false);
+
+      const result = await service.validateCart(mockUserId);
+
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContainEqual({
+        itemId: mockCartItemId,
+        error: "Bundle not available at selected branch",
+      });
     });
 
     it("should validate applied discounts", async () => {

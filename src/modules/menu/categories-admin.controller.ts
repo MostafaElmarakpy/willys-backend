@@ -8,7 +8,9 @@ import {
   Post,
   Query,
   Request,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
   Version,
 } from "@nestjs/common";
 import { Permission } from "src/common/decorators/permissions.decorator";
@@ -20,6 +22,7 @@ import {
   createCreatedResponse,
   createSuccessResponse,
 } from "src/common/utils/api-response-wrapper";
+import { EntityFilesInterceptor } from "src/services/upload-media/entity-files.interceptor";
 import { CategoriesService } from "./categories.service";
 import { CategoryFilterDto } from "./dto/category/category-filter.dto";
 import { CreateCategoryDto } from "./dto/category/create-category.dto";
@@ -60,13 +63,18 @@ export class CategoriesAdminController {
   @Post()
   @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.CREATE)
+  @UseInterceptors(
+    EntityFilesInterceptor("menu-categories", [{ name: "image", maxCount: 1 }]),
+  )
   async create(
+    @UploadedFiles() files: { [fieldName: string]: Express.Multer.File[] },
     @Body() createCategoryDto: CreateCategoryDto,
     @Request() req: any,
   ) {
     const category = await this.categoriesService.create(
       createCategoryDto,
       req.user.id,
+      files,
     );
     return createCreatedResponse(category, "Category created successfully");
   }
@@ -101,8 +109,12 @@ export class CategoriesAdminController {
   @Patch(":id")
   @Version("1")
   @Permission(PermissionModule.CATEGORIES, PermissionAction.UPDATE)
+  @UseInterceptors(
+    EntityFilesInterceptor("menu-categories", [{ name: "image", maxCount: 1 }]),
+  )
   async update(
     @Param("id") id: string,
+    @UploadedFiles() files: { [fieldName: string]: Express.Multer.File[] },
     @Body() updateCategoryDto: UpdateCategoryDto,
     @Request() req: any,
   ) {
@@ -110,6 +122,7 @@ export class CategoriesAdminController {
       id,
       updateCategoryDto,
       req.user.id,
+      files,
     );
     return createSuccessResponse(category, "Category updated successfully");
   }

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Category } from "src/database/entities/category.entity";
+import { UploadMediaService } from "src/services/upload-media/upload-media.service";
 import { DataSource, IsNull, type Repository } from "typeorm";
 import { CategoryOrderBy } from "./dto/category/category-filter.dto";
 import { CreateCategoryDto } from "./dto/category/create-category.dto";
@@ -13,11 +14,13 @@ export class CategoriesService {
     @InjectRepository(Category)
     readonly categoryRepository: Repository<Category>,
     private readonly dataSource: DataSource,
+    private readonly uploadMediaService: UploadMediaService,
   ) {}
 
   async create(
     createCategoryDto: CreateCategoryDto,
     userId: string,
+    files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Category> {
     // Get the highest sortOrder value and add 1
     const maxSortOrder = await this.categoryRepository
@@ -33,7 +36,22 @@ export class CategoriesService {
       sortOrder: nextSortOrder,
       createdBy: userId,
     });
-    return await this.categoryRepository.save(category);
+
+    const savedCategory = await this.categoryRepository.save(category);
+
+    // Handle image upload if provided
+    if (files?.image) {
+      savedCategory.image = (
+        await this.uploadMediaService.saveOneFile(
+          files.image,
+          "properties",
+          savedCategory.id,
+        )
+      )?.url;
+      await this.categoryRepository.save(savedCategory);
+    }
+
+    return savedCategory;
   }
 
   async findAll(
@@ -123,12 +141,24 @@ export class CategoriesService {
     id: string,
     updateCategoryDto: UpdateCategoryDto,
     userId: string,
+    files: { [fieldName: string]: Express.Multer.File[] },
   ): Promise<Category> {
     const category = await this.findOne(id);
 
     Object.assign(category, updateCategoryDto, {
       updatedBy: userId,
     });
+
+    // Handle image upload if provided
+    if (files?.image) {
+      category.image = (
+        await this.uploadMediaService.saveOneFile(
+          files.image,
+          "properties",
+          category.id,
+        )
+      )?.url;
+    }
 
     return await this.categoryRepository.save(category);
   }

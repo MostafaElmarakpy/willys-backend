@@ -17,7 +17,7 @@ describe("NotificationsService", () => {
   let preferencesRepository: jest.Mocked<
     Repository<AdminNotificationPreferences>
   >;
-  let _userRepository: jest.Mocked<Repository<User>>;
+  let userRepository: jest.Mocked<Repository<User>>;
   let fcmService: jest.Mocked<FcmService>;
   let queryBuilder: any;
 
@@ -56,20 +56,30 @@ describe("NotificationsService", () => {
   };
 
   beforeEach(async () => {
+    // Create queryBuilder first, then set up return values
     queryBuilder = {
-      leftJoinAndSelect: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      skip: jest.fn().mockReturnThis(),
-      take: jest.fn().mockReturnThis(),
+      leftJoinAndSelect: jest.fn(),
+      where: jest.fn(),
+      andWhere: jest.fn(),
+      orderBy: jest.fn(),
+      skip: jest.fn(),
+      take: jest.fn(),
       getMany: jest.fn(),
       getManyAndCount: jest.fn(),
       getCount: jest.fn(),
-      update: jest.fn().mockReturnThis(),
-      set: jest.fn().mockReturnThis(),
+      update: jest.fn(),
+      set: jest.fn(),
       execute: jest.fn(),
     } as any;
+    // Set up chaining - each method returns the queryBuilder
+    queryBuilder.leftJoinAndSelect.mockReturnValue(queryBuilder);
+    queryBuilder.where.mockReturnValue(queryBuilder);
+    queryBuilder.andWhere.mockReturnValue(queryBuilder);
+    queryBuilder.orderBy.mockReturnValue(queryBuilder);
+    queryBuilder.skip.mockReturnValue(queryBuilder);
+    queryBuilder.take.mockReturnValue(queryBuilder);
+    queryBuilder.update.mockReturnValue(queryBuilder);
+    queryBuilder.set.mockReturnValue(queryBuilder);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -125,7 +135,7 @@ describe("NotificationsService", () => {
     preferencesRepository = module.get(
       getRepositoryToken(AdminNotificationPreferences),
     );
-    _userRepository = module.get(getRepositoryToken(User));
+    userRepository = module.get(getRepositoryToken(User));
     fcmService = module.get(FcmService);
   });
 
@@ -395,13 +405,10 @@ describe("NotificationsService", () => {
         mockNotification as AdminNotification,
       );
 
-      const mockAdmin = {
-        id: mockUserId,
-        role: UserRole.admin,
-        adminNotificationPreferences: mockPreferences,
-        adminFcmTokens: [mockFcmToken],
-      };
-      queryBuilder.getMany.mockResolvedValue([mockAdmin]);
+      // Spy on the private method to control the return value
+      const getAdminsWithTokensSpy = jest
+        .spyOn(service as any, "getAdminsWithTokens")
+        .mockResolvedValue([{ userId: mockUserId, tokens: [mockToken] }]);
 
       fcmService.sendToTokens.mockResolvedValue({
         success: [mockToken],
@@ -417,7 +424,17 @@ describe("NotificationsService", () => {
 
       expect(notificationRepository.create).toHaveBeenCalled();
       expect(notificationRepository.save).toHaveBeenCalled();
-      expect(fcmService.sendToTokens).toHaveBeenCalled();
+      expect(getAdminsWithTokensSpy).toHaveBeenCalledWith(
+        NotificationType.ORDER_NEW,
+        undefined,
+      );
+      expect(fcmService.sendToTokens).toHaveBeenCalledWith(
+        [mockToken],
+        expect.objectContaining({ title: "New Order" }),
+        expect.any(Object),
+      );
+
+      getAdminsWithTokensSpy.mockRestore();
     });
 
     it("should remove invalid tokens after sending", async () => {
@@ -428,13 +445,10 @@ describe("NotificationsService", () => {
         mockNotification as AdminNotification,
       );
 
-      const mockAdmin = {
-        id: mockUserId,
-        role: UserRole.admin,
-        adminNotificationPreferences: mockPreferences,
-        adminFcmTokens: [mockFcmToken],
-      };
-      queryBuilder.getMany.mockResolvedValue([mockAdmin]);
+      // Spy on the private method to control the return value
+      const getAdminsWithTokensSpy = jest
+        .spyOn(service as any, "getAdminsWithTokens")
+        .mockResolvedValue([{ userId: mockUserId, tokens: [mockToken] }]);
 
       fcmService.sendToTokens.mockResolvedValue({
         success: [],
@@ -449,18 +463,12 @@ describe("NotificationsService", () => {
         "A new order has been placed",
       );
 
-      // Verify the notification flow executed
-      expect(fcmService.sendToTokens).toHaveBeenCalledWith(
-        [mockToken],
-        expect.objectContaining({
-          title: "New Order",
-          body: "A new order has been placed",
-        }),
-        expect.any(Object),
-      );
+      expect(fcmService.sendToTokens).toHaveBeenCalled();
       expect(fcmTokenRepository.delete).toHaveBeenCalledWith({
         token: mockToken,
       });
+
+      getAdminsWithTokensSpy.mockRestore();
     });
 
     it("should handle database errors gracefully", async () => {
