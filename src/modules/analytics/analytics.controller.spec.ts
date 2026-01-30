@@ -83,7 +83,9 @@ describe("AnalyticsController", () => {
 
   describe("getOrdersOverTime", () => {
     it("should return orders over time data", async () => {
-      analyticsService.getOrdersOverTime.mockResolvedValue(mockOrdersData as any);
+      analyticsService.getOrdersOverTime.mockResolvedValue(
+        mockOrdersData as any,
+      );
 
       const result = await controller.getOrdersOverTime(mockFilter);
 
@@ -97,7 +99,9 @@ describe("AnalyticsController", () => {
 
   describe("getRevenueOverTime", () => {
     it("should return revenue over time data", async () => {
-      analyticsService.getRevenueOverTime.mockResolvedValue(mockRevenueData as any);
+      analyticsService.getRevenueOverTime.mockResolvedValue(
+        mockRevenueData as any,
+      );
 
       const result = await controller.getRevenueOverTime(mockFilter);
 
@@ -138,9 +142,7 @@ describe("AnalyticsController", () => {
       expect(analyticsService.getRevenueByCategory).toHaveBeenCalledWith(
         mockFilter,
       );
-      expect(result.message).toBe(
-        "Revenue by category retrieved successfully",
-      );
+      expect(result.message).toBe("Revenue by category retrieved successfully");
       expect(result.data).toEqual(mockCategoryRevenue.data);
     });
   });
@@ -163,8 +165,12 @@ describe("AnalyticsController", () => {
 
   describe("getDashboardAnalytics", () => {
     it("should return combined dashboard analytics", async () => {
-      analyticsService.getOrdersOverTime.mockResolvedValue(mockOrdersData as any);
-      analyticsService.getRevenueOverTime.mockResolvedValue(mockRevenueData as any);
+      analyticsService.getOrdersOverTime.mockResolvedValue(
+        mockOrdersData as any,
+      );
+      analyticsService.getRevenueOverTime.mockResolvedValue(
+        mockRevenueData as any,
+      );
       analyticsService.getOrderStatusDistribution.mockResolvedValue(
         mockStatusDistribution as any,
       );
@@ -177,9 +183,7 @@ describe("AnalyticsController", () => {
 
       const result = await controller.getDashboardAnalytics(mockFilter);
 
-      expect(result.message).toBe(
-        "Dashboard analytics retrieved successfully",
-      );
+      expect(result.message).toBe("Dashboard analytics retrieved successfully");
       expect(result.data.ordersOverTime).toEqual(mockOrdersData.data);
       expect(result.data.revenueOverTime).toEqual(mockRevenueData.data);
       expect(result.data.orderStatusDistribution).toEqual(
@@ -196,9 +200,7 @@ describe("AnalyticsController", () => {
 
       const result = await controller.getDashboardAnalytics(mockFilter);
 
-      expect(result.message).toBe(
-        "Dashboard analytics retrieved successfully",
-      );
+      expect(result.message).toBe("Dashboard analytics retrieved successfully");
       expect(result.data.ordersOverTime).toEqual([]);
       expect(result.data.revenueOverTime).toEqual([]);
       expect(result.data.orderStatusDistribution).toEqual([]);

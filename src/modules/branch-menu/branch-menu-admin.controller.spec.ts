@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { BranchMenuAdminController } from "./branch-menu-admin.controller";
 import { BranchMenuService } from "./branch-menu.service";
+import { BranchMenuAdminController } from "./branch-menu-admin.controller";
 
 describe("BranchMenuAdminController", () => {
   let controller: BranchMenuAdminController;
@@ -69,9 +69,9 @@ describe("BranchMenuAdminController", () => {
 
       const result = await controller.getBranchOverrides(mockBranchId);
 
-      expect(
-        branchMenuService.getBranchCategoryOverrides,
-      ).toHaveBeenCalledWith(mockBranchId);
+      expect(branchMenuService.getBranchCategoryOverrides).toHaveBeenCalledWith(
+        mockBranchId,
+      );
       expect(branchMenuService.getBranchItemOverrides).toHaveBeenCalledWith(
         mockBranchId,
       );

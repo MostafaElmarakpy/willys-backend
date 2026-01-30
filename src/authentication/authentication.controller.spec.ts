@@ -60,8 +60,14 @@ describe("AuthenticationController", () => {
 
   describe("login", () => {
     it("should login user and return tokens", async () => {
-      const loginDto = { email: "test@example.com", password: "password123" } as any;
-      authService.login.mockResolvedValue({ user: mockUser, ...mockTokens } as any);
+      const loginDto = {
+        email: "test@example.com",
+        password: "password123",
+      } as any;
+      authService.login.mockResolvedValue({
+        user: mockUser,
+        ...mockTokens,
+      } as any);
 
       const result = await controller.login(loginDto);
 
@@ -95,7 +101,10 @@ describe("AuthenticationController", () => {
         fieldname: "avatar",
         originalname: "avatar.jpg",
       } as Express.Multer.File;
-      authService.register.mockResolvedValue({ user: mockUser, ...mockTokens } as any);
+      authService.register.mockResolvedValue({
+        user: mockUser,
+        ...mockTokens,
+      } as any);
 
       const result = await controller.register(mockFile, registerDto);
 
@@ -111,7 +120,10 @@ describe("AuthenticationController", () => {
         phoneNumber: "1234567890",
         phoneNumberCountryCode: "+20",
       } as any;
-      authService.register.mockResolvedValue({ user: mockUser, ...mockTokens } as any);
+      authService.register.mockResolvedValue({
+        user: mockUser,
+        ...mockTokens,
+      } as any);
 
       const result = await controller.register(undefined as any, registerDto);
 
@@ -238,7 +250,9 @@ describe("AuthenticationController", () => {
       expect(authService.resendVerificationEmail).toHaveBeenCalledWith(
         resendDto,
       );
-      expect(result.data.message).toBe("Verification email resent successfully");
+      expect(result.data.message).toBe(
+        "Verification email resent successfully",
+      );
     });
   });
 
@@ -249,11 +263,16 @@ describe("AuthenticationController", () => {
         newEmail: "newemail@example.com",
         verificationToken: "token-123",
       };
-      authService.changeEmail.mockResolvedValue("Email change initiated" as any);
+      authService.changeEmail.mockResolvedValue(
+        "Email change initiated" as any,
+      );
 
       const result = await controller.changeEmail(mockReq, changeDto);
 
-      expect(authService.changeEmail).toHaveBeenCalledWith(mockUserId, changeDto);
+      expect(authService.changeEmail).toHaveBeenCalledWith(
+        mockUserId,
+        changeDto,
+      );
       expect(result.data.message).toBe("Email change initiated");
     });
   });

@@ -2,7 +2,6 @@ import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import type { Repository } from "typeorm";
 import { NotificationType } from "../../common/enums/NotificationType";
-import { UserRole } from "../../common/enums/UserRole";
 import { AdminFcmToken } from "../../database/entities/admin-fcm-token.entity";
 import { AdminNotification } from "../../database/entities/admin-notification.entity";
 import { AdminNotificationPreferences } from "../../database/entities/admin-notification-preferences.entity";
@@ -17,7 +16,7 @@ describe("NotificationsService", () => {
   let preferencesRepository: jest.Mocked<
     Repository<AdminNotificationPreferences>
   >;
-  let userRepository: jest.Mocked<Repository<User>>;
+  let _userRepository: jest.Mocked<Repository<User>>;
   let fcmService: jest.Mocked<FcmService>;
   let queryBuilder: any;
 
@@ -135,7 +134,7 @@ describe("NotificationsService", () => {
     preferencesRepository = module.get(
       getRepositoryToken(AdminNotificationPreferences),
     );
-    userRepository = module.get(getRepositoryToken(User));
+    _userRepository = module.get(getRepositoryToken(User));
     fcmService = module.get(FcmService);
   });
 

@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { UploadMediaController } from "./upload-media.controller";
 import { S3StorageService } from "./multer-config.service";
+import { UploadMediaController } from "./upload-media.controller";
 
 describe("UploadMediaController", () => {
   let controller: UploadMediaController;

@@ -64,7 +64,10 @@ describe("AddressesController", () => {
 
       const result = await controller.create(mockUserId, createDto);
 
-      expect(addressesService.create).toHaveBeenCalledWith(mockUserId, createDto);
+      expect(addressesService.create).toHaveBeenCalledWith(
+        mockUserId,
+        createDto,
+      );
       expect(result.message).toBe("Address created successfully");
     });
   });
@@ -108,7 +111,11 @@ describe("AddressesController", () => {
       const updatedAddress = { ...mockAddress, label: "Work" };
       addressesService.update.mockResolvedValue(updatedAddress as any);
 
-      const result = await controller.update(mockUserId, mockAddressId, updateDto);
+      const result = await controller.update(
+        mockUserId,
+        mockAddressId,
+        updateDto,
+      );
 
       expect(addressesService.update).toHaveBeenCalledWith(
         mockUserId,
@@ -156,7 +163,9 @@ describe("AddressesController", () => {
         nearestBranch: { id: "branch-123", name: "Test Branch" },
         deliveryFee: 25,
       };
-      addressesService.validateAddress.mockResolvedValue(validationResult as any);
+      addressesService.validateAddress.mockResolvedValue(
+        validationResult as any,
+      );
 
       const dto = { latitude: 30.0444, longitude: 31.2357 };
       const result = await controller.validateAddress(dto);
@@ -173,7 +182,10 @@ describe("AddressesController", () => {
     it("should revalidate an existing address", async () => {
       addressesService.revalidateAddress.mockResolvedValue(mockAddress as any);
 
-      const result = await controller.revalidateAddress(mockUserId, mockAddressId);
+      const result = await controller.revalidateAddress(
+        mockUserId,
+        mockAddressId,
+      );
 
       expect(addressesService.revalidateAddress).toHaveBeenCalledWith(
         mockUserId,

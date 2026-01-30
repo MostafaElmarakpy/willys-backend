@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { IngredientsAdminController } from "./ingredients-admin.controller";
 import { IngredientsService } from "./ingredients.service";
+import { IngredientsAdminController } from "./ingredients-admin.controller";
 
 describe("IngredientsAdminController", () => {
   let controller: IngredientsAdminController;
@@ -130,9 +130,7 @@ describe("IngredientsAdminController", () => {
       expect(ingredientsService.findOneCategory).toHaveBeenCalledWith(
         mockCategoryId,
       );
-      expect(result.message).toBe(
-        "Ingredient category retrieved successfully",
-      );
+      expect(result.message).toBe("Ingredient category retrieved successfully");
     });
   });
 
@@ -184,7 +182,10 @@ describe("IngredientsAdminController", () => {
         paginatedResult as any,
       );
 
-      const result = await controller.findAllIngredients({ page: 1, limit: 10 });
+      const result = await controller.findAllIngredients({
+        page: 1,
+        limit: 10,
+      });
 
       expect(ingredientsService.findAllIngredients).toHaveBeenCalledWith(
         1,
@@ -294,7 +295,9 @@ describe("IngredientsAdminController", () => {
       expect(ingredientsService.findIngredientsByCategory).toHaveBeenCalledWith(
         mockCategoryId,
       );
-      expect(result.message).toBe("Category ingredients retrieved successfully");
+      expect(result.message).toBe(
+        "Category ingredients retrieved successfully",
+      );
     });
   });
 });

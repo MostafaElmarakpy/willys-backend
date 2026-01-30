@@ -1,11 +1,11 @@
+import { NotFoundException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { NotFoundException } from "@nestjs/common";
+import { Category } from "src/database/entities/category.entity";
+import { UploadMediaService } from "src/services/upload-media/upload-media.service";
 import { DataSource } from "typeorm";
 import { CategoriesService } from "./categories.service";
-import { Category } from "src/database/entities/category.entity";
 import { CategoryOrderBy } from "./dto/category/category-filter.dto";
-import { UploadMediaService } from "src/services/upload-media/upload-media.service";
 
 describe("CategoriesService", () => {
   let service: CategoriesService;
@@ -59,12 +59,16 @@ describe("CategoriesService", () => {
         {
           provide: getRepositoryToken(Category),
           useValue: {
-            create: jest.fn().mockImplementation((data) => ({ ...data, id: mockCategoryId })),
+            create: jest
+              .fn()
+              .mockImplementation((data) => ({ ...data, id: mockCategoryId })),
             save: jest.fn().mockResolvedValue(mockCategory),
             findOne: jest.fn(),
             find: jest.fn(),
             softDelete: jest.fn(),
-            createQueryBuilder: jest.fn().mockReturnValue(createMockQueryBuilder([mockCategory], 1)),
+            createQueryBuilder: jest
+              .fn()
+              .mockReturnValue(createMockQueryBuilder([mockCategory], 1)),
           },
         },
         {
@@ -85,7 +89,9 @@ describe("CategoriesService", () => {
         {
           provide: UploadMediaService,
           useValue: {
-            saveOneFile: jest.fn().mockResolvedValue({ url: "https://example.com/image.jpg" }),
+            saveOneFile: jest
+              .fn()
+              .mockResolvedValue({ url: "https://example.com/image.jpg" }),
             deleteFile: jest.fn(),
           },
         },
@@ -121,14 +127,19 @@ describe("CategoriesService", () => {
         description: { en: "Description", ar: "وصف" },
       };
 
-      categoryRepository.save.mockResolvedValueOnce({ ...mockCategory, id: mockCategoryId });
+      categoryRepository.save.mockResolvedValueOnce({
+        ...mockCategory,
+        id: mockCategoryId,
+      });
       categoryRepository.save.mockResolvedValueOnce({
         ...mockCategory,
         id: mockCategoryId,
         image: "https://example.com/image.jpg",
       });
 
-      const result = await service.create(createDto as any, mockUserId, { image: [mockFile] });
+      const result = await service.create(createDto as any, mockUserId, {
+        image: [mockFile],
+      });
 
       expect(categoryRepository.create).toHaveBeenCalled();
       expect(categoryRepository.save).toHaveBeenCalledTimes(2);
@@ -177,19 +188,40 @@ describe("CategoriesService", () => {
     });
 
     it("should sort by sortOrder", async () => {
-      await service.findAll(1, 10, undefined, undefined, CategoryOrderBy.SORT_ORDER, "ASC");
+      await service.findAll(
+        1,
+        10,
+        undefined,
+        undefined,
+        CategoryOrderBy.SORT_ORDER,
+        "ASC",
+      );
 
       expect(categoryRepository.createQueryBuilder).toHaveBeenCalled();
     });
 
     it("should sort by updatedAt", async () => {
-      await service.findAll(1, 10, undefined, undefined, CategoryOrderBy.UPDATED_AT, "DESC");
+      await service.findAll(
+        1,
+        10,
+        undefined,
+        undefined,
+        CategoryOrderBy.UPDATED_AT,
+        "DESC",
+      );
 
       expect(categoryRepository.createQueryBuilder).toHaveBeenCalled();
     });
 
     it("should sort by items count", async () => {
-      await service.findAll(1, 10, undefined, undefined, CategoryOrderBy.ITEMS_COUNT, "DESC");
+      await service.findAll(
+        1,
+        10,
+        undefined,
+        undefined,
+        CategoryOrderBy.ITEMS_COUNT,
+        "DESC",
+      );
 
       expect(categoryRepository.createQueryBuilder).toHaveBeenCalled();
     });
@@ -208,7 +240,9 @@ describe("CategoriesService", () => {
     it("should throw NotFoundException when category not found", async () => {
       categoryRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne(mockCategoryId)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(mockCategoryId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -216,9 +250,17 @@ describe("CategoriesService", () => {
     it("should update a category", async () => {
       const updateDto = { name: { en: "Updated Category", ar: "فئة محدثة" } };
       categoryRepository.findOne.mockResolvedValue({ ...mockCategory });
-      categoryRepository.save.mockResolvedValue({ ...mockCategory, ...updateDto });
+      categoryRepository.save.mockResolvedValue({
+        ...mockCategory,
+        ...updateDto,
+      });
 
-      const result = await service.update(mockCategoryId, updateDto as any, mockUserId, {});
+      const result = await service.update(
+        mockCategoryId,
+        updateDto as any,
+        mockUserId,
+        {},
+      );
 
       expect(categoryRepository.save).toHaveBeenCalled();
       expect(result).toBeDefined();
@@ -233,9 +275,14 @@ describe("CategoriesService", () => {
         image: "https://example.com/image.jpg",
       });
 
-      const result = await service.update(mockCategoryId, updateDto as any, mockUserId, {
-        image: [mockFile],
-      });
+      const result = await service.update(
+        mockCategoryId,
+        updateDto as any,
+        mockUserId,
+        {
+          image: [mockFile],
+        },
+      );
 
       expect(categoryRepository.save).toHaveBeenCalled();
       expect(uploadMediaService.saveOneFile).toHaveBeenCalledWith(
@@ -249,9 +296,17 @@ describe("CategoriesService", () => {
     it("should update a category without changing image", async () => {
       const updateDto = { name: { en: "Updated Category", ar: "فئة محدثة" } };
       categoryRepository.findOne.mockResolvedValue({ ...mockCategory });
-      categoryRepository.save.mockResolvedValue({ ...mockCategory, ...updateDto });
+      categoryRepository.save.mockResolvedValue({
+        ...mockCategory,
+        ...updateDto,
+      });
 
-      const result = await service.update(mockCategoryId, updateDto as any, mockUserId, {});
+      const result = await service.update(
+        mockCategoryId,
+        updateDto as any,
+        mockUserId,
+        {},
+      );
 
       expect(categoryRepository.save).toHaveBeenCalled();
       expect(uploadMediaService.saveOneFile).not.toHaveBeenCalled();
@@ -266,7 +321,9 @@ describe("CategoriesService", () => {
 
       await service.remove(mockCategoryId);
 
-      expect(categoryRepository.softDelete).toHaveBeenCalledWith(mockCategoryId);
+      expect(categoryRepository.softDelete).toHaveBeenCalledWith(
+        mockCategoryId,
+      );
     });
   });
 

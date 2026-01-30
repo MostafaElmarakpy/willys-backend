@@ -1,8 +1,8 @@
-import { Test, type TestingModule } from "@nestjs/testing";
 import { BadRequestException } from "@nestjs/common";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { BranchesService } from "./branches.service";
 import { OrderRoutingService } from "./order-routing.service";
 import { ZonesService } from "./zones.service";
-import { BranchesService } from "./branches.service";
 
 describe("OrderRoutingService", () => {
   let service: OrderRoutingService;
@@ -99,7 +99,9 @@ describe("OrderRoutingService", () => {
       const result = await service.routeOrder(mockDeliveryLocation);
 
       expect(result.canDeliver).toBe(false);
-      expect(result.message).toBe("All branches serving this area are currently closed.");
+      expect(result.message).toBe(
+        "All branches serving this area are currently closed.",
+      );
     });
 
     it("should return alternative branches when multiple are available", async () => {
@@ -121,7 +123,9 @@ describe("OrderRoutingService", () => {
     });
 
     it("should throw BadRequestException on error", async () => {
-      zonesService.checkPointInZone.mockRejectedValue(new Error("Zone check failed"));
+      zonesService.checkPointInZone.mockRejectedValue(
+        new Error("Zone check failed"),
+      );
 
       await expect(service.routeOrder(mockDeliveryLocation)).rejects.toThrow(
         BadRequestException,
@@ -136,7 +140,8 @@ describe("OrderRoutingService", () => {
         matchingBranches: [{ branch: mockBranch, zone: mockZone }],
       } as any);
 
-      const result = await service.validateDeliveryLocation(mockDeliveryLocation);
+      const result =
+        await service.validateDeliveryLocation(mockDeliveryLocation);
 
       expect(result.isValid).toBe(true);
       expect(result.branch).toEqual(mockBranch);
@@ -148,7 +153,8 @@ describe("OrderRoutingService", () => {
         matchingBranches: [],
       } as any);
 
-      const result = await service.validateDeliveryLocation(mockDeliveryLocation);
+      const result =
+        await service.validateDeliveryLocation(mockDeliveryLocation);
 
       expect(result.isValid).toBe(false);
       expect(result.branch).toBeNull();
@@ -158,7 +164,12 @@ describe("OrderRoutingService", () => {
   describe("findNearestBranches", () => {
     it("should return branches sorted by distance", async () => {
       const nearBranch = { ...mockBranch, latitude: 30.05, longitude: 31.24 };
-      const farBranch = { ...mockBranch, id: "far-branch", latitude: 31.0, longitude: 32.0 };
+      const farBranch = {
+        ...mockBranch,
+        id: "far-branch",
+        latitude: 31.0,
+        longitude: 32.0,
+      };
       branchesService.findOpen.mockResolvedValue({
         branches: [farBranch, nearBranch],
       } as any);
@@ -202,7 +213,10 @@ describe("OrderRoutingService", () => {
         { latitude: 30.06, longitude: 31.26 },
       ];
 
-      const result = await service.optimizeDeliveryRoute(mockBranchId, deliveryLocations);
+      const result = await service.optimizeDeliveryRoute(
+        mockBranchId,
+        deliveryLocations,
+      );
 
       expect(branchesService.findOne).toHaveBeenCalledWith(mockBranchId);
       expect(result.optimizedRoute).toHaveLength(2);

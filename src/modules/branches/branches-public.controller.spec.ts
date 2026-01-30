@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { BranchesPublicController } from "./branches-public.controller";
 import { BranchesService } from "./branches.service";
+import { BranchesPublicController } from "./branches-public.controller";
 import { ZonesService } from "./zones.service";
 
 describe("BranchesPublicController", () => {
@@ -83,7 +83,7 @@ describe("BranchesPublicController", () => {
     it("should work without radius parameter", async () => {
       branchesService.findNearby.mockResolvedValue([mockBranch] as any);
 
-      const result = await controller.findNearby(30.0, 31.0);
+      const _result = await controller.findNearby(30.0, 31.0);
 
       expect(branchesService.findNearby).toHaveBeenCalledWith(
         30.0,

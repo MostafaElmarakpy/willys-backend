@@ -252,7 +252,10 @@ describe("CartService", () => {
   describe("addItem", () => {
     beforeEach(() => {
       // Return a fresh copy of mockCart to prevent mutation between tests
-      cartRepository.findOne.mockResolvedValue({ ...mockCart, items: [] } as Cart);
+      cartRepository.findOne.mockResolvedValue({
+        ...mockCart,
+        items: [],
+      } as Cart);
       cartRepository.save.mockResolvedValue({ ...mockCart } as Cart);
     });
 

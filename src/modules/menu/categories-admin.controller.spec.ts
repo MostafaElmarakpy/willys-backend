@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { CategoriesAdminController } from "./categories-admin.controller";
 import { CategoriesService } from "./categories.service";
+import { CategoriesAdminController } from "./categories-admin.controller";
 
 describe("CategoriesAdminController", () => {
   let controller: CategoriesAdminController;
@@ -172,11 +172,19 @@ describe("CategoriesAdminController", () => {
   describe("update", () => {
     it("should update a category", async () => {
       const updateDto = { name: { en: "Updated Category" } } as any;
-      const updatedCategory = { ...mockCategory, name: { en: "Updated Category" } };
+      const updatedCategory = {
+        ...mockCategory,
+        name: { en: "Updated Category" },
+      };
       categoriesService.update.mockResolvedValue(updatedCategory as any);
 
       const mockReq = { user: { id: mockUserId } };
-      const result = await controller.update(mockCategoryId, {}, updateDto, mockReq);
+      const result = await controller.update(
+        mockCategoryId,
+        {},
+        updateDto,
+        mockReq,
+      );
 
       expect(categoriesService.update).toHaveBeenCalledWith(
         mockCategoryId,
@@ -190,11 +198,19 @@ describe("CategoriesAdminController", () => {
     it("should update a category with image file", async () => {
       const updateDto = { name: { en: "Updated Category" } } as any;
       const mockFiles = { image: [{ originalname: "test.jpg" }] } as any;
-      const updatedCategory = { ...mockCategory, name: { en: "Updated Category" } };
+      const updatedCategory = {
+        ...mockCategory,
+        name: { en: "Updated Category" },
+      };
       categoriesService.update.mockResolvedValue(updatedCategory as any);
 
       const mockReq = { user: { id: mockUserId } };
-      const result = await controller.update(mockCategoryId, mockFiles, updateDto, mockReq);
+      const result = await controller.update(
+        mockCategoryId,
+        mockFiles,
+        updateDto,
+        mockReq,
+      );
 
       expect(categoriesService.update).toHaveBeenCalledWith(
         mockCategoryId,

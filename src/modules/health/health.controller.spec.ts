@@ -1,10 +1,10 @@
-import { Test, type TestingModule } from "@nestjs/testing";
 import {
   DiskHealthIndicator,
   HealthCheckService,
   MemoryHealthIndicator,
   TypeOrmHealthIndicator,
 } from "@nestjs/terminus";
+import { Test, type TestingModule } from "@nestjs/testing";
 import { HealthController } from "./health.controller";
 import { HealthService } from "./health.service";
 

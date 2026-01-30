@@ -64,7 +64,12 @@ describe("RolesController", () => {
 
       const result = await controller.findAll({ page: 1, limit: 10 });
 
-      expect(rolesService.findAll).toHaveBeenCalledWith(1, 10, undefined, "DESC");
+      expect(rolesService.findAll).toHaveBeenCalledWith(
+        1,
+        10,
+        undefined,
+        "DESC",
+      );
       expect(result.message).toBe("Roles retrieved successfully");
       expect(result.data).toEqual(paginatedResult);
     });
@@ -74,7 +79,12 @@ describe("RolesController", () => {
 
       await controller.findAll({});
 
-      expect(rolesService.findAll).toHaveBeenCalledWith(1, 10, undefined, "DESC");
+      expect(rolesService.findAll).toHaveBeenCalledWith(
+        1,
+        10,
+        undefined,
+        "DESC",
+      );
     });
   });
 
@@ -89,7 +99,9 @@ describe("RolesController", () => {
       const result = await controller.getAvailablePermissions();
 
       expect(rolesService.getAvailablePermissions).toHaveBeenCalled();
-      expect(result.message).toBe("Available permissions retrieved successfully");
+      expect(result.message).toBe(
+        "Available permissions retrieved successfully",
+      );
       expect(result.data).toEqual(permissions);
     });
   });

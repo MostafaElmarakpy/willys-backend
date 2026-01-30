@@ -103,7 +103,9 @@ describe("PaymentMethodsController", () => {
         mockPaymentMethodId,
         mockUserId,
       );
-      expect(result.message).toBe("Default payment method updated successfully");
+      expect(result.message).toBe(
+        "Default payment method updated successfully",
+      );
     });
   });
 

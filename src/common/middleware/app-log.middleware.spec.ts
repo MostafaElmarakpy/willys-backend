@@ -82,9 +82,7 @@ describe("AppLoggerMiddleware", () => {
         nextFunction,
       );
 
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining("127.0.0.1"),
-      );
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("127.0.0.1"));
 
       process.env.NODE_ENV = originalEnv;
     });
@@ -114,9 +112,7 @@ describe("AppLoggerMiddleware", () => {
         nextFunction,
       );
 
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining("/api/test"),
-      );
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("/api/test"));
 
       process.env.NODE_ENV = originalEnv;
     });

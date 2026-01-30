@@ -1,8 +1,8 @@
-import { Test, type TestingModule } from "@nestjs/testing";
 import { UnauthorizedException } from "@nestjs/common";
-import { WebhooksController } from "./webhooks.controller";
+import { Test, type TestingModule } from "@nestjs/testing";
 import { PaymentsService } from "./payments.service";
 import { PaymobService } from "./paymob.service";
+import { WebhooksController } from "./webhooks.controller";
 
 describe("WebhooksController", () => {
   let controller: WebhooksController;
@@ -68,7 +68,9 @@ describe("WebhooksController", () => {
       paymobService.verifyHmacSignature.mockReturnValue(true);
       paymentsService.handleWebhookUpdate.mockResolvedValue(undefined);
 
-      const result = await controller.handlePaymobWebhook(mockPaymobPayload as any);
+      const result = await controller.handlePaymobWebhook(
+        mockPaymobPayload as any,
+      );
 
       expect(paymobService.verifyHmacSignature).toHaveBeenCalledWith(
         mockPaymobPayload,
@@ -111,7 +113,9 @@ describe("WebhooksController", () => {
         new Error("Processing failed"),
       );
 
-      const result = await controller.handlePaymobWebhook(mockPaymobPayload as any);
+      const result = await controller.handlePaymobWebhook(
+        mockPaymobPayload as any,
+      );
 
       expect(result).toEqual({
         received: false,

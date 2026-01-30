@@ -141,7 +141,10 @@ describe("AddParamToBodyInterceptor", () => {
         paramName: "id",
       });
 
-      const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler);
+      const result$ = interceptor.intercept(
+        mockExecutionContext,
+        mockCallHandler,
+      );
 
       result$.subscribe((result) => {
         expect(result).toEqual(expectedResult);

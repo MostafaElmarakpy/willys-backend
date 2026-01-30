@@ -286,7 +286,10 @@ describe("CartController", () => {
     it("should remove discount", async () => {
       cartService.removeDiscount.mockResolvedValue(mockCart as any);
 
-      const result = await controller.removeDiscount(mockUserId, mockDiscountId);
+      const result = await controller.removeDiscount(
+        mockUserId,
+        mockDiscountId,
+      );
 
       expect(cartService.removeDiscount).toHaveBeenCalledWith(
         mockUserId,

@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { DiscountsAdminController } from "./discounts-admin.controller";
 import { DiscountsService } from "./discounts.service";
+import { DiscountsAdminController } from "./discounts-admin.controller";
 
 describe("DiscountsAdminController", () => {
   let controller: DiscountsAdminController;
@@ -118,7 +118,11 @@ describe("DiscountsAdminController", () => {
       } as any);
 
       const mockReq = { user: { id: mockUserId } };
-      const result = await controller.update(mockDiscountId, updateDto, mockReq);
+      const result = await controller.update(
+        mockDiscountId,
+        updateDto,
+        mockReq,
+      );
 
       expect(discountsService.update).toHaveBeenCalledWith(
         mockDiscountId,
@@ -313,9 +317,7 @@ describe("DiscountsAdminController", () => {
   describe("expire", () => {
     it("should expire a discount", async () => {
       const expiredDiscount = { ...mockDiscount, isActive: false };
-      discountsService.expireDiscount.mockResolvedValue(
-        expiredDiscount as any,
-      );
+      discountsService.expireDiscount.mockResolvedValue(expiredDiscount as any);
 
       const mockReq = { user: { id: mockUserId } };
       const result = await controller.expire(mockDiscountId, mockReq);

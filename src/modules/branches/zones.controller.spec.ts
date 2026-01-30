@@ -95,7 +95,12 @@ describe("ZonesController", () => {
 
       const result = await controller.findAll({ page: 1, limit: 10 });
 
-      expect(zonesService.findAll).toHaveBeenCalledWith(1, 10, undefined, "DESC");
+      expect(zonesService.findAll).toHaveBeenCalledWith(
+        1,
+        10,
+        undefined,
+        "DESC",
+      );
       expect(result.message).toBe("Zones retrieved successfully");
     });
   });
@@ -132,7 +137,9 @@ describe("ZonesController", () => {
   describe("findBranchForLocation", () => {
     it("should find best branch for location", async () => {
       const zoneCheckDto = { latitude: 30.05, longitude: 31.25 };
-      zonesService.findBestBranchForLocation.mockResolvedValue(mockBranch as any);
+      zonesService.findBestBranchForLocation.mockResolvedValue(
+        mockBranch as any,
+      );
 
       const result = await controller.findBranchForLocation(zoneCheckDto);
 

@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { ZonesPublicController } from "./zones-public.controller";
 import { ZonesService } from "./zones.service";
+import { ZonesPublicController } from "./zones-public.controller";
 
 describe("ZonesPublicController", () => {
   let controller: ZonesPublicController;

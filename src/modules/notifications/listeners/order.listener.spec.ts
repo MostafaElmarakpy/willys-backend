@@ -1,7 +1,7 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { OrderEventListener } from "./order.listener";
-import { NotificationsService } from "../notifications.service";
 import { NotificationType } from "src/common/enums/NotificationType";
+import { NotificationsService } from "../notifications.service";
+import { OrderEventListener } from "./order.listener";
 
 describe("OrderEventListener", () => {
   let listener: OrderEventListener;
@@ -49,11 +49,15 @@ describe("OrderEventListener", () => {
 
   describe("handleOrderCreated", () => {
     it("should send notification to admins when order is created", async () => {
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handleOrderCreated(mockOrderCreatedEvent);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.ORDER_NEW,
         "New Order Received",
         expect.stringContaining(mockOrderCreatedEvent.orderNumber),
@@ -83,11 +87,15 @@ describe("OrderEventListener", () => {
 
   describe("handleOrderStatusChanged", () => {
     it("should send notification to admins when order status changes", async () => {
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handleOrderStatusChanged(mockOrderStatusChangedEvent);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.ORDER_STATUS_CHANGED,
         "Order Status Updated",
         expect.stringContaining(mockOrderStatusChangedEvent.orderNumber),

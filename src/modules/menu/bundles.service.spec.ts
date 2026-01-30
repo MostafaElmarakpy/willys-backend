@@ -1,18 +1,18 @@
+import { NotFoundException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { NotFoundException } from "@nestjs/common";
-import { BundlesService } from "./bundles.service";
+import { BundleStatus } from "src/common/enums/BundleStatus";
 import { Bundle } from "src/database/entities/bundle.entity";
 import { BundleComponent } from "src/database/entities/bundle-component.entity";
 import { BundleComponentItem } from "src/database/entities/bundle-component-item.entity";
 import { UploadMediaService } from "src/services/upload-media/upload-media.service";
-import { BundleStatus } from "src/common/enums/BundleStatus";
+import { BundlesService } from "./bundles.service";
 
 describe("BundlesService", () => {
   let service: BundlesService;
   let bundleRepository: any;
   let bundleComponentRepository: any;
-  let bundleComponentItemRepository: any;
+  let _bundleComponentItemRepository: any;
   let uploadMediaService: jest.Mocked<UploadMediaService>;
 
   const mockUserId = "user-123";
@@ -38,7 +38,9 @@ describe("BundlesService", () => {
   };
 
   const mockTransactionManager = {
-    save: jest.fn().mockImplementation((entity, data) => Promise.resolve(data)),
+    save: jest
+      .fn()
+      .mockImplementation((_entity, data) => Promise.resolve(data)),
     remove: jest.fn().mockResolvedValue(undefined),
   };
 
@@ -49,21 +51,27 @@ describe("BundlesService", () => {
         {
           provide: getRepositoryToken(Bundle),
           useValue: {
-            create: jest.fn().mockImplementation((data) => ({ ...data, id: mockBundleId })),
+            create: jest
+              .fn()
+              .mockImplementation((data) => ({ ...data, id: mockBundleId })),
             save: jest.fn().mockResolvedValue(mockBundle),
             findOne: jest.fn(),
             find: jest.fn(),
             softDelete: jest.fn(),
             query: jest.fn(),
             manager: {
-              transaction: jest.fn().mockImplementation((cb) => cb(mockTransactionManager)),
+              transaction: jest
+                .fn()
+                .mockImplementation((cb) => cb(mockTransactionManager)),
             },
           },
         },
         {
           provide: getRepositoryToken(BundleComponent),
           useValue: {
-            create: jest.fn().mockImplementation((data) => ({ ...data, id: "component-123" })),
+            create: jest
+              .fn()
+              .mockImplementation((data) => ({ ...data, id: "component-123" })),
             save: jest.fn(),
             remove: jest.fn(),
           },
@@ -71,7 +79,9 @@ describe("BundlesService", () => {
         {
           provide: getRepositoryToken(BundleComponentItem),
           useValue: {
-            create: jest.fn().mockImplementation((data) => ({ ...data, id: "item-123" })),
+            create: jest
+              .fn()
+              .mockImplementation((data) => ({ ...data, id: "item-123" })),
             save: jest.fn(),
           },
         },
@@ -87,7 +97,9 @@ describe("BundlesService", () => {
     service = module.get<BundlesService>(BundlesService);
     bundleRepository = module.get(getRepositoryToken(Bundle));
     bundleComponentRepository = module.get(getRepositoryToken(BundleComponent));
-    bundleComponentItemRepository = module.get(getRepositoryToken(BundleComponentItem));
+    _bundleComponentItemRepository = module.get(
+      getRepositoryToken(BundleComponentItem),
+    );
     uploadMediaService = module.get(UploadMediaService);
   });
 
@@ -104,7 +116,10 @@ describe("BundlesService", () => {
         price: 99.99,
       };
 
-      mockTransactionManager.save.mockResolvedValue({ ...mockBundle, ...createDto });
+      mockTransactionManager.save.mockResolvedValue({
+        ...mockBundle,
+        ...createDto,
+      });
 
       const result = await service.create(createDto as any, mockUserId, {});
 
@@ -128,7 +143,10 @@ describe("BundlesService", () => {
         ],
       };
 
-      mockTransactionManager.save.mockResolvedValue({ ...mockBundle, ...createDto });
+      mockTransactionManager.save.mockResolvedValue({
+        ...mockBundle,
+        ...createDto,
+      });
 
       const result = await service.create(createDto as any, mockUserId, {});
 
@@ -144,7 +162,9 @@ describe("BundlesService", () => {
         price: 99.99,
       };
       const files = { image: [{ originalname: "test.jpg" }] };
-      uploadMediaService.saveOneFile.mockResolvedValue({ url: "uploaded-image.jpg" } as any);
+      uploadMediaService.saveOneFile.mockResolvedValue({
+        url: "uploaded-image.jpg",
+      } as any);
       mockTransactionManager.save.mockResolvedValue(mockBundle);
 
       await service.create(createDto as any, mockUserId, files as any);
@@ -231,7 +251,9 @@ describe("BundlesService", () => {
     it("should throw NotFoundException when bundle not found", async () => {
       bundleRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne(mockBundleId)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(mockBundleId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -242,9 +264,17 @@ describe("BundlesService", () => {
         price: 149.99,
       };
       bundleRepository.findOne.mockResolvedValue({ ...mockBundle });
-      mockTransactionManager.save.mockResolvedValue({ ...mockBundle, ...updateDto });
+      mockTransactionManager.save.mockResolvedValue({
+        ...mockBundle,
+        ...updateDto,
+      });
 
-      const result = await service.update(mockBundleId, updateDto as any, mockUserId, {});
+      const result = await service.update(
+        mockBundleId,
+        updateDto as any,
+        mockUserId,
+        {},
+      );
 
       expect(result).toBeDefined();
     });

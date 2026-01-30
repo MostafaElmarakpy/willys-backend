@@ -77,7 +77,7 @@ describe("EntityFileInterceptor", () => {
       };
       mockRequest.file = mockFile;
 
-      const InterceptorClass = EntityFileInterceptor("categories");
+      const _InterceptorClass = EntityFileInterceptor("categories");
       const interceptor = {
         s3StorageService: mockS3StorageService,
         filesInterceptor: mockFileInterceptor,
@@ -93,7 +93,9 @@ describe("EntityFileInterceptor", () => {
 
       await interceptor.intercept(mockExecutionContext, mockCallHandler);
 
-      expect(mockS3StorageService.validateFileSize).toHaveBeenCalledWith(mockFile);
+      expect(mockS3StorageService.validateFileSize).toHaveBeenCalledWith(
+        mockFile,
+      );
     });
 
     it("should not call validateFileSize when no file", async () => {
@@ -120,7 +122,9 @@ describe("EntityFileInterceptor", () => {
     it("should call multerOptions with entity type", () => {
       mockS3StorageService.multerOptions("categories");
 
-      expect(mockS3StorageService.multerOptions).toHaveBeenCalledWith("categories");
+      expect(mockS3StorageService.multerOptions).toHaveBeenCalledWith(
+        "categories",
+      );
     });
 
     it("should return result from file interceptor", async () => {
@@ -134,7 +138,10 @@ describe("EntityFileInterceptor", () => {
         },
       };
 
-      const result = await interceptor.intercept(mockExecutionContext, mockCallHandler);
+      const result = await interceptor.intercept(
+        mockExecutionContext,
+        mockCallHandler,
+      );
 
       expect(result).toBeDefined();
     });

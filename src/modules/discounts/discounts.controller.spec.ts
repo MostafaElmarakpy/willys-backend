@@ -47,12 +47,16 @@ describe("DiscountsController", () => {
 
   describe("getMyDiscounts", () => {
     it("should return user discounts", async () => {
-      discountsService.getUserDiscounts.mockResolvedValue([mockDiscount] as any);
+      discountsService.getUserDiscounts.mockResolvedValue([
+        mockDiscount,
+      ] as any);
 
       const mockReq = { user: { id: mockUserId } };
       const result = await controller.getMyDiscounts(mockReq);
 
-      expect(discountsService.getUserDiscounts).toHaveBeenCalledWith(mockUserId);
+      expect(discountsService.getUserDiscounts).toHaveBeenCalledWith(
+        mockUserId,
+      );
       expect(result.message).toBe("User discounts retrieved successfully");
       expect(result.data).toHaveLength(1);
     });
@@ -69,11 +73,15 @@ describe("DiscountsController", () => {
 
   describe("getItemDiscounts", () => {
     it("should return item discounts", async () => {
-      discountsService.getItemDiscounts.mockResolvedValue([mockDiscount] as any);
+      discountsService.getItemDiscounts.mockResolvedValue([
+        mockDiscount,
+      ] as any);
 
       const result = await controller.getItemDiscounts(mockItemId);
 
-      expect(discountsService.getItemDiscounts).toHaveBeenCalledWith(mockItemId);
+      expect(discountsService.getItemDiscounts).toHaveBeenCalledWith(
+        mockItemId,
+      );
       expect(result.message).toBe("Item discounts retrieved successfully");
       expect(result.data).toHaveLength(1);
     });
@@ -158,7 +166,9 @@ describe("DiscountsController", () => {
       expect(result.message).toBe("Discount calculated successfully");
       expect(result.data.canApply).toBe(true);
       expect((result.data as any).discountAmount).toBe(discountAmount);
-      expect((result.data as any).finalPrice).toBe(originalPrice - discountAmount);
+      expect((result.data as any).finalPrice).toBe(
+        originalPrice - discountAmount,
+      );
     });
 
     it("should return cannot apply when discount is not usable", async () => {
@@ -187,7 +197,7 @@ describe("DiscountsController", () => {
       discountsService.calculateDiscountAmount.mockReturnValue(10);
 
       const mockReq = { user: { id: mockUserId } };
-      const result = await controller.calculateDiscount(
+      const _result = await controller.calculateDiscount(
         mockDiscountId,
         100,
         undefined as any,

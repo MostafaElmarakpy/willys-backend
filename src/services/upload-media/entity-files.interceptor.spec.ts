@@ -83,7 +83,10 @@ describe("EntityFilesInterceptor", () => {
         s3StorageService: mockS3StorageService,
         fileFieldsInterceptor: mockFileFieldsInterceptor,
         intercept: async (context: ExecutionContext, next: CallHandler) => {
-          const result = await mockFileFieldsInterceptor.intercept(context, next);
+          const result = await mockFileFieldsInterceptor.intercept(
+            context,
+            next,
+          );
           const request = context.switchToHttp().getRequest();
           if (request.files) {
             Object.values(request.files).forEach((fileArray: any[]) => {
@@ -113,7 +116,9 @@ describe("EntityFilesInterceptor", () => {
 
     it("should validate file sizes for multiple fields", async () => {
       const mockFiles = {
-        image: [{ mimetype: "image/jpeg", size: 1024, originalname: "img.jpg" }],
+        image: [
+          { mimetype: "image/jpeg", size: 1024, originalname: "img.jpg" },
+        ],
         video: [{ mimetype: "video/mp4", size: 5000, originalname: "vid.mp4" }],
       };
       mockRequest.files = mockFiles;
@@ -122,7 +127,10 @@ describe("EntityFilesInterceptor", () => {
         s3StorageService: mockS3StorageService,
         fileFieldsInterceptor: mockFileFieldsInterceptor,
         intercept: async (context: ExecutionContext, next: CallHandler) => {
-          const result = await mockFileFieldsInterceptor.intercept(context, next);
+          const result = await mockFileFieldsInterceptor.intercept(
+            context,
+            next,
+          );
           const request = context.switchToHttp().getRequest();
           if (request.files) {
             Object.values(request.files).forEach((fileArray: any[]) => {
@@ -146,7 +154,11 @@ describe("EntityFilesInterceptor", () => {
 
     it("should handle single file (non-array)", async () => {
       const mockFiles = {
-        document: { mimetype: "application/pdf", size: 10000, originalname: "doc.pdf" },
+        document: {
+          mimetype: "application/pdf",
+          size: 10000,
+          originalname: "doc.pdf",
+        },
       };
       mockRequest.files = mockFiles as any;
 
@@ -154,7 +166,10 @@ describe("EntityFilesInterceptor", () => {
         s3StorageService: mockS3StorageService,
         fileFieldsInterceptor: mockFileFieldsInterceptor,
         intercept: async (context: ExecutionContext, next: CallHandler) => {
-          const result = await mockFileFieldsInterceptor.intercept(context, next);
+          const result = await mockFileFieldsInterceptor.intercept(
+            context,
+            next,
+          );
           const request = context.switchToHttp().getRequest();
           if (request.files) {
             Object.values(request.files).forEach((fileArray: any[]) => {
@@ -185,7 +200,10 @@ describe("EntityFilesInterceptor", () => {
         s3StorageService: mockS3StorageService,
         fileFieldsInterceptor: mockFileFieldsInterceptor,
         intercept: async (context: ExecutionContext, next: CallHandler) => {
-          const result = await mockFileFieldsInterceptor.intercept(context, next);
+          const result = await mockFileFieldsInterceptor.intercept(
+            context,
+            next,
+          );
           const request = context.switchToHttp().getRequest();
           if (request.files) {
             Object.values(request.files).forEach((fileArray: any[]) => {
@@ -214,7 +232,10 @@ describe("EntityFilesInterceptor", () => {
         s3StorageService: mockS3StorageService,
         fileFieldsInterceptor: mockFileFieldsInterceptor,
         intercept: async (context: ExecutionContext, next: CallHandler) => {
-          const result = await mockFileFieldsInterceptor.intercept(context, next);
+          const result = await mockFileFieldsInterceptor.intercept(
+            context,
+            next,
+          );
           const request = context.switchToHttp().getRequest();
           if (request.files) {
             Object.values(request.files).forEach((fileArray: any[]) => {
@@ -253,7 +274,10 @@ describe("EntityFilesInterceptor", () => {
         },
       };
 
-      const result = await interceptor.intercept(mockExecutionContext, mockCallHandler);
+      const result = await interceptor.intercept(
+        mockExecutionContext,
+        mockCallHandler,
+      );
 
       expect(result).toBeDefined();
     });

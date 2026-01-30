@@ -118,7 +118,10 @@ describe("UsersAdminController", () => {
 
       const result = await controller.create(mockFile, createDto);
 
-      expect(usersAdminService.create).toHaveBeenCalledWith(createDto, mockFile);
+      expect(usersAdminService.create).toHaveBeenCalledWith(
+        createDto,
+        mockFile,
+      );
       expect(result.message).toBe("User created successfully");
     });
 
@@ -129,9 +132,12 @@ describe("UsersAdminController", () => {
       } as any;
       usersAdminService.create.mockResolvedValue(mockUser as any);
 
-      const result = await controller.create(undefined as any, createDto);
+      const _result = await controller.create(undefined as any, createDto);
 
-      expect(usersAdminService.create).toHaveBeenCalledWith(createDto, undefined);
+      expect(usersAdminService.create).toHaveBeenCalledWith(
+        createDto,
+        undefined,
+      );
     });
   });
 

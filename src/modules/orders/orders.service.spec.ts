@@ -14,7 +14,7 @@ import { OrdersService } from "./orders.service";
 describe("OrdersService", () => {
   let service: OrdersService;
   let orderRepository: any;
-  let orderItemRepository: any;
+  let _orderItemRepository: any;
   let statusLogRepository: any;
   let addressRepository: any;
   let eventEmitter: jest.Mocked<EventEmitter2>;
@@ -41,7 +41,7 @@ describe("OrdersService", () => {
     rollbackTransaction: jest.fn().mockResolvedValue(undefined),
     release: jest.fn().mockResolvedValue(undefined),
     manager: {
-      create: jest.fn().mockImplementation((entity, data) => data),
+      create: jest.fn().mockImplementation((_entity, data) => data),
       save: jest.fn().mockImplementation((data) => ({ ...data, id: "new-id" })),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
     },
@@ -116,7 +116,7 @@ describe("OrdersService", () => {
 
     service = module.get<OrdersService>(OrdersService);
     orderRepository = module.get(getRepositoryToken(Order));
-    orderItemRepository = module.get(getRepositoryToken(OrderItem));
+    _orderItemRepository = module.get(getRepositoryToken(OrderItem));
     statusLogRepository = module.get(getRepositoryToken(OrderStatusLog));
     addressRepository = module.get(getRepositoryToken(UserAddress));
     eventEmitter = module.get(EventEmitter2);
@@ -422,7 +422,12 @@ describe("OrdersService", () => {
         },
       ],
       appliedDiscounts: [
-        { discountId: "discount-123", code: "SAVE10", type: "PERCENTAGE", amount: 10 },
+        {
+          discountId: "discount-123",
+          code: "SAVE10",
+          type: "PERCENTAGE",
+          amount: 10,
+        },
       ],
     };
 
@@ -444,7 +449,9 @@ describe("OrdersService", () => {
         ...data,
         id: "new-order-123",
       }));
-      mockQueryRunner.manager.save.mockImplementation((data) => Promise.resolve(data));
+      mockQueryRunner.manager.save.mockImplementation((data) =>
+        Promise.resolve(data),
+      );
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         id: "new-order-123",
@@ -460,12 +467,18 @@ describe("OrdersService", () => {
     });
 
     it("should create order without delivery address for pickup", async () => {
-      const pickupCart = { ...mockCart, orderType: OrderType.PICKUP, deliveryAddressId: null };
+      const pickupCart = {
+        ...mockCart,
+        orderType: OrderType.PICKUP,
+        deliveryAddressId: null,
+      };
       mockQueryRunner.manager.create.mockImplementation((_entity, data) => ({
         ...data,
         id: "new-order-123",
       }));
-      mockQueryRunner.manager.save.mockImplementation((data) => Promise.resolve(data));
+      mockQueryRunner.manager.save.mockImplementation((data) =>
+        Promise.resolve(data),
+      );
       orderRepository.findOne.mockResolvedValue({
         ...mockOrder,
         id: "new-order-123",
@@ -474,7 +487,10 @@ describe("OrdersService", () => {
         branch: { name: { en: "Main Branch" } },
       });
 
-      const result = await service.createFromCart(mockUserId, pickupCart as any);
+      const result = await service.createFromCart(
+        mockUserId,
+        pickupCart as any,
+      );
 
       expect(result).toBeDefined();
       expect(addressRepository.findOne).not.toHaveBeenCalled();
@@ -496,7 +512,10 @@ describe("OrdersService", () => {
     it("should use external query runner when provided", async () => {
       const externalQueryRunner = {
         manager: {
-          create: jest.fn().mockImplementation((_entity, data) => ({ ...data, id: "new-order-123" })),
+          create: jest.fn().mockImplementation((_entity, data) => ({
+            ...data,
+            id: "new-order-123",
+          })),
           save: jest.fn().mockImplementation((data) => Promise.resolve(data)),
         },
       };

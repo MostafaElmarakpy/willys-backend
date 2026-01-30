@@ -307,7 +307,10 @@ describe("UploadMediaService", () => {
         failed: [],
       });
 
-      const result = await service.deleteFilesByEntity("product", "product-123");
+      const result = await service.deleteFilesByEntity(
+        "product",
+        "product-123",
+      );
 
       expect(filesRepository.find).toHaveBeenCalledWith({
         where: { entityType: "product", entityId: "product-123" },
@@ -318,7 +321,10 @@ describe("UploadMediaService", () => {
     it("should return true when no files found", async () => {
       filesRepository.find.mockResolvedValue([]);
 
-      const result = await service.deleteFilesByEntity("product", "product-123");
+      const result = await service.deleteFilesByEntity(
+        "product",
+        "product-123",
+      );
 
       expect(result).toBe(true);
     });
@@ -335,7 +341,10 @@ describe("UploadMediaService", () => {
         failed: ["file-2"],
       });
 
-      const result = await service.deleteFilesByEntity("product", "product-123");
+      const result = await service.deleteFilesByEntity(
+        "product",
+        "product-123",
+      );
 
       expect(result).toBe(false);
     });
@@ -343,7 +352,10 @@ describe("UploadMediaService", () => {
     it("should return false on error", async () => {
       filesRepository.find.mockRejectedValue(new Error("DB Error"));
 
-      const result = await service.deleteFilesByEntity("product", "product-123");
+      const result = await service.deleteFilesByEntity(
+        "product",
+        "product-123",
+      );
 
       expect(result).toBe(false);
     });
@@ -351,14 +363,16 @@ describe("UploadMediaService", () => {
 
   describe("private extractS3KeyFromUrl", () => {
     it("should extract key from bucket subdomain URL", () => {
-      const url = "https://test-bucket.s3.us-east-1.amazonaws.com/uploads/test.jpg";
+      const url =
+        "https://test-bucket.s3.us-east-1.amazonaws.com/uploads/test.jpg";
       const result = (service as any).extractS3KeyFromUrl(url);
 
       expect(result).toBe("uploads/test.jpg");
     });
 
     it("should extract key from path-style URL", () => {
-      const url = "https://s3.us-east-1.amazonaws.com/test-bucket/uploads/test.jpg";
+      const url =
+        "https://s3.us-east-1.amazonaws.com/test-bucket/uploads/test.jpg";
       const result = (service as any).extractS3KeyFromUrl(url);
 
       expect(result).toBe("uploads/test.jpg");

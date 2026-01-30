@@ -160,13 +160,16 @@ describe("ConfigService", () => {
     it("should return Firebase configuration when set", () => {
       process.env.FIREBASE_PROJECT_ID = "test-project";
       process.env.FIREBASE_CLIENT_EMAIL = "firebase@test.com";
-      process.env.FIREBASE_PRIVATE_KEY = "-----BEGIN KEY-----\\ntest\\n-----END KEY-----";
+      process.env.FIREBASE_PRIVATE_KEY =
+        "-----BEGIN KEY-----\\ntest\\n-----END KEY-----";
 
       const service = new ConfigService();
 
       expect(service.get("firebaseProjectId")).toBe("test-project");
       expect(service.get("firebaseClientEmail")).toBe("firebase@test.com");
-      expect(service.get("firebasePrivateKey")).toContain("-----BEGIN KEY-----");
+      expect(service.get("firebasePrivateKey")).toContain(
+        "-----BEGIN KEY-----",
+      );
     });
 
     it("should replace escaped newlines in Firebase private key", () => {

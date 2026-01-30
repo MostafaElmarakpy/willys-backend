@@ -130,7 +130,9 @@ describe("BranchMenuController", () => {
       expect(
         branchMenuService.getAvailableCategoriesForBranch,
       ).toHaveBeenCalledWith(mockBranchId);
-      expect(result.message).toBe("Available categories retrieved successfully");
+      expect(result.message).toBe(
+        "Available categories retrieved successfully",
+      );
       expect(result.data).toHaveLength(1);
     });
   });

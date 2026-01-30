@@ -1,7 +1,7 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { PaymentEventListener } from "./payment.listener";
-import { NotificationsService } from "../notifications.service";
 import { NotificationType } from "src/common/enums/NotificationType";
+import { NotificationsService } from "../notifications.service";
+import { PaymentEventListener } from "./payment.listener";
 
 describe("PaymentEventListener", () => {
   let listener: PaymentEventListener;
@@ -56,11 +56,15 @@ describe("PaymentEventListener", () => {
 
   describe("handlePaymentSuccess", () => {
     it("should send notification to admins when payment succeeds", async () => {
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handlePaymentSuccess(mockPaymentSuccessEvent);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.PAYMENT_SUCCESS,
         "Payment Successful",
         expect.stringContaining(mockPaymentSuccessEvent.customerName),
@@ -80,11 +84,15 @@ describe("PaymentEventListener", () => {
         orderId: undefined,
         orderNumber: undefined,
       };
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handlePaymentSuccess(eventWithoutOrder as any);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.PAYMENT_SUCCESS,
         "Payment Successful",
         expect.any(String),
@@ -109,11 +117,15 @@ describe("PaymentEventListener", () => {
 
   describe("handlePaymentFailed", () => {
     it("should send notification to admins when payment fails", async () => {
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handlePaymentFailed(mockPaymentFailedEvent);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.PAYMENT_FAILED,
         "Payment Failed",
         expect.stringContaining(mockPaymentFailedEvent.errorMessage as string),
@@ -131,11 +143,15 @@ describe("PaymentEventListener", () => {
         ...mockPaymentFailedEvent,
         errorMessage: undefined,
       };
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handlePaymentFailed(eventWithoutError as any);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.PAYMENT_FAILED,
         "Payment Failed",
         expect.any(String),
@@ -158,11 +174,15 @@ describe("PaymentEventListener", () => {
 
   describe("handlePaymentRefunded", () => {
     it("should send notification to admins when payment is refunded", async () => {
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handlePaymentRefunded(mockPaymentRefundedEvent);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.PAYMENT_REFUNDED,
         "Payment Refunded",
         expect.stringContaining(mockPaymentRefundedEvent.customerName),
@@ -181,11 +201,15 @@ describe("PaymentEventListener", () => {
         ...mockPaymentRefundedEvent,
         orderNumber: undefined,
       };
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handlePaymentRefunded(eventWithoutOrder as any);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.PAYMENT_REFUNDED,
         "Payment Refunded",
         expect.any(String),

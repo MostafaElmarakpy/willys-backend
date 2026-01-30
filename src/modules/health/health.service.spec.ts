@@ -1,9 +1,9 @@
-import { Test, type TestingModule } from "@nestjs/testing";
-import { ConfigService } from "../../config/config.service";
-import { DataSource } from "typeorm";
-import { HealthService } from "./health.service";
-import * as fs from "node:fs";
 import * as childProcess from "node:child_process";
+import * as fs from "node:fs";
+import { Test, type TestingModule } from "@nestjs/testing";
+import { DataSource } from "typeorm";
+import { ConfigService } from "../../config/config.service";
+import { HealthService } from "./health.service";
 
 // Mock child_process.exec
 jest.mock("node:child_process", () => ({
@@ -60,9 +60,7 @@ describe("HealthService", () => {
   describe("checkDockerHealth", () => {
     it("should return ok status when not running in Docker", async () => {
       // Mock isRunningInDocker to return false
-      (fs.promises.access as jest.Mock).mockRejectedValue(
-        new Error("ENOENT"),
-      );
+      (fs.promises.access as jest.Mock).mockRejectedValue(new Error("ENOENT"));
 
       const result = await service.checkDockerHealth();
 
@@ -120,9 +118,7 @@ describe("HealthService", () => {
       dataSource.query.mockResolvedValue([{ 1: 1 }]);
 
       // Mock not in docker
-      (fs.promises.access as jest.Mock).mockRejectedValue(
-        new Error("ENOENT"),
-      );
+      (fs.promises.access as jest.Mock).mockRejectedValue(new Error("ENOENT"));
 
       // Mock disk usage command
       mockExec.mockImplementation((cmd, opts, callback) => {
@@ -161,12 +157,10 @@ describe("HealthService", () => {
       dataSource.query.mockRejectedValue(new Error("DB connection failed"));
 
       // Mock not in docker
-      (fs.promises.access as jest.Mock).mockRejectedValue(
-        new Error("ENOENT"),
-      );
+      (fs.promises.access as jest.Mock).mockRejectedValue(new Error("ENOENT"));
 
       // Mock disk command failure
-      mockExec.mockImplementation((cmd, opts, callback) => {
+      mockExec.mockImplementation((_cmd, opts, callback) => {
         if (typeof opts === "function") {
           callback = opts;
         }
@@ -197,9 +191,7 @@ describe("HealthService", () => {
     });
 
     it("should return error when database query fails", async () => {
-      dataSource.query.mockRejectedValue(
-        new Error("Connection refused"),
-      );
+      dataSource.query.mockRejectedValue(new Error("Connection refused"));
 
       const result = await (service as any).checkDatabaseHealth();
 
@@ -253,9 +245,7 @@ describe("HealthService", () => {
     });
 
     it("should return false when no docker indicators found", async () => {
-      (fs.promises.access as jest.Mock).mockRejectedValue(
-        new Error("ENOENT"),
-      );
+      (fs.promises.access as jest.Mock).mockRejectedValue(new Error("ENOENT"));
 
       const result = await (service as any).isRunningInDocker();
 
@@ -294,7 +284,7 @@ describe("HealthService", () => {
     });
 
     it("should handle docker version command failure", async () => {
-      mockExec.mockImplementation((cmd, opts, callback) => {
+      mockExec.mockImplementation((_cmd, opts, callback) => {
         if (typeof opts === "function") {
           callback = opts;
         }
@@ -353,7 +343,7 @@ describe("HealthService", () => {
     });
 
     it("should handle disk info failure gracefully", async () => {
-      mockExec.mockImplementation((cmd, opts, callback) => {
+      mockExec.mockImplementation((_cmd, opts, callback) => {
         if (typeof opts === "function") {
           callback = opts;
         }

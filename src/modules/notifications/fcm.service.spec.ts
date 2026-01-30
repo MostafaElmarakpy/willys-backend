@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { FcmService } from "./fcm.service";
 import { ConfigService } from "src/config/config.service";
+import { FcmService } from "./fcm.service";
 
 // Mock firebase-admin
 jest.mock("firebase-admin", () => ({
@@ -72,10 +72,10 @@ describe("FcmService", () => {
 
   describe("sendToToken", () => {
     it("should return failure when not initialized", async () => {
-      const result = await service.sendToToken(
-        "token",
-        { title: "Test", body: "Message" },
-      );
+      const result = await service.sendToToken("token", {
+        title: "Test",
+        body: "Message",
+      });
 
       expect(result.success).toBe(false);
       expect(result.shouldRemoveToken).toBe(false);
@@ -120,10 +120,10 @@ describe("FcmService", () => {
         message: "Invalid token",
       });
 
-      const result = await service.sendToToken(
-        "invalid-token",
-        { title: "Test", body: "Message" },
-      );
+      const result = await service.sendToToken("invalid-token", {
+        title: "Test",
+        body: "Message",
+      });
 
       expect(result.success).toBe(false);
       expect(result.shouldRemoveToken).toBe(true);
@@ -142,10 +142,10 @@ describe("FcmService", () => {
       });
       await service.onModuleInit();
 
-      const result = await service.sendToTokens(
-        ["token1", "token2"],
-        { title: "Test", body: "Message" },
-      );
+      const result = await service.sendToTokens(["token1", "token2"], {
+        title: "Test",
+        body: "Message",
+      });
 
       expect(result.success).toBeDefined();
       expect(result.failed).toBeDefined();
@@ -164,14 +164,18 @@ describe("FcmService", () => {
       await service.onModuleInit();
 
       const admin = require("firebase-admin");
-      admin.initializeApp().messaging().send
-        .mockResolvedValueOnce("success")
-        .mockRejectedValueOnce({ code: "messaging/invalid-registration-token" });
+      admin
+        .initializeApp()
+        .messaging()
+        .send.mockResolvedValueOnce("success")
+        .mockRejectedValueOnce({
+          code: "messaging/invalid-registration-token",
+        });
 
-      const result = await service.sendToTokens(
-        ["token1", "token2"],
-        { title: "Test", body: "Message" },
-      );
+      const result = await service.sendToTokens(["token1", "token2"], {
+        title: "Test",
+        body: "Message",
+      });
 
       expect(result.success).toContain("token1");
       expect(result.tokensToRemove).toContain("token2");

@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { PaymentsAdminController } from "./payments-admin.controller";
 import { PaymentsService } from "./payments.service";
+import { PaymentsAdminController } from "./payments-admin.controller";
 import { RefundsService } from "./refunds.service";
 
 describe("PaymentsAdminController", () => {
@@ -118,7 +118,9 @@ describe("PaymentsAdminController", () => {
 
       const result = await controller.getPendingRefunds();
 
-      expect(refundsService.findAll).toHaveBeenCalledWith({ status: "PENDING" });
+      expect(refundsService.findAll).toHaveBeenCalledWith({
+        status: "PENDING",
+      });
       expect(result.message).toBe("Pending refunds retrieved successfully");
       expect(result.data).toEqual(pendingRefunds);
     });
@@ -141,7 +143,9 @@ describe("PaymentsAdminController", () => {
 
       const result = await controller.getAllRefunds("APPROVED");
 
-      expect(refundsService.findAll).toHaveBeenCalledWith({ status: "APPROVED" });
+      expect(refundsService.findAll).toHaveBeenCalledWith({
+        status: "APPROVED",
+      });
       expect(result.data).toEqual(approvedRefunds);
     });
   });

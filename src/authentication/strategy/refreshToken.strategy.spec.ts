@@ -1,5 +1,5 @@
-import { RefreshJwtStrategy } from "./refreshToken.strategy";
 import { ConfigService } from "src/config/config.service";
+import { RefreshJwtStrategy } from "./refreshToken.strategy";
 
 describe("RefreshJwtStrategy", () => {
   let strategy: RefreshJwtStrategy;

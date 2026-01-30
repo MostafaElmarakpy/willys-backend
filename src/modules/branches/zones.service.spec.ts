@@ -275,7 +275,7 @@ describe("ZonesService", () => {
       zoneRepository.findOne.mockResolvedValue(activeZone as Zone);
       zoneRepository.save.mockResolvedValue(inactiveZone as Zone);
 
-      const result = await service.toggleActive("zone-123");
+      const _result = await service.toggleActive("zone-123");
 
       expect(zoneRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({ isActive: false }),
@@ -336,7 +336,9 @@ describe("ZonesService", () => {
         radiusKm: 10,
         branch: { ...mockBranch, isActive: true, isOpen: true },
       };
-      zoneRepository.find.mockResolvedValue([zoneWithRadius as unknown as Zone]);
+      zoneRepository.find.mockResolvedValue([
+        zoneWithRadius as unknown as Zone,
+      ]);
 
       const result = await service.checkPointInZone({
         latitude: 30.05,
@@ -389,7 +391,9 @@ describe("ZonesService", () => {
 
     it("should return zero area for zone without polygon", async () => {
       const zoneWithoutPolygon = { ...mockZone, polygon: null };
-      zoneRepository.findOne.mockResolvedValue(zoneWithoutPolygon as unknown as Zone);
+      zoneRepository.findOne.mockResolvedValue(
+        zoneWithoutPolygon as unknown as Zone,
+      );
 
       const result = await service.getZoneStats("zone-123");
 
@@ -461,7 +465,14 @@ describe("ZonesService", () => {
       it("should return GeoJSON if already in GeoJSON format", () => {
         const geoJson = {
           type: "Polygon",
-          coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]],
+          coordinates: [
+            [
+              [0, 0],
+              [1, 0],
+              [1, 1],
+              [0, 0],
+            ],
+          ],
         };
 
         const result = (service as any).wktToGeoJson(geoJson);

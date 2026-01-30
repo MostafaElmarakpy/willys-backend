@@ -1,7 +1,7 @@
 import { Test, type TestingModule } from "@nestjs/testing";
 import { S3StorageService } from "../../services/upload-media/multer-config.service";
-import { ItemsAdminController } from "./items-admin.controller";
 import { ItemsService } from "./items.service";
+import { ItemsAdminController } from "./items-admin.controller";
 
 describe("ItemsAdminController", () => {
   let controller: ItemsAdminController;
@@ -161,7 +161,10 @@ describe("ItemsAdminController", () => {
       const mockReq = { user: { id: mockUserId } };
       const result = await controller.duplicate(mockItemId, mockReq);
 
-      expect(itemsService.duplicate).toHaveBeenCalledWith(mockItemId, mockUserId);
+      expect(itemsService.duplicate).toHaveBeenCalledWith(
+        mockItemId,
+        mockUserId,
+      );
       expect(result.message).toBe("Item duplicated successfully");
     });
   });

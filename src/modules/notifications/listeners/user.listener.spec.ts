@@ -1,7 +1,7 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { UserEventListener } from "./user.listener";
-import { NotificationsService } from "../notifications.service";
 import { NotificationType } from "src/common/enums/NotificationType";
+import { NotificationsService } from "../notifications.service";
+import { UserEventListener } from "./user.listener";
 
 describe("UserEventListener", () => {
   let listener: UserEventListener;
@@ -37,11 +37,15 @@ describe("UserEventListener", () => {
 
   describe("handleUserRegistered", () => {
     it("should send notification to admins when user registers with email", async () => {
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handleUserRegistered(mockUserRegisteredEvent);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.USER_REGISTERED,
         "New User Registered",
         expect.stringContaining(mockUserRegisteredEvent.fullName),
@@ -60,11 +64,15 @@ describe("UserEventListener", () => {
         ...mockUserRegisteredEvent,
         email: undefined,
       };
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handleUserRegistered(eventWithPhoneOnly as any);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.USER_REGISTERED,
         "New User Registered",
         expect.stringContaining(eventWithPhoneOnly.phoneNumber as string),
@@ -82,11 +90,15 @@ describe("UserEventListener", () => {
         email: undefined,
         phoneNumber: undefined,
       };
-      notificationsService.sendNotificationToAdmins.mockResolvedValue(undefined);
+      notificationsService.sendNotificationToAdmins.mockResolvedValue(
+        undefined,
+      );
 
       await listener.handleUserRegistered(eventWithNoContact as any);
 
-      expect(notificationsService.sendNotificationToAdmins).toHaveBeenCalledWith(
+      expect(
+        notificationsService.sendNotificationToAdmins,
+      ).toHaveBeenCalledWith(
         NotificationType.USER_REGISTERED,
         "New User Registered",
         expect.stringContaining("No contact info"),

@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import { ClsMiddleware } from "./async-context.middleware";
 import { ClsService } from "nestjs-cls";
 import { UsersService } from "src/modules/users/users.service";
 import { CURRENT_USER } from "../constants/context";
+import { ClsMiddleware } from "./async-context.middleware";
 
 describe("ClsMiddleware", () => {
   let middleware: ClsMiddleware;
@@ -105,7 +105,9 @@ describe("ClsMiddleware", () => {
 
     it("should handle invalid token gracefully", async () => {
       mockRequest.headers = { authorization: "Bearer invalid-token" };
-      mockUsersService.validateUserToken.mockRejectedValue(new Error("Invalid"));
+      mockUsersService.validateUserToken.mockRejectedValue(
+        new Error("Invalid"),
+      );
 
       await middleware.use(
         mockRequest as Request,

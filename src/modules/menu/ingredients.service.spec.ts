@@ -1,9 +1,9 @@
+import { NotFoundException } from "@nestjs/common";
 import { Test, type TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { NotFoundException } from "@nestjs/common";
-import { IngredientsService } from "./ingredients.service";
 import { Ingredient } from "src/database/entities/ingredient.entity";
 import { IngredientCategory } from "src/database/entities/ingredient-category.entity";
+import { IngredientsService } from "./ingredients.service";
 
 describe("IngredientsService", () => {
   let service: IngredientsService;
@@ -58,7 +58,10 @@ describe("IngredientsService", () => {
         {
           provide: getRepositoryToken(Ingredient),
           useValue: {
-            create: jest.fn().mockImplementation((data) => ({ ...data, id: mockIngredientId })),
+            create: jest.fn().mockImplementation((data) => ({
+              ...data,
+              id: mockIngredientId,
+            })),
             save: jest.fn().mockResolvedValue(mockIngredient),
             findOne: jest.fn(),
             find: jest.fn(),
@@ -69,7 +72,9 @@ describe("IngredientsService", () => {
         {
           provide: getRepositoryToken(IngredientCategory),
           useValue: {
-            create: jest.fn().mockImplementation((data) => ({ ...data, id: mockCategoryId })),
+            create: jest
+              .fn()
+              .mockImplementation((data) => ({ ...data, id: mockCategoryId })),
             save: jest.fn().mockResolvedValue(mockCategory),
             findOne: jest.fn(),
             find: jest.fn(),
@@ -82,7 +87,9 @@ describe("IngredientsService", () => {
 
     service = module.get<IngredientsService>(IngredientsService);
     ingredientRepository = module.get(getRepositoryToken(Ingredient));
-    ingredientCategoryRepository = module.get(getRepositoryToken(IngredientCategory));
+    ingredientCategoryRepository = module.get(
+      getRepositoryToken(IngredientCategory),
+    );
   });
 
   afterEach(() => {
@@ -128,7 +135,9 @@ describe("IngredientsService", () => {
 
       await service.findAllCategories(1, 10, "sauce");
 
-      expect(ingredientCategoryRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(
+        ingredientCategoryRepository.createQueryBuilder,
+      ).toHaveBeenCalled();
     });
 
     it("should sort by name", async () => {
@@ -138,7 +147,9 @@ describe("IngredientsService", () => {
 
       await service.findAllCategories(1, 10, undefined, "name", "ASC");
 
-      expect(ingredientCategoryRepository.createQueryBuilder).toHaveBeenCalled();
+      expect(
+        ingredientCategoryRepository.createQueryBuilder,
+      ).toHaveBeenCalled();
     });
   });
 
@@ -163,13 +174,19 @@ describe("IngredientsService", () => {
   describe("updateCategory", () => {
     it("should update an ingredient category", async () => {
       const updateDto = { name: { en: "Updated Category", ar: "فئة محدثة" } };
-      ingredientCategoryRepository.findOne.mockResolvedValue({ ...mockCategory });
+      ingredientCategoryRepository.findOne.mockResolvedValue({
+        ...mockCategory,
+      });
       ingredientCategoryRepository.save.mockResolvedValue({
         ...mockCategory,
         ...updateDto,
       });
 
-      const result = await service.updateCategory(mockCategoryId, updateDto as any, mockUserId);
+      const result = await service.updateCategory(
+        mockCategoryId,
+        updateDto as any,
+        mockUserId,
+      );
 
       expect(ingredientCategoryRepository.save).toHaveBeenCalled();
       expect(result).toBeDefined();
@@ -179,11 +196,15 @@ describe("IngredientsService", () => {
   describe("removeCategory", () => {
     it("should soft delete a category", async () => {
       ingredientCategoryRepository.findOne.mockResolvedValue(mockCategory);
-      ingredientCategoryRepository.softDelete.mockResolvedValue({ affected: 1 });
+      ingredientCategoryRepository.softDelete.mockResolvedValue({
+        affected: 1,
+      });
 
       await service.removeCategory(mockCategoryId);
 
-      expect(ingredientCategoryRepository.softDelete).toHaveBeenCalledWith(mockCategoryId);
+      expect(ingredientCategoryRepository.softDelete).toHaveBeenCalledWith(
+        mockCategoryId,
+      );
     });
   });
 
@@ -196,7 +217,10 @@ describe("IngredientsService", () => {
       };
       ingredientCategoryRepository.findOne.mockResolvedValue(mockCategory);
 
-      const result = await service.createIngredient(createDto as any, mockUserId);
+      const result = await service.createIngredient(
+        createDto as any,
+        mockUserId,
+      );
 
       expect(ingredientRepository.create).toHaveBeenCalled();
       expect(ingredientRepository.save).toHaveBeenCalled();
@@ -244,7 +268,14 @@ describe("IngredientsService", () => {
         createMockQueryBuilder([mockIngredient], 1),
       );
 
-      await service.findAllIngredients(1, 10, undefined, undefined, "price", "ASC");
+      await service.findAllIngredients(
+        1,
+        10,
+        undefined,
+        undefined,
+        "price",
+        "ASC",
+      );
 
       expect(ingredientRepository.createQueryBuilder).toHaveBeenCalled();
     });
@@ -277,7 +308,11 @@ describe("IngredientsService", () => {
         ...updateDto,
       });
 
-      const result = await service.updateIngredient(mockIngredientId, updateDto as any, mockUserId);
+      const result = await service.updateIngredient(
+        mockIngredientId,
+        updateDto as any,
+        mockUserId,
+      );
 
       expect(ingredientRepository.save).toHaveBeenCalled();
       expect(result).toBeDefined();
@@ -291,7 +326,9 @@ describe("IngredientsService", () => {
 
       await service.removeIngredient(mockIngredientId);
 
-      expect(ingredientRepository.softDelete).toHaveBeenCalledWith(mockIngredientId);
+      expect(ingredientRepository.softDelete).toHaveBeenCalledWith(
+        mockIngredientId,
+      );
     });
   });
 

@@ -398,7 +398,9 @@ describe("CheckoutService", () => {
       });
 
       expect(result.order).toBeDefined();
-      expect(result.payment.iframeUrl).toBe("https://payment.example.com/iframe");
+      expect(result.payment.iframeUrl).toBe(
+        "https://payment.example.com/iframe",
+      );
       expect(paymentsService.processCardPayment).toHaveBeenCalled();
     });
 
@@ -453,7 +455,9 @@ describe("CheckoutService", () => {
       });
       cartService.getCart.mockResolvedValue(mockCart as any);
       userRepository.findOne.mockResolvedValue(mockUser);
-      ordersService.createFromCart.mockRejectedValue(new Error("Database error"));
+      ordersService.createFromCart.mockRejectedValue(
+        new Error("Database error"),
+      );
 
       await expect(
         service.processCheckout(mockUserId, {

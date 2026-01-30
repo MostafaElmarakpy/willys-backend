@@ -1,6 +1,6 @@
 import { Test, type TestingModule } from "@nestjs/testing";
-import { OrdersAdminController } from "./orders-admin.controller";
 import { OrdersService } from "./orders.service";
+import { OrdersAdminController } from "./orders-admin.controller";
 
 describe("OrdersAdminController", () => {
   let controller: OrdersAdminController;
@@ -95,7 +95,7 @@ describe("OrdersAdminController", () => {
       const stats = { totalOrders: 50, totalRevenue: 5000 };
       ordersService.getOrderStats.mockResolvedValue(stats as any);
 
-      const result = await controller.getStats(mockBranchId);
+      const _result = await controller.getStats(mockBranchId);
 
       expect(ordersService.getOrderStats).toHaveBeenCalledWith(mockBranchId);
     });
@@ -132,11 +132,17 @@ describe("OrdersAdminController", () => {
 
   describe("updateStatus", () => {
     it("should update order status", async () => {
-      const updateDto = { status: "preparing", notes: "Started cooking" } as any;
+      const updateDto = {
+        status: "preparing",
+        notes: "Started cooking",
+      } as any;
       const updatedOrder = { ...mockOrder, status: "preparing" };
       ordersService.updateStatus.mockResolvedValue(updatedOrder as any);
 
-      const mockReq = { ip: "127.0.0.1", socket: { remoteAddress: "127.0.0.1" } };
+      const mockReq = {
+        ip: "127.0.0.1",
+        socket: { remoteAddress: "127.0.0.1" },
+      };
       const result = await controller.updateStatus(
         mockUserId,
         mockOrderId,
@@ -161,7 +167,10 @@ describe("OrdersAdminController", () => {
       const cancelledOrder = { ...mockOrder, status: "cancelled" };
       ordersService.cancelOrder.mockResolvedValue(cancelledOrder as any);
 
-      const mockReq = { ip: "127.0.0.1", socket: { remoteAddress: "127.0.0.1" } };
+      const mockReq = {
+        ip: "127.0.0.1",
+        socket: { remoteAddress: "127.0.0.1" },
+      };
       const result = await controller.cancelOrder(
         mockUserId,
         mockOrderId,

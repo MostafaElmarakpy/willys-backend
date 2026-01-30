@@ -1,7 +1,7 @@
 import { Test, type TestingModule } from "@nestjs/testing";
 import { S3StorageService } from "../../services/upload-media/multer-config.service";
-import { BundlesAdminController } from "./bundles-admin.controller";
 import { BundlesService } from "./bundles.service";
+import { BundlesAdminController } from "./bundles-admin.controller";
 
 describe("BundlesAdminController", () => {
   let controller: BundlesAdminController;
@@ -148,7 +148,9 @@ describe("BundlesAdminController", () => {
 
       const result = await controller.findByCategory(mockCategoryId);
 
-      expect(bundlesService.findByCategory).toHaveBeenCalledWith(mockCategoryId);
+      expect(bundlesService.findByCategory).toHaveBeenCalledWith(
+        mockCategoryId,
+      );
       expect(result.message).toBe("Category bundles retrieved successfully");
     });
   });

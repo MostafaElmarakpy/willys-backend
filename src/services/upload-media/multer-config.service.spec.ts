@@ -162,7 +162,10 @@ describe("S3StorageService", () => {
       });
 
       it("should include mimetype in error message for rejected files", () => {
-        const file = { fieldname: "file", mimetype: "application/octet-stream" };
+        const file = {
+          fieldname: "file",
+          mimetype: "application/octet-stream",
+        };
         const callback = jest.fn();
 
         fileFilter({}, file, callback);
@@ -255,7 +258,9 @@ describe("S3StorageService", () => {
       };
 
       expect(() => service.validateFileSize(file)).toThrow(BadRequestException);
-      expect(() => service.validateFileSize(file)).toThrow(/unsupported file type/);
+      expect(() => service.validateFileSize(file)).toThrow(
+        /unsupported file type/,
+      );
     });
 
     it("should include original filename in error message", () => {
@@ -289,7 +294,13 @@ describe("S3StorageService", () => {
     });
 
     it("should accept various video formats", () => {
-      const videoFormats = ["video/mp4", "video/webm", "video/ogg", "video/avi", "video/mov"];
+      const videoFormats = [
+        "video/mp4",
+        "video/webm",
+        "video/ogg",
+        "video/avi",
+        "video/mov",
+      ];
 
       for (const format of videoFormats) {
         const file = {

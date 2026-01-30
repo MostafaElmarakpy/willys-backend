@@ -1,8 +1,8 @@
-import { Test, type TestingModule } from "@nestjs/testing";
 import { UnauthorizedException } from "@nestjs/common";
-import { JwtStrategy } from "./jwt.strategy";
-import { UsersService } from "src/modules/users/users.service";
+import { Test, type TestingModule } from "@nestjs/testing";
 import { ConfigService } from "src/config/config.service";
+import { UsersService } from "src/modules/users/users.service";
+import { JwtStrategy } from "./jwt.strategy";
 
 describe("JwtStrategy", () => {
   let strategy: JwtStrategy;

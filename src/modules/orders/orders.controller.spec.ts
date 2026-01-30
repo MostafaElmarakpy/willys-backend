@@ -199,9 +199,9 @@ describe("OrdersController", () => {
       const otherUserOrder = { ...mockOrder, userId: "other-user" };
       ordersService.findOne.mockResolvedValue(otherUserOrder as any);
 
-      await expect(
-        controller.findOne(mockUserId, mockOrderId),
-      ).rejects.toThrow("Order not found");
+      await expect(controller.findOne(mockUserId, mockOrderId)).rejects.toThrow(
+        "Order not found",
+      );
     });
   });
 

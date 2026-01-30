@@ -90,9 +90,17 @@ describe("BranchesController", () => {
       };
       branchesService.findAll.mockResolvedValue(paginatedResult as any);
 
-      const result = await controller.findAll(undefined, { page: 1, limit: 10 });
+      const result = await controller.findAll(undefined, {
+        page: 1,
+        limit: 10,
+      });
 
-      expect(branchesService.findAll).toHaveBeenCalledWith(1, 10, undefined, "DESC");
+      expect(branchesService.findAll).toHaveBeenCalledWith(
+        1,
+        10,
+        undefined,
+        "DESC",
+      );
       expect(result.message).toBe("Branches retrieved successfully");
     });
 
@@ -115,11 +123,19 @@ describe("BranchesController", () => {
     });
 
     it("should use default pagination values", async () => {
-      branchesService.findAll.mockResolvedValue({ branches: [], total: 0 } as any);
+      branchesService.findAll.mockResolvedValue({
+        branches: [],
+        total: 0,
+      } as any);
 
       await controller.findAll("all", {});
 
-      expect(branchesService.findAll).toHaveBeenCalledWith(1, 10, undefined, "DESC");
+      expect(branchesService.findAll).toHaveBeenCalledWith(
+        1,
+        10,
+        undefined,
+        "DESC",
+      );
     });
   });
 
@@ -165,7 +181,9 @@ describe("BranchesController", () => {
 
   describe("findServingBranch", () => {
     it("should return serving branch when found", async () => {
-      zonesService.findBestBranchForLocation.mockResolvedValue(mockBranch as any);
+      zonesService.findBestBranchForLocation.mockResolvedValue(
+        mockBranch as any,
+      );
 
       const dto = { latitude: 30.05, longitude: 31.25 };
       const result = await controller.findServingBranch(dto);
@@ -222,11 +240,17 @@ describe("BranchesController", () => {
   describe("update", () => {
     it("should update a branch", async () => {
       const updateDto = { name: { en: "Updated Branch" } } as any;
-      branchesService.update.mockResolvedValue({ ...mockBranch, ...updateDto } as any);
+      branchesService.update.mockResolvedValue({
+        ...mockBranch,
+        ...updateDto,
+      } as any);
 
       const result = await controller.update(mockBranchId, updateDto);
 
-      expect(branchesService.update).toHaveBeenCalledWith(mockBranchId, updateDto);
+      expect(branchesService.update).toHaveBeenCalledWith(
+        mockBranchId,
+        updateDto,
+      );
       expect(result.message).toBe("Branch updated successfully");
     });
   });
@@ -238,7 +262,10 @@ describe("BranchesController", () => {
 
       const result = await controller.toggleStatus(mockBranchId, "active");
 
-      expect(branchesService.toggleStatus).toHaveBeenCalledWith(mockBranchId, "active");
+      expect(branchesService.toggleStatus).toHaveBeenCalledWith(
+        mockBranchId,
+        "active",
+      );
       expect(result.message).toBe("Branch active status toggled successfully");
     });
 
@@ -248,7 +275,10 @@ describe("BranchesController", () => {
 
       const result = await controller.toggleStatus(mockBranchId, "open");
 
-      expect(branchesService.toggleStatus).toHaveBeenCalledWith(mockBranchId, "open");
+      expect(branchesService.toggleStatus).toHaveBeenCalledWith(
+        mockBranchId,
+        "open",
+      );
       expect(result.message).toBe("Branch open status toggled successfully");
     });
   });
