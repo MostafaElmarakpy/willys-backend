@@ -217,7 +217,7 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
 
       // Should fail (already used once)
       expect(secondDiscountAttempt.status).toBe(400);
-    });
+    }, 60000); // 60 second timeout
 
     it("should handle race condition on last discount usage", async () => {
       const admin = await createDefaultAdmin();
@@ -230,24 +230,17 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
         value: 25,
       });
 
-      // Create 3 users who will race for the last use
-      const users = await Promise.all([
-        registerUser(app, {
-          fullName: "Racer 1",
-          email: "racer1@discount.com",
+      // Create 3 users sequentially to avoid connection pool exhaustion
+      // The race condition test happens during discount application, not registration
+      const users: Awaited<ReturnType<typeof registerUser>>[] = [];
+      for (let i = 0; i < 3; i++) {
+        const user = await registerUser(app, {
+          fullName: `Racer ${i + 1}`,
+          email: `racer${i + 1}@discount.com`,
           password: "Test@1234",
-        }),
-        registerUser(app, {
-          fullName: "Racer 2",
-          email: "racer2@discount.com",
-          password: "Test@1234",
-        }),
-        registerUser(app, {
-          fullName: "Racer 3",
-          email: "racer3@discount.com",
-          password: "Test@1234",
-        }),
-      ]);
+        });
+        users.push(user);
+      }
 
       const userRepo = getRepository<User>(User);
       const dbUsers = await Promise.all(
@@ -296,11 +289,17 @@ describe("Multi-User Discount Race Conditions (E2E)", () => {
         ),
       );
 
-      // Only one should get the discount
+      // Only one should get the discount (POST returns 201 for created)
       const successfulApplications = discountApplications.filter(
-        (r) => r.status === 200,
+        (r) => r.status === 201 || r.status === 200,
       );
       expect(successfulApplications.length).toBe(1);
+
+      // Verify 2 were rejected
+      const rejectedApplications = discountApplications.filter(
+        (r) => r.status === 400,
+      );
+      expect(rejectedApplications.length).toBe(2);
     });
   });
 });

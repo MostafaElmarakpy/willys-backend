@@ -301,8 +301,28 @@ export class CartService {
     return this.recalculateTotals(userId);
   }
 
-  async clearCart(userId: string): Promise<Cart> {
+  async clearCart(userId: string, releaseDiscounts = true): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId);
+
+    // Decrement usage count for any applied discounts (release reservations)
+    // Only do this if explicitly requested (e.g., user clearing cart manually)
+    // Don't do this after successful checkout since discount was already recorded
+    if (
+      releaseDiscounts &&
+      cart.appliedDiscounts &&
+      cart.appliedDiscounts.length > 0
+    ) {
+      for (const discount of cart.appliedDiscounts) {
+        try {
+          await this.dataSource.query(
+            `UPDATE discounts SET "currentUsageCount" = GREATEST(0, "currentUsageCount" - 1) WHERE id = $1`,
+            [discount.discountId],
+          );
+        } catch (error) {
+          console.warn("Failed to decrement discount usage count:", error);
+        }
+      }
+    }
 
     // Soft delete all cart items
     await this.cartItemRepository.softDelete({ cartId: cart.id });
@@ -442,15 +462,6 @@ export class CartService {
       throw new NotFoundException("Discount code not found");
     }
 
-    // Check if user can use this discount
-    const eligibility = await this.discountsService.canUseDiscount(
-      discount.id,
-      userId,
-    );
-    if (!eligibility.canUse) {
-      throw new BadRequestException(eligibility.reason);
-    }
-
     // Check if discount is already applied
     const alreadyApplied = cart.appliedDiscounts?.some(
       (d) => d.discountId === discount.id,
@@ -479,28 +490,141 @@ export class CartService {
       throw new BadRequestException("Invalid discount amount calculated");
     }
 
-    // Add to applied discounts
-    const appliedDiscount: AppliedDiscount = {
-      discountId: discount.id,
-      code: discount.code,
-      type: discount.type,
-      amount: Number(discountAmount),
-    };
+    // Use transaction with pessimistic locking to reserve the discount
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    cart.appliedDiscounts = [...(cart.appliedDiscounts || []), appliedDiscount];
+    let shouldRollback = false;
+    let errorToThrow: Error | null = null;
 
-    await this.cartRepository.save(cart);
+    try {
+      // Lock the discount row and check availability atomically
+      const lockedDiscount = await queryRunner.manager.query(
+        `SELECT * FROM discounts WHERE id = $1 AND "deletedAt" IS NULL FOR UPDATE`,
+        [discount.id],
+      );
 
-    return this.recalculateTotals(userId);
+      if (!lockedDiscount || lockedDiscount.length === 0) {
+        shouldRollback = true;
+        errorToThrow = new NotFoundException("Discount not found");
+      } else {
+        const lockedDiscountData = lockedDiscount[0];
+
+        // Check if discount is still active
+        if (
+          !lockedDiscountData.isActive ||
+          lockedDiscountData.status !== "active"
+        ) {
+          shouldRollback = true;
+          errorToThrow = new BadRequestException("Discount is not active");
+        }
+        // Check usage limits with the locked data
+        else if (
+          lockedDiscountData.maxUsageTotal &&
+          lockedDiscountData.currentUsageCount >=
+            lockedDiscountData.maxUsageTotal
+        ) {
+          shouldRollback = true;
+          errorToThrow = new BadRequestException(
+            "Discount usage limit reached",
+          );
+        } else {
+          // Check user-specific eligibility for user-targeted discounts
+          if (discount.targetType === "user") {
+            // Lock user discount row to check per-user limits
+            const userDiscount = await queryRunner.manager.query(
+              `SELECT * FROM user_discounts WHERE "userId" = $1 AND "discountId" = $2 FOR UPDATE`,
+              [userId, discount.id],
+            );
+
+            if (!userDiscount || userDiscount.length === 0) {
+              shouldRollback = true;
+              errorToThrow = new BadRequestException(
+                "Discount not assigned to this user",
+              );
+            } else {
+              const userDiscountData = userDiscount[0];
+              if (
+                lockedDiscountData.maxUsagePerUser &&
+                userDiscountData.usageCount >=
+                  lockedDiscountData.maxUsagePerUser
+              ) {
+                shouldRollback = true;
+                errorToThrow = new BadRequestException(
+                  "User has reached their usage limit for this discount",
+                );
+              }
+            }
+          }
+
+          if (!shouldRollback) {
+            // Increment usage count to reserve the discount
+            await queryRunner.manager.query(
+              `UPDATE discounts SET "currentUsageCount" = "currentUsageCount" + 1 WHERE id = $1`,
+              [discount.id],
+            );
+
+            // Add to applied discounts
+            const appliedDiscount: AppliedDiscount = {
+              discountId: discount.id,
+              code: discount.code,
+              type: discount.type,
+              amount: Number(discountAmount),
+            };
+
+            cart.appliedDiscounts = [
+              ...(cart.appliedDiscounts || []),
+              appliedDiscount,
+            ];
+
+            await queryRunner.manager.save(cart);
+          }
+        }
+      }
+
+      if (shouldRollback) {
+        await queryRunner.rollbackTransaction();
+        throw errorToThrow!;
+      }
+
+      await queryRunner.commitTransaction();
+
+      return this.recalculateTotals(userId);
+    } catch (error) {
+      if (!shouldRollback) {
+        await queryRunner.rollbackTransaction();
+      }
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async removeDiscount(userId: string, discountId: string): Promise<Cart> {
     const cart = await this.getOrCreateCart(userId);
 
+    // Check if discount was actually applied
+    const wasApplied = cart.appliedDiscounts?.some(
+      (d) => d.discountId === discountId,
+    );
+
     cart.appliedDiscounts =
       cart.appliedDiscounts?.filter((d) => d.discountId !== discountId) || [];
 
     await this.cartRepository.save(cart);
+
+    // Decrement usage count if discount was removed (release the reservation)
+    if (wasApplied) {
+      try {
+        await this.dataSource.query(
+          `UPDATE discounts SET "currentUsageCount" = GREATEST(0, "currentUsageCount" - 1) WHERE id = $1`,
+          [discountId],
+        );
+      } catch (error) {
+        console.warn("Failed to decrement discount usage count:", error);
+      }
+    }
 
     return this.recalculateTotals(userId);
   }

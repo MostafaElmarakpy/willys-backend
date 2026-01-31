@@ -101,7 +101,7 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
     it("should allow customer to cancel order in CONFIRMED status", async () => {
       // Setup
       const admin = await createDefaultAdmin();
-      const adminToken = getAuthToken(admin);
+      const _adminToken = getAuthToken(admin);
       const { mainBranch } = await createTestBranches(admin);
       const menu = await createTestMenu(admin);
 
@@ -143,11 +143,7 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
 
       const orderId = checkoutResponse.body.data.order.id;
 
-      // Admin confirms the order
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "CONFIRMED",
-      });
-
+      // Order is already CONFIRMED for cash payments
       // Customer tries to cancel confirmed order
       const cancelResponse = await authenticatedPost(
         app,
@@ -215,13 +211,15 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
 
       const orderId = checkoutResponse.body.data.order.id;
 
-      // Admin moves to PREPARING
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "CONFIRMED",
-      });
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "PREPARING",
-      });
+      // Admin moves to PREPARING (order already CONFIRMED for cash payments)
+      await authenticatedPatch(
+        app,
+        `/admin/orders/${orderId}/status`,
+        adminToken,
+        {
+          status: "PREPARING",
+        },
+      );
 
       // Customer tries to cancel
       const cancelResponse = await authenticatedPost(
@@ -289,22 +287,23 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
 
       const orderId = checkoutResponse.body.data.order.id;
 
-      // Move to PREPARING
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "CONFIRMED",
-      });
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "PREPARING",
-      });
-
-      // Admin cancels
-      const cancelResponse = await authenticatedPatch(
+      // Move to PREPARING (order already CONFIRMED for cash payments)
+      await authenticatedPatch(
         app,
-        `/admin/orders/${orderId}`,
+        `/admin/orders/${orderId}/status`,
         adminToken,
         {
-          status: "CANCELLED",
-          cancellationReason: "Out of stock",
+          status: "PREPARING",
+        },
+      );
+
+      // Admin cancels
+      const cancelResponse = await authenticatedPost(
+        app,
+        `/admin/orders/${orderId}/cancel`,
+        adminToken,
+        {
+          reason: "Out of stock",
         },
       );
 
@@ -361,16 +360,17 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
 
       const orderId = checkoutResponse.body.data.order.id;
 
-      // Move to CONFIRMED (paid orders after CONFIRMED may require refund)
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "CONFIRMED",
-      });
+      // Order is already CONFIRMED for cash payments (paid orders may require refund)
 
       // Admin cancels
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "CANCELLED",
-        cancellationReason: "Restaurant closed unexpectedly",
-      });
+      await authenticatedPost(
+        app,
+        `/admin/orders/${orderId}/cancel`,
+        adminToken,
+        {
+          reason: "Restaurant closed unexpectedly",
+        },
+      );
 
       // Check order for refund flags
       const orderRepo = getRepository<Order>(Order);
@@ -503,10 +503,14 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
       const orderId = checkoutResponse.body.data.order.id;
 
       // Admin cancels
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "CANCELLED",
-        cancellationReason: "Admin cancellation test",
-      });
+      await authenticatedPost(
+        app,
+        `/admin/orders/${orderId}/cancel`,
+        adminToken,
+        {
+          reason: "Admin cancellation test",
+        },
+      );
 
       // Check status logs for who changed it
       const statusLogRepo = getRepository<OrderStatusLog>(OrderStatusLog);
@@ -569,37 +573,22 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
 
       const orderId = checkoutResponse.body.data.order.id;
 
-      // PENDING -> CONFIRMED
-      const confirmResponse = await authenticatedPatch(
-        app,
-        `/admin/orders/${orderId}`,
-        adminToken,
-        { status: "CONFIRMED" },
-      );
-      expect(confirmResponse.status).toBe(200);
+      // Order is already CONFIRMED for cash payments
+      // For delivery orders: CONFIRMED -> PREPARING -> OUT_FOR_DELIVERY -> COMPLETED
 
       // CONFIRMED -> PREPARING
       const preparingResponse = await authenticatedPatch(
         app,
-        `/admin/orders/${orderId}`,
+        `/admin/orders/${orderId}/status`,
         adminToken,
         { status: "PREPARING" },
       );
       expect(preparingResponse.status).toBe(200);
 
-      // PREPARING -> READY
-      const readyResponse = await authenticatedPatch(
-        app,
-        `/admin/orders/${orderId}`,
-        adminToken,
-        { status: "READY" },
-      );
-      expect(readyResponse.status).toBe(200);
-
-      // READY -> OUT_FOR_DELIVERY
+      // PREPARING -> OUT_FOR_DELIVERY (delivery orders skip READY)
       const outForDeliveryResponse = await authenticatedPatch(
         app,
-        `/admin/orders/${orderId}`,
+        `/admin/orders/${orderId}/status`,
         adminToken,
         { status: "OUT_FOR_DELIVERY" },
       );
@@ -608,7 +597,7 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
       // OUT_FOR_DELIVERY -> COMPLETED
       const completedResponse = await authenticatedPatch(
         app,
-        `/admin/orders/${orderId}`,
+        `/admin/orders/${orderId}/status`,
         adminToken,
         { status: "COMPLETED" },
       );
@@ -626,8 +615,8 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
         order: { createdAt: "ASC" },
       });
 
-      // Should have logs for each transition
-      expect(logs.length).toBeGreaterThanOrEqual(5);
+      // Should have logs for each transition (CONFIRMED->PREPARING->OUT_FOR_DELIVERY->COMPLETED)
+      expect(logs.length).toBeGreaterThanOrEqual(3);
     });
 
     it("should reject invalid status transitions", async () => {
@@ -675,10 +664,10 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
 
       const orderId = checkoutResponse.body.data.order.id;
 
-      // Try to skip from PENDING directly to COMPLETED (should fail)
+      // Try to skip from CONFIRMED directly to COMPLETED (should fail)
       const invalidResponse = await authenticatedPatch(
         app,
-        `/admin/orders/${orderId}`,
+        `/admin/orders/${orderId}/status`,
         adminToken,
         { status: "COMPLETED" },
       );
@@ -686,10 +675,10 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
       // Should be rejected (invalid transition)
       expect([400, 422]).toContain(invalidResponse.status);
 
-      // Order should still be PENDING
+      // Order should still be CONFIRMED (cash payments start confirmed)
       const orderRepo = getRepository<Order>(Order);
       const order = await orderRepo.findOne({ where: { id: orderId } });
-      expect(order!.status).toBe("PENDING");
+      expect(order!.status).toBe("CONFIRMED");
     });
 
     it("should not allow reverting to previous status", async () => {
@@ -737,15 +726,11 @@ describe("Order Cancellation and Refund Flows (E2E)", () => {
 
       const orderId = checkoutResponse.body.data.order.id;
 
-      // Move to CONFIRMED
-      await authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-        status: "CONFIRMED",
-      });
-
+      // Order is already CONFIRMED for cash payments
       // Try to revert to PENDING
       const revertResponse = await authenticatedPatch(
         app,
-        `/admin/orders/${orderId}`,
+        `/admin/orders/${orderId}/status`,
         adminToken,
         { status: "PENDING" },
       );

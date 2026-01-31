@@ -57,11 +57,11 @@ export async function registerUser(
     const random = Math.floor(Math.random() * 1000)
       .toString()
       .padStart(3, "0");
-    payload.phoneNumber = userData.phoneNumber || `+2010${timestamp}${random}`;
+    payload.phoneNumber = userData.phoneNumber || `010${timestamp}${random}`;
     payload.phoneNumberCountryCode = userData.phoneNumberCountryCode || "EG";
   } else {
     payload.phoneNumber = userData.phoneNumber;
-    payload.phoneNumberCountryCode = userData.phoneNumberCountryCode || "+20";
+    payload.phoneNumberCountryCode = userData.phoneNumberCountryCode || "EG";
   }
 
   const response = await request(app.getHttpServer())
@@ -70,12 +70,19 @@ export async function registerUser(
     .send(payload);
 
   if (response.status !== 200 && response.status !== 201) {
-    console.error("Registration failed with payload:", JSON.stringify(payload));
-    console.error(
-      "Response:",
-      response.status,
-      JSON.stringify(response.body, null, 2),
-    );
+    try {
+      console.error(
+        "Registration failed with payload:",
+        JSON.stringify(payload),
+      );
+      console.error(
+        "Response:",
+        response.status,
+        JSON.stringify(response.body, null, 2),
+      );
+    } catch {
+      // Suppress logging errors during test teardown
+    }
     throw new Error(
       `Registration failed: ${response.status} - ${JSON.stringify(response.body)}`,
     );
@@ -123,12 +130,16 @@ export async function loginUser(
     .send(payload);
 
   if (response.status !== 200 && response.status !== 201) {
-    console.error("Login failed with payload:", JSON.stringify(payload));
-    console.error(
-      "Response:",
-      response.status,
-      JSON.stringify(response.body, null, 2),
-    );
+    try {
+      console.error("Login failed with payload:", JSON.stringify(payload));
+      console.error(
+        "Response:",
+        response.status,
+        JSON.stringify(response.body, null, 2),
+      );
+    } catch {
+      // Suppress logging errors during test teardown
+    }
     throw new Error(
       `Login failed: ${response.status} - ${JSON.stringify(response.body)}`,
     );

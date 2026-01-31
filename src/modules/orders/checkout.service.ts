@@ -124,6 +124,7 @@ export class CheckoutService {
       );
 
       // Record discount usage (pass queryRunner to avoid nested transactions)
+      // Skip global increment since it was already incremented when applying to cart
       for (const appliedDiscount of cart.appliedDiscounts || []) {
         await this.discountsService.recordUsage(
           appliedDiscount.discountId,
@@ -132,6 +133,7 @@ export class CheckoutService {
           undefined,
           order.id,
           queryRunner,
+          true, // skipGlobalIncrement - already incremented when applying to cart
         );
       }
 
@@ -191,8 +193,8 @@ export class CheckoutService {
         );
       }
 
-      // Clear cart on success
-      await this.cartService.clearCart(userId);
+      // Clear cart on success (don't release discounts - they're already recorded in the order)
+      await this.cartService.clearCart(userId, false);
 
       // Store idempotency key
       this.processedIdempotencyKeys.set(dto.idempotencyKey, order.id);

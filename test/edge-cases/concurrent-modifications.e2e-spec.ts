@@ -498,13 +498,23 @@ describe("Concurrent Entity Modifications (E2E)", () => {
       // One to CONFIRMED, one to CANCELLED
       const statusUpdateOperations = [
         () =>
-          authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-            status: "CONFIRMED",
-          }),
+          authenticatedPatch(
+            app,
+            `/admin/orders/${orderId}/status`,
+            adminToken,
+            {
+              status: "CONFIRMED",
+            },
+          ),
         () =>
-          authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-            status: "CANCELLED",
-          }),
+          authenticatedPatch(
+            app,
+            `/admin/orders/${orderId}/status`,
+            adminToken,
+            {
+              status: "CANCELLED",
+            },
+          ),
       ];
 
       const results = await runSimultaneousOperations(statusUpdateOperations);
@@ -575,9 +585,14 @@ describe("Concurrent Entity Modifications (E2E)", () => {
       // Concurrent: Admin confirms while customer tries to cancel
       const raceOperations = [
         () =>
-          authenticatedPatch(app, `/admin/orders/${orderId}`, adminToken, {
-            status: "PREPARING",
-          }),
+          authenticatedPatch(
+            app,
+            `/admin/orders/${orderId}/status`,
+            adminToken,
+            {
+              status: "PREPARING",
+            },
+          ),
         () =>
           authenticatedPost(
             app,

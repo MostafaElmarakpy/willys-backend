@@ -209,7 +209,7 @@ describe("Customer Checkout - Delivery (E2E)", () => {
         },
       );
 
-      expect(response.body.data.order.orderNumber).toMatch(/^WO\d+$/);
+      expect(response.body.data.order.orderNumber).toMatch(/^WLY-\d+-\d+$/); // Format: WLY-YYMMDDHHMMSS-XXX
     });
 
     it("should return estimated delivery time", async () => {

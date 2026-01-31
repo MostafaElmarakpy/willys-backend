@@ -78,7 +78,43 @@ export async function createTestApp(): Promise<INestApplication> {
 
 export async function closeTestApp(app: INestApplication): Promise<void> {
   if (app) {
+    // Wait longer for pending async operations (event emitters, promises, etc.)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Close all database connections
+    try {
+      const dataSource = app.get(DataSource);
+      if (dataSource?.isInitialized) {
+        // Check for active connections before destroying
+        try {
+          const driver = dataSource.driver as any;
+          if (driver.master) {
+            // Log connection pool stats for debugging
+            const poolSize = driver.master._clients?.length || 0;
+            const idleCount = driver.master._idle?.length || 0;
+            console.log(
+              `Closing connection pool: ${poolSize} total, ${idleCount} idle`,
+            );
+          }
+        } catch (_error) {
+          // Ignore errors when checking pool stats
+        }
+
+        // Destroy the data source (drains pool)
+        await dataSource.destroy();
+
+        // Wait for connections to fully close
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    } catch (error) {
+      console.warn("Warning: Failed to destroy DataSource:", error);
+    }
+
+    // Close the NestJS application
     await app.close();
+
+    // Additional wait to ensure all resources are released
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 }
 
@@ -95,19 +131,32 @@ export function getTestDataSource(): DataSource {
  */
 export async function cleanDatabase(): Promise<void> {
   const dataSource = getTestDataSource();
+
+  // Verify DataSource is healthy before cleanup
+  if (!dataSource.isInitialized) {
+    throw new Error("DataSource is not initialized. Cannot clean database.");
+  }
+
+  // Wait for any pending operations to complete
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
   const queryRunner = dataSource.createQueryRunner();
 
   await queryRunner.connect();
 
   try {
+    // Terminate only long-running idle transactions (10s instead of 5s)
     await queryRunner.query(`
       SELECT pg_terminate_backend(pid) 
       FROM pg_stat_activity 
       WHERE datname = current_database() 
       AND pid <> pg_backend_pid()
       AND state = 'idle in transaction'
-      AND state_change < current_timestamp - INTERVAL '5 seconds';
+      AND state_change < current_timestamp - INTERVAL '10 seconds';
     `);
+
+    // Wait a bit after terminating connections
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Temporarily disable foreign key checks for faster cleanup
     await queryRunner.query("SET session_replication_role = replica;");

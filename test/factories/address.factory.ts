@@ -25,15 +25,17 @@ export interface CreateAddressOptions {
 /**
  * Generate address data
  * Default coordinates are in Cairo, Egypt area
+ * Defaults to coordinates within the main test branch zone (Nasr City)
  */
 export function generateAddressData(
   options: CreateAddressOptions = {},
 ): Partial<UserAddress> {
-  // Cairo coordinates range
+  // Default to coordinates within main test branch zone (30.0444, 31.2357) ± 2km
+  // This ensures addresses work with test zones which have 5km radius
   const latitude =
-    options.latitude || faker.location.latitude({ min: 29.9, max: 30.2 });
+    options.latitude || faker.location.latitude({ min: 30.025, max: 30.065 });
   const longitude =
-    options.longitude || faker.location.longitude({ min: 31.1, max: 31.5 });
+    options.longitude || faker.location.longitude({ min: 31.215, max: 31.255 });
 
   const typeLabel = options.type || AddressType.HOME;
   const defaultLabel: BilingualStringObject = {

@@ -207,8 +207,8 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
 
       expect(result1.status).toBe(201);
       expect(result2.status).toBe(201);
-      expect(result1.body.data.branchId).toBe(mainBranch.id);
-      expect(result2.body.data.branchId).toBe(secondBranch.id);
+      expect(result1.body.data.order.branchId).toBe(mainBranch.id);
+      expect(result2.body.data.order.branchId).toBe(secondBranch.id);
     });
 
     it("should handle multiple users ordering the same item", async () => {
@@ -216,16 +216,17 @@ describe("Multi-User Concurrent Orders (E2E)", () => {
       const { mainBranch } = await createTestBranches(admin);
       const menu = await createTestMenu(admin);
 
-      // Create 5 users who all want the same item
-      const userCreations = Array.from({ length: 5 }, (_, i) =>
-        registerUser(app, {
+      // Create 5 users sequentially to avoid connection pool exhaustion
+      // The concurrent test happens during checkout, not registration
+      const users: Awaited<ReturnType<typeof registerUser>>[] = [];
+      for (let i = 0; i < 5; i++) {
+        const user = await registerUser(app, {
           fullName: `User ${i + 1}`,
           email: `user${i + 1}@sameitem.com`,
           password: "Test@1234",
-        }),
-      );
-
-      const users = await Promise.all(userCreations);
+        });
+        users.push(user);
+      }
 
       const userRepo = getRepository<User>(User);
       const dbUsers = await Promise.all(

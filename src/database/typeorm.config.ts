@@ -29,10 +29,13 @@ async function initializeDatabaseConfig() {
     },
     synchronize: false,
     extra: {
-      max: process.env.NODE_ENV === "test" ? 50 : 20,
+      max: process.env.NODE_ENV === "test" ? 100 : 20,
       min: 5,
-      idleTimeoutMillis: 30000,
+      acquireTimeoutMillis: 30000,
+      maxUses: 1000,
+      idleTimeoutMillis: process.env.NODE_ENV === "test" ? 15000 : 30000,
       connectionTimeoutMillis: 10000,
+      evictionRunIntervalMillis: 10000,
     },
   };
 }

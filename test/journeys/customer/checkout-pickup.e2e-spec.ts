@@ -137,6 +137,7 @@ describe("Customer Checkout - Pickup (E2E)", () => {
         },
       );
 
+      expect(response.status).toBe(201);
       expect(response.body.data.order.scheduledPickupTime).toBeDefined();
     });
   });

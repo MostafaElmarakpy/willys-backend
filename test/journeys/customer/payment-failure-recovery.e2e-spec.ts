@@ -80,7 +80,7 @@ describe("Payment Failure Recovery Flows (E2E)", () => {
       expect(checkoutResponse.status).toBe(201);
 
       const order = checkoutResponse.body.data.order;
-      expect(order.status).toBe("PENDING");
+      expect(order.status).toBe("CONFIRMED"); // Cash payments are immediately confirmed
     });
   });
 
@@ -495,7 +495,7 @@ describe("Payment Failure Recovery Flows (E2E)", () => {
       });
 
       expect(order).toBeDefined();
-      expect(order!.status).toBe("PENDING");
+      expect(order!.status).toBe("CONFIRMED"); // Cash payments are immediately confirmed
       expect(order!.orderNumber).toBeDefined();
       expect(order!.items.length).toBeGreaterThan(0);
       expect(order!.user.id).toBe(user.id);

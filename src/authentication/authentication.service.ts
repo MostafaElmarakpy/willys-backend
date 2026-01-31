@@ -125,24 +125,57 @@ export class AuthenticationService {
     expirationDate: Date,
     refreshExpirationDate: Date,
   ) {
-    try {
-      const accessTokenEntity = this.accessTokenRepository.create({
-        refreshToken,
-        accessToken,
-        identifier: user.email || user.phoneNumber,
-        userId: user.id,
-        expiration: expirationDate,
-        refreshExpiration: refreshExpirationDate,
-      });
+    const maxRetries = 3;
+    const baseDelay = 100; // 100ms base delay
 
-      await this.accessTokenRepository.save(accessTokenEntity);
-    } catch (error: any) {
-      if (error.code === "23503") {
-        console.error(
-          `Failed to save access token for user ${user.id}: User may have been deleted`,
-        );
-      } else {
-        throw error;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Check if repository manager has an active connection
+        const dataSource = this.accessTokenRepository.manager.connection;
+        if (!dataSource?.isInitialized) {
+          throw new Error("DataSource is not initialized");
+        }
+
+        const accessTokenEntity = this.accessTokenRepository.create({
+          refreshToken,
+          accessToken,
+          identifier: user.email || user.phoneNumber,
+          userId: user.id,
+          expiration: expirationDate,
+          refreshExpiration: refreshExpirationDate,
+        });
+
+        await this.accessTokenRepository.save(accessTokenEntity);
+        return; // Success, exit the retry loop
+      } catch (error: any) {
+        if (error.code === "23503") {
+          console.error(
+            `Failed to save access token for user ${user.id}: User may have been deleted`,
+          );
+          return; // Don't retry foreign key violations
+        }
+
+        // Check if it's a connection error
+        const isConnectionError =
+          error.message?.includes("Driver not Connected") ||
+          error.message?.includes("Connection") ||
+          error.name === "TypeORMError";
+
+        if (isConnectionError && attempt < maxRetries) {
+          // Exponential backoff: 100ms, 200ms, 400ms
+          const delay = baseDelay * 2 ** (attempt - 1);
+          console.warn(
+            `Connection error saving access token (attempt ${attempt}/${maxRetries}). Retrying in ${delay}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          // Non-connection error or max retries reached
+          console.error(
+            `Failed to save access token for user ${user.id} after ${attempt} attempts:`,
+            error.message,
+          );
+          throw error;
+        }
       }
     }
   }

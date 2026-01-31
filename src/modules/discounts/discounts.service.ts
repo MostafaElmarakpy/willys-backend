@@ -505,86 +505,104 @@ export class DiscountsService {
     await queryRunner.startTransaction();
 
     try {
-      // Lock the discount row for update
-      const discount = await queryRunner.manager
-        .createQueryBuilder(Discount, "discount")
-        .where("discount.id = :id", { id: discountId })
-        .andWhere("discount.deletedAt IS NULL")
-        .setLock("pessimistic_write")
-        .getOne();
-
-      if (!discount) {
-        await queryRunner.rollbackTransaction();
-        return { canUse: false, reason: "Discount not found" };
-      }
-
-      if (!this.isDiscountActive(discount)) {
-        await queryRunner.rollbackTransaction();
-        return {
-          canUse: false,
-          reason: "Discount is not active or has expired",
-        };
-      }
-
-      if (
-        discount.maxUsageTotal &&
-        discount.currentUsageCount >= discount.maxUsageTotal
-      ) {
-        await queryRunner.rollbackTransaction();
-        return { canUse: false, reason: "Discount usage limit reached" };
-      }
-
-      if (discount.targetType === DiscountTargetType.USER) {
-        // Lock user discount for update
-        const userDiscount = await queryRunner.manager
-          .createQueryBuilder(UserDiscount, "userDiscount")
-          .where("userDiscount.userId = :userId", { userId })
-          .andWhere("userDiscount.discountId = :discountId", { discountId })
-          .setLock("pessimistic_write")
-          .getOne();
-
-        if (!userDiscount) {
-          await queryRunner.rollbackTransaction();
-          return {
-            canUse: false,
-            reason: "Discount not assigned to this user",
-          };
-        }
-
-        if (
-          discount.maxUsagePerUser &&
-          userDiscount.usageCount >= discount.maxUsagePerUser
-        ) {
-          await queryRunner.rollbackTransaction();
-          return {
-            canUse: false,
-            reason: "User has reached their usage limit for this discount",
-          };
-        }
-      }
-
-      if (discount.targetType === DiscountTargetType.ITEM && itemId) {
-        const itemDiscount = await queryRunner.manager.findOne(ItemDiscount, {
-          where: { itemId, discountId },
-        });
-
-        if (!itemDiscount) {
-          await queryRunner.rollbackTransaction();
-          return {
-            canUse: false,
-            reason: "Discount not assigned to this item",
-          };
-        }
-      }
+      const result = await this.checkDiscountEligibilityWithLock(
+        queryRunner,
+        discountId,
+        userId,
+        itemId,
+      );
 
       await queryRunner.commitTransaction();
-      return { canUse: true };
+      return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {
       await queryRunner.release();
     }
+  }
+
+  /**
+   * Check discount eligibility with pessimistic locking within an existing transaction
+   * @param queryRunner The transaction query runner to use
+   * @param discountId The discount ID to check
+   * @param userId The user ID to check
+   * @param itemId Optional item ID for item-targeted discounts
+   * @returns Eligibility result with canUse flag and reason
+   */
+  async checkDiscountEligibilityWithLock(
+    queryRunner: QueryRunner,
+    discountId: string,
+    userId: string,
+    itemId?: string,
+  ): Promise<{ canUse: boolean; reason?: string }> {
+    // Lock the discount row for update
+    const discount = await queryRunner.manager
+      .createQueryBuilder(Discount, "discount")
+      .where("discount.id = :id", { id: discountId })
+      .andWhere("discount.deletedAt IS NULL")
+      .setLock("pessimistic_write")
+      .getOne();
+
+    if (!discount) {
+      return { canUse: false, reason: "Discount not found" };
+    }
+
+    if (!this.isDiscountActive(discount)) {
+      return {
+        canUse: false,
+        reason: "Discount is not active or has expired",
+      };
+    }
+
+    if (
+      discount.maxUsageTotal &&
+      discount.currentUsageCount >= discount.maxUsageTotal
+    ) {
+      return { canUse: false, reason: "Discount usage limit reached" };
+    }
+
+    if (discount.targetType === DiscountTargetType.USER) {
+      // Lock user discount for update
+      const userDiscount = await queryRunner.manager
+        .createQueryBuilder(UserDiscount, "userDiscount")
+        .where("userDiscount.userId = :userId", { userId })
+        .andWhere("userDiscount.discountId = :discountId", { discountId })
+        .setLock("pessimistic_write")
+        .getOne();
+
+      if (!userDiscount) {
+        return {
+          canUse: false,
+          reason: "Discount not assigned to this user",
+        };
+      }
+
+      if (
+        discount.maxUsagePerUser &&
+        userDiscount.usageCount >= discount.maxUsagePerUser
+      ) {
+        return {
+          canUse: false,
+          reason: "User has reached their usage limit for this discount",
+        };
+      }
+    }
+
+    if (discount.targetType === DiscountTargetType.ITEM && itemId) {
+      const itemDiscount = await queryRunner.manager.findOne(ItemDiscount, {
+        where: { itemId, discountId },
+      });
+
+      if (!itemDiscount) {
+        return {
+          canUse: false,
+          reason: "Discount not assigned to this item",
+        };
+      }
+    }
+
+    return { canUse: true };
   }
 
   async recordUsage(
@@ -594,6 +612,7 @@ export class DiscountsService {
     itemId?: string,
     orderId?: string,
     externalQueryRunner?: QueryRunner,
+    skipGlobalIncrement = false, // Set to true if usage was already incremented (e.g., when applying to cart)
   ): Promise<void> {
     // Use external query runner if provided, otherwise create our own
     const queryRunner =
@@ -635,13 +654,15 @@ export class DiscountsService {
         discountAmount,
       });
 
-      // Atomically increment usage count
-      await queryRunner.manager.increment(
-        Discount,
-        { id: discountId },
-        "currentUsageCount",
-        1,
-      );
+      // Atomically increment usage count (skip if already incremented when applying to cart)
+      if (!skipGlobalIncrement) {
+        await queryRunner.manager.increment(
+          Discount,
+          { id: discountId },
+          "currentUsageCount",
+          1,
+        );
+      }
 
       if (discount.targetType === DiscountTargetType.USER) {
         // Lock user discount for update
