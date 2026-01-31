@@ -8,8 +8,7 @@
 docker compose -f docker-compose.dev.yml up
 
 # Run migrations in development
-docker compose -f docker-compose.dev.yml exec willys-backend yarn migrate
-
+npm run migrate
 # Run seeders in development
 npm run seed
 ```
