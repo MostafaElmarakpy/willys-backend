@@ -1,152 +1,253 @@
+````markdown
 # Willy's Backend
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-willys--backend-blue?logo=github)](https://github.com/MostafaElmarakpy/willys-backend)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-WillysBackend-blue?logo=github)](https://github.com/MostafaElmarakpy/willys-backend)
 
-## 📝 Project Overview
+## 📝 Project Overview & Purpose
 
-**Willy's Backend** is a NestJS backend service built with TypeScript, designed to support a Geo-enabled e-commerce / store platform.  
-It uses **PostgreSQL** with **PostGIS** extension to handle geospatial data, and is containerized with Docker for easy development, staging, and production deployments. The repository includes scripts for migrations, seeding, and preset docker-compose configurations for different environments. :contentReference[oaicite:1]{index=1}
+**Willy's Backend** is a scalable, extensible backend API built for managing data, authentication, and operations for a modern business application. Using **NestJS** and **Clean Architecture**, the project ensures maintainability, flexibility, and secure integration for client-side applications. It provides robust support for authentication, product and category management, and role-based access control.
 
 ---
 
 ## ✨ Key Features
 
-- NestJS (TypeScript) backend
-- PostgreSQL database with PostGIS support (geospatial queries)
-- Dockerized environments (development / staging / production)
-- Database migrations & seed scripts
-- Ready-to-run `docker-compose` files for different environments
-- Environment variables via `.env`
-- Structured architecture suitable for further modular development
+- **JWT-based Authentication** with support for refresh tokens
+- Complete Product CRUD operations
+- Category management with product-category associations
+- Role-based access control (Admin/User)
+- Database seeding and migration capabilities
+- Swagger documentation for API exploration
+- CORS configuration for secure frontend integration
+- Repository and Unit of Work design patterns
+- Dockerized development and production setups
 
 ---
 
-## 🗂️ Repo Structure (high-level)
+## 🛠️ Technical Stack & Dependencies
 
-```
+### **Frameworks & Runtimes**
+
+- **NestJS**: 11.x (Node.js framework for scalable backend)
+- **TypeScript**: Typed JavaScript for maintainable codebase
+
+### **Database**
+
+- **PostgreSQL**: Relational database
+- **PostGIS**: Extension for geospatial data
+
+### **Authentication**
+
+- **@nestjs/jwt**: JWT Authentication
+- **bcrypt**: Password hashing and validation
+
+### **Documentation & Utilities**
+
+- **Swagger**: API Documentation via `@nestjs/swagger`
+- **Class-validator**: Validation for DTOs
+
+### **Testing**
+
+- **Jest**: Unit and integration testing
+- **Supertest**: HTTP assertions
+
+### **Containerization**
+
+- Docker & Docker Compose for consistent environments
+
+---
+
+## 🗂️ Project Structure
+
+```plaintext
 willys-backend/
-├── .husky/                        # Git hooks
-├── src/                           # Source code (NestJS app)
-├── test/                          # Tests
-├── docker-compose.yml             # Production compose (Traefik)
-├── docker-compose.dev.yml         # Development compose (hot reload)
-├── docker-compose.staging.yml     # Staging compose
-├── docker-compose.test.yml        # Test compose
-├── Dockerfile                      # Production Dockerfile
-├── Dockerfile.dev                  # Dev Dockerfile (hot reload)
-├── Dockerfile.staging              # Staging Dockerfile
-├── package.json
-├── tsconfig.json
-├── yarn.lock
-└── README.md
+├── src/
+│   ├── authentication/    # JWT authentication module
+│   ├── common/            # Shared modules (utilities, decorators)
+│   ├── config/            # Application configuration
+│   ├── database/          # Entities, migrations, and seeders
+│   ├── modules/           # Feature modules (products, categories, etc.)
+│   ├── services/          # Business logic services
+│   ├── types/             # TypeScript type definitions
+│   ├── main.ts            # Application bootstrap
+├── test/                  # Unit and integration test files
+├── docker-compose.yml     # Docker setup
+├── README.md              # Project documentation
+└── package.json           # Dependencies and scripts
 ```
+````
 
 ---
 
-## 📦 Prerequisites
+## 📡 API Endpoints
 
-- Docker & Docker Compose
-- Node.js (for local non-container runs) — recommended LTS
-- Yarn or npm
-- PostgreSQL (if running without Docker)
-- PostGIS extension enabled in database (if using geospatial features)
+> **For full details, visit the Swagger docs at `/swagger`**
 
----
+### **Authentication**
 
-## 🚀 Quickstart (Docker — recommended)
+- `POST /api/auth/login` — Logs in a user, returns JWT
+- `POST /api/auth/register` — Registers a new user
+- `POST /api/auth/refresh-token` — Refreshes the expired JWT
 
-### Development
+### **Products**
 
-```bash
-# from repo root
-docker compose -f docker-compose.dev.yml up
-# then, inside container or host:
-npm run migrate
-npm run seed
-```
+- `GET /api/products` — Fetch all products
+- `GET /api/products/:id` — Fetch product by ID
+- `POST /api/products/` — Create a new product
+- `PUT /api/products/:id` — Update product by ID
+- `DELETE /api/products/:id` — Delete a product by ID
 
-### Staging
+### **Categories**
 
-```bash
-docker compose -f docker-compose.staging.yml up
-# run migrations/seed in staging container:
-docker compose -f docker-compose.staging.yml exec willys-backend yarn migrate:prod
-docker compose -f docker-compose.staging.yml exec willys-backend yarn seed:prod
-```
-
-### Production
-
-```bash
-docker compose -f docker-compose.yml up
-# run migrations:
-docker compose -f docker-compose.yml exec willys-backend yarn migrate:prod
-docker compose -f docker-compose.yml exec willys-backend yarn seed:prod
-```
-
-> ملاحظة: الـ README في الريبو يذكر أن بعض seeders في staging/production قد تواجه مشاكل في علاقات الـ entities — راجع الـ TODO أو ملفات الـ seed لو واجهت مشاكل. :contentReference[oaicite:2]{index=2}
+- `GET /api/categories` — Fetch all categories
+- `POST /api/categories` — Create a new category
+- `PUT /api/categories/:id` — Update category by ID
+- `DELETE /api/categories/:id` — Delete a category by ID
 
 ---
 
-## 🔧 Environment variables
+## 🚀 Installation & Running
 
-ضع نسخة من ملف `.env` في المسار الجذري واملأ القيم المناسبة:
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/MostafaElmarakpy/willys-backend.git
+cd willys-backend
+```
+
+### 2. Configure Environment
+
+Create an `.env` file based on `.env.example`, and configure the following:
 
 ```env
-# Example .env (fill with your real values)
-DATABASE_URL=postgresql://user:password@db:5432/willysdb
-POSTGRES_DB=willysdb
-POSTGRES_USER=user
-POSTGRES_PASSWORD=secret
 NODE_ENV=development
-PORT=3000
-
-# Any other env variables required by the app (JWT keys, API keys, etc.)
+DATABASE_URL=postgres://user:password@localhost:5432/willys_db
+JWT_SECRET=your_secret_key
+JWT_EXPIRATION=3600
 ```
 
----
+### 3. Start the Application
 
-## 🗂 Migrations & Seeders
-
-المشروع يحتوي على سكربتات لتشغيل الـ migrations والـ seeders (راجع package.json للـ scripts الدقيقة). أمثلة:
+For development:
 
 ```bash
-npm run migrate          # run development migrations
-npm run seed             # run development seeders
-# or inside container in prod:
-yarn migrate:prod
-yarn seed:prod
+npm install
+npm run start:dev
+```
+
+For production:
+
+```bash
+docker-compose up --build
+```
+
+- API runs at: `http://localhost:3000`
+- Swagger UI: `http://localhost:3000/swagger`
+
+---
+
+## 🧩 Dependencies
+
+Core project dependencies:
+
+- **@nestjs/core**: Framework core
+- **@nestjs/typeorm**: ORM integration for NestJS
+- **class-validator**: Validation for DTOs
+- **Swagger**: API documentation
+- **bcrypt**: Password hashing
+
+Testing dependencies:
+
+- **Jest**: Unit testing
+- **Supertest**: End-to-end HTTP testing
+
+---
+
+## 🗺️ Entity Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+    AppUser ||--o{ RefreshToken : "User refresh tokens"
+    AppUser ||--o{ Product : "Created products"
+    Product }o--|| Category : "Belongs to Category"
+
+    AppUser {
+        string id PK
+        string username
+        string email
+        string password
+    }
+    Category {
+        int id PK
+        string name
+        string description
+    }
+    Product {
+        int id PK
+        string name
+        double price
+        int categoryId FK
+    }
+    RefreshToken {
+        int id PK
+        string token
+        datetime expiryDate
+        string userId FK
+    }
 ```
 
 ---
 
-## 🧭 Architecture & Notes
+## 🏗️ Design Patterns Overview
 
-- تم بناء الـ backend باستخدام **NestJS** — modular, testable, scalable.
-- يُعتمد على **PostgreSQL + PostGIS** للوظائف الجغرافية (مثل البحث بالقرب من موقع).
-- القيم الافتراضية للتشغيل مُهيأة عبر ملفات docker-compose لكل بيئة (dev/staging/prod). :contentReference[oaicite:3]{index=3}
+1. **Repository Pattern**:
+   - Abstracts data access and provides a clear contract for database operations.
+   - Example: `GenericRepository<T>` for CRUD and custom queries.
 
----
+2. **Unit of Work Pattern**:
+   - Manages transactions and ensures changes are committed atomically.
 
-## 🧪 Testing
+3. **Dependency Injection (DI)**:
+   - All services, modules, and components are centralized into the service container.
 
-المجلد `test/` موجود، استخدم الأوامر في `package.json` لتشغيل الاختبارات (عادةً `yarn test` أو `npm test`).
+4. **Clean Architecture**:
+   - Separation of layers:
+     - **Domain**: Core business logic
+     - **Application**: Use case coordination
+     - **Infrastructure**: Database access and external dependencies
+     - **Presentation**: API layer
 
----
-
-## ✅ Deployment tips
-
-- تأكد من توافر امتداد PostGIS في قاعدة البيانات الإنتاجية.
-- استخدم secret management (GitHub Secrets / Vault) لحماية كلمات المرور و المفاتيح.
-- راجع تهيئة Traefik في `docker-compose.yml` إذا كنت تستخدمه في الإنتاج.
-
----
-
-## 📝 TODO / Known issues
-
-- بعض عمليات seeding في staging/production قد تحتاج فحص لعلاقات الـ entities (راجع TODO.md أو ملاحظات الـ seeders). :contentReference[oaicite:4]{index=4}
+5. **DTOs & Mapping**:
+   - Data Transfer Objects ensure well-defined payloads between layers.
 
 ---
 
-## 📚 Resources
+## 🔎 Visual Summary
 
-- Repo source: [MostafaElmarakpy/willys-backend (commit 76852b1)](https://github.com/MostafaElmarakpy/willys-backend/tree/76852b1e90743f6001f445b7ba20417ea8fd9040). :contentReference[oaicite:5]{index=5}
+```mermaid
+flowchart TD
+    Client["Client (Frontend)"]
+        -->|HTTP| API["API Gateway (NestJS)"]
+    API -->|Calls| Service["Application Layer"]
+    Service -->|Executes| Infrastructure["Infrastructure (Repositories, Database)"]
+    Infrastructure -->|Data| Database["PostgreSQL + PostGIS"]
+```
+
+## 📣 Additional Notes
+
+### **Future Enhancements**
+
+- Support for third-party payment integration
+- GraphQL API support
+- More detailed logging and observability
+
+### **Frontend Compatibility**
+
+- Works seamlessly with modern SPAs (React, Angular, Vue)
+
+---
+
+Let me know if there’s anything more you’d like to add or adjust!
+
+```
+
+```
